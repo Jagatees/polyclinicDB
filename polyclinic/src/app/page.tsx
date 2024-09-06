@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Link from 'next/link'; // Corrected import statement
+import {Dashboard} from '../components/ui/Dashboard'; // Ensure the path is correct based on your project structure
+
 
 export default function Home() {
   return (
@@ -11,6 +13,12 @@ export default function Home() {
       <Link href="/register">
         <Button variant="outline">Registration</Button>
       </Link>
+
+      <Link href="/clinicPage">
+        <Button variant="outline">General Dashboard</Button>
+      </Link>
+      <Dashboard/>
+
     </div>
   );
 }
