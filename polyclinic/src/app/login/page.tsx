@@ -17,7 +17,7 @@ export default function Login() {
       <div className="flex flex-row min-h-screen w-full">
         <div className="w-1/2 flex flex-col justify-between items-start p-10 bg-gray-900">
           <div className="self-start">
-            <span className="text-2xl font-bold text-white">Zheng Gen Inc</span>
+            <span className="text-2xl font-bold text-white">B1 Clinic Inc</span>
           </div>
           <div className="text-sm font-light italic text-gray-300">
             "This library has saved me countless hours of work and helped me
