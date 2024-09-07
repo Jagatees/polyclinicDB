@@ -7,8 +7,6 @@ const Home = () => {
       <div className="text-center text-white">
         <h1 className="text-4xl font-bold mb-4">Welcome to the Home Page</h1>
         <p className="text-lg mb-6">This is a simple homepage for your React app.</p>
-
-        {/* Buttons to go to Login and Registration */}
         <div className="flex space-x-4">
           <Link to="/login">
             <button className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">

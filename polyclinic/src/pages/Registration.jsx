@@ -1,19 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import image from '../assets/images.jpg'; // Correct the path to your image
 
 const Registration = () => {
   return (
     <div className="h-screen w-screen flex">
       {/* Left Side */}
-      <div className="w-1/2 flex flex-col bg-gray-900 text-white justify-between p-8">
+      <div
+        className="w-1/2 flex flex-col justify-between p-8 text-white"
+        style={{
+          backgroundImage: `url(${image})`, // Use the imported image here
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'multiply',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)', // Dark overlay effect
+        }}
+      >
         <div>
-          <h1 className="text-4xl font-bold mb-8">Acme Inc</h1>
+          <h1 className="text-4xl font-bold mb-8">Polyclinic Inc</h1>
         </div>
         <div className="mb-8">
-          <p className="text-lg">
-            "This library has saved me countless hours of work and helped me deliver stunning designs to my clients faster than ever before."
+          <p className="text-lg italic">
+          "INF2003-Databases-Project-1"
           </p>
-          <p className="mt-4 font-semibold">Sofia Davis</p>
+          <p className="mt-4 font-semibold">P2-Group 13</p>
         </div>
       </div>
 

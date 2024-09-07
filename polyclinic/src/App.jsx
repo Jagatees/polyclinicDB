@@ -13,7 +13,6 @@ function App() {
             <Route extact path="/" element={<Home />} />
             <Route extact path="/login" element={<Login />} />
             <Route extact path="/registration" element={<Registration />} />
-
           </Routes>
         </div>
       </div>
