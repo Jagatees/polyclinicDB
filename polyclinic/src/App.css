@@ -1,10 +1,23 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Ensure the body and html cover the full viewport and have a black background */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: black; /* Black background for full viewport */
+  overflow: hidden;
 }
 
+/* #root should take the full width and height */
+#root {
+  height: 100%;
+  width: 100%; /* Ensure it takes full width */
+  padding: 2rem;
+  text-align: center;
+  background-color: black; /* Set background to black */
+  color: white; /* Ensure text is readable */
+}
+
+/* Your existing styles */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -39,4 +52,14 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.full-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  color: white;
 }
