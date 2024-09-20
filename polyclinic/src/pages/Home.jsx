@@ -4,21 +4,64 @@ import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 const Home = () => {
   return (
     <div className="home h-screen w-screen flex flex-col items-center justify-center bg-blue-500">
-      <div className="text-center text-white">
-        <h1 className="text-4xl font-bold mb-4">Welcome to the Home Page</h1>
-        <p className="text-lg mb-6">This is a simple homepage for your React app.</p>
-        <div className="flex space-x-4">
-          <Link to="/login">
-            <button className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
-              Go to Login
-            </button>
-          </Link>
-          <Link to="/registration">
-            <button className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-500">
-              Go to Registration
-            </button>
-          </Link>
-        </div>
+      <div className="text-center text-white mb-8">
+        <h1 className="text-4xl font-bold mb-4">Book same-day appointments at SIT clinic</h1>
+        <p className="text-lg mb-6">Lighting fast booking</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {/* Card 1 */}
+        <Link to="/vaccination" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+          <img 
+            src="https://picsum.photos/200/300" // Placeholder image URL
+            alt="Vaccination" 
+            className="w-full h-32 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">Book an Appointments</h2>
+          <p className="text-gray-600">Able to book appoiments with doctor</p>
+        </Link>
+
+        <Link to="/child-vaccination" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+          <img 
+            src="https://picsum.photos/200/300" // Placeholder image URL
+            alt="Child Vaccination" 
+            className="w-full h-32 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">View Bills</h2>
+          <p className="text-gray-600">Get the vaccinations your child needs, free of charge</p>
+        </Link>
+
+        {/* Card 3 */}
+        <Link to="/health-screening" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+          <img 
+            src="https://picsum.photos/200/300" // Placeholder image URL
+            alt="Health Screening" 
+            className="w-full h-32 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">Book a Health Screening</h2>
+          <p className="text-gray-600">Screen for Life and Mammogram screenings available</p>
+        </Link>
+
+        {/* Card 4 */}
+        <Link to="/gp-consultation" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+          <img 
+            src="https://picsum.photos/200/300" // Placeholder image URL
+            alt="GP Consultation" 
+            className="w-full h-32 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">Book a GP Consultation</h2>
+          <p className="text-gray-600">Same-day appointments are now available</p>
+        </Link>
+
+        {/* Card 5 */}
+        <Link to="/services" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+          <img 
+            src="https://picsum.photos/200/300" // Placeholder image URL
+            alt="Browse Services" 
+            className="w-full h-32 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">Browse all services</h2>
+        </Link>
       </div>
     </div>
   );
