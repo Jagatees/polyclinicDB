@@ -25,3 +25,46 @@ def get_user_by_email(email):
     finally:
         if connection:
             close_db_connection(connection)
+
+def get_appointments_by_user(user_id, user_role):
+    if user_role == 2:
+        query = """
+        SELECT * FROM appointments WHERE patient_id_fk = %s
+        """
+    elif user_role == 1:
+        query = """
+        SELECT * FROM appointments WHERE doctor_id_fk = %s
+        """
+    else:
+        raise ValueError("Invalid user type")
+    
+    connection = get_db_connection()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (user_id))
+            appointments = cursor.fetchall()
+        return appointments
+    finally:
+        if connection:
+            close_db_connection(connection)
+
+def get_billing_by_user(user_id):
+    # select appointments
+    # join appointments, patient and user table on user_id_fk
+    return 0
+
+def get_medication_by_user(user_id):
+    # medication
+    # join patient_medication, patient on user_id_fk
+    return 0
+
+def get_patients_by_doctor(doctor_id):
+    # patient
+    # join appointments, doctor and user on doctor_id
+    return 0
+
+def get_appointments_by_doctor(doctor_id):
+    # appointments
+    # join on patient on doctor_id_fk
+    return 0
