@@ -31,17 +31,15 @@ const Home = () => {
           <p className="text-gray-600">Get the vaccinations your child needs, free of charge</p>
         </Link>
 
-         {/* Card 3 */}
-         <Link to="/doctor_dashbaord" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+        <Link to="/doctordashbaord" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
           <img 
             src="https://picsum.photos/200/300" // Placeholder image URL
-            alt="Health Screening" 
+            alt="Child Vaccination" 
             className="w-full h-32 object-cover rounded-lg mb-4"
           />
-          <h2 className="text-xl font-semibold mb-2">Doctor Dashbaord</h2>
-          <p className="text-gray-600">Doctor Dashbaord</p>
+          <h2 className="text-xl font-semibold mb-2">doctordashbaord</h2>
+          <p className="text-gray-600">doctordashbaord</p>
         </Link>
-
        
       </div>
     </div>

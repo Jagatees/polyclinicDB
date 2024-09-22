@@ -4,7 +4,8 @@ import Login from './pages/Login';
 import Registration from './pages/Registration';
 import Appointments from './pages/Appointments';
 import Bill from './pages/Bill';
-import DoctorDashbaord from './pages/doctor_dashbaord';
+import DoctorDashbaord from './pages/DoctorDashbaord';
+
 
 
 function App() {
@@ -19,7 +20,7 @@ function App() {
             <Route extact path="/registration" element={<Registration />} />
             <Route extact path="/appointments" element={<Appointments />} />
             <Route extact path="/bill" element={<Bill />} />
-            <Route extact path="/doctor_dashbaord" element={<DoctorDashbaord />} />
+            <Route extact path="/doctordashbaord" element={<DoctorDashbaord />} />
 
           </Routes>
         </div>
