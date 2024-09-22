@@ -11,7 +11,7 @@ const Home = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {/* Card 1 */}
-        <Link to="/vaccination" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+        <Link to="/appointments" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
           <img 
             src="https://picsum.photos/200/300" // Placeholder image URL
             alt="Vaccination" 
@@ -21,7 +21,7 @@ const Home = () => {
           <p className="text-gray-600">Able to book appoiments with doctor</p>
         </Link>
 
-        <Link to="/child-vaccination" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+        <Link to="/bill" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
           <img 
             src="https://picsum.photos/200/300" // Placeholder image URL
             alt="Child Vaccination" 
@@ -31,37 +31,18 @@ const Home = () => {
           <p className="text-gray-600">Get the vaccinations your child needs, free of charge</p>
         </Link>
 
-        {/* Card 3 */}
-        <Link to="/health-screening" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+         {/* Card 3 */}
+         <Link to="/doctor_dashbaord" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
           <img 
             src="https://picsum.photos/200/300" // Placeholder image URL
             alt="Health Screening" 
             className="w-full h-32 object-cover rounded-lg mb-4"
           />
-          <h2 className="text-xl font-semibold mb-2">Book a Health Screening</h2>
-          <p className="text-gray-600">Screen for Life and Mammogram screenings available</p>
+          <h2 className="text-xl font-semibold mb-2">Doctor Dashbaord</h2>
+          <p className="text-gray-600">Doctor Dashbaord</p>
         </Link>
 
-        {/* Card 4 */}
-        <Link to="/gp-consultation" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
-          <img 
-            src="https://picsum.photos/200/300" // Placeholder image URL
-            alt="GP Consultation" 
-            className="w-full h-32 object-cover rounded-lg mb-4"
-          />
-          <h2 className="text-xl font-semibold mb-2">Book a GP Consultation</h2>
-          <p className="text-gray-600">Same-day appointments are now available</p>
-        </Link>
-
-        {/* Card 5 */}
-        <Link to="/services" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
-          <img 
-            src="https://picsum.photos/200/300" // Placeholder image URL
-            alt="Browse Services" 
-            className="w-full h-32 object-cover rounded-lg mb-4"
-          />
-          <h2 className="text-xl font-semibold mb-2">Browse all services</h2>
-        </Link>
+       
       </div>
     </div>
   );
