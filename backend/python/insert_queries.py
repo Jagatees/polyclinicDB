@@ -12,8 +12,6 @@ from db_connection import get_db_connection, close_db_connection
         - doctor: {'first_name', 'last_name', 'phone_number'}
         - patient: {'first_name', 'last_name', 'age', 'gender', 'phone_number', 'address'}
 """
-
-
 def insert_user(user_info, role_info):
     connection = None
     try:
@@ -50,6 +48,8 @@ def insert_user(user_info, role_info):
         return {"status": "success", "message": "User and related record inserted successfully."}
     
     except Exception as e:
+        # rollback any changes made to database if any error occurs
+        connection.rollback()
         print(f"Status: error, Message: Error has occurred: {str(e)}")
         #return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
