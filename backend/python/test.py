@@ -34,5 +34,6 @@ user_2_role = {
 }
 
 # test the functions for the queries
-#insert_user(user_1_info, user_1_role)
-#delete_user(3, 1)
+#insert_user(user_1_info, user_1_role) #insert doctor
+#insert_user(user_2_info, user_2_role) #insert patient
+#delete_user(1, 2) # user_id, role_id
