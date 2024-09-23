@@ -3,7 +3,7 @@ from db_connection import get_db_connection, close_db_connection
 def get_user_by_email(email):
     connection = None
     try:
-        connection = get_db_connection()
+        connection, tunnel = get_db_connection()
 
         with connection.cursor() as cursor:
             select_query = """
@@ -16,15 +16,18 @@ def get_user_by_email(email):
             user = cursor.fetchone()
 
             if user:
-                return {"status": "success", "user": user}
+                print({"status": "success", "user": user})
+                #return {"status": "success", "user": user}
             else:
-                return {"status": "error", "message": "User not found."}
+                print({"status": "error", "message": "User not found."})
+                #return {"status": "error", "message": "User not found."}
             
     except Exception as e:
-        return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+        print(f"Status: error, Message: Error has occurred: {str(e)}")
+        #return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     finally:
         if connection:
-            close_db_connection(connection)
+            close_db_connection(connection, tunnel)
 
 def get_appointments_by_user(user_id, user_role):
     if user_role == 2:
@@ -38,7 +41,7 @@ def get_appointments_by_user(user_id, user_role):
     else:
         raise ValueError("Invalid user type")
     
-    connection = get_db_connection()
+    connection, tunnel = get_db_connection()
 
     try:
         with connection.cursor() as cursor:
@@ -47,7 +50,7 @@ def get_appointments_by_user(user_id, user_role):
         return appointments
     finally:
         if connection:
-            close_db_connection(connection)
+            close_db_connection(connection, tunnel)
 
 def get_billing_by_user(user_id):
     # select appointments
