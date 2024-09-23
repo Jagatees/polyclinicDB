@@ -1,5 +1,6 @@
 from insert_queries import insert_user
 from delete_queries import delete_user
+from csv_queries import insert_data_from_csv
 
 # Example dummy data for two users
 user_1_info = {
@@ -37,3 +38,5 @@ user_2_role = {
 #insert_user(user_1_info, user_1_role) #insert doctor
 #insert_user(user_2_info, user_2_role) #insert patient
 #delete_user(1, 2) # user_id, role_id
+#insert_data_from_csv('../datasets/user.csv', 'user')
+insert_data_from_csv('../datasets/doctor.csv', 'doctor')
