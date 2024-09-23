@@ -1,24 +1,31 @@
 import React, { useState } from 'react';
 
-const DoctorDashboard = () => {
+const UserDashboard = () => {
   const [activePage, setActivePage] = useState('get_users_by_doctor');
 
   const renderContent = () => {
     switch (activePage) {
-      case 'get_users_by_doctor':
+      case 'get_appointments':
         return (
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">get_users_by_doctor</h2>
-            <p className="mt-4 text-gray-600">get_users_by_doctor</p>
+            <h2 className="text-2xl font-semibold text-gray-800">get_appointments</h2>
+            <p className="mt-4 text-gray-600">get_appointments</p>
           </div>
         );
-      case 'get_appointment':
+      case 'get_billing':
         return (
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">get_appointment</h2>
-            <p className="mt-4 text-gray-600">get_appointment</p>
+            <h2 className="text-2xl font-semibold text-gray-800">get_billing</h2>
+            <p className="mt-4 text-gray-600">get_billing</p>
           </div>
         );
+        case 'get_medication':
+          return (
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800">get_medication</h2>
+              <p className="mt-4 text-gray-600">get_medication</p>
+            </div>
+          );
       default:
         return null;
     }
@@ -39,22 +46,28 @@ const DoctorDashboard = () => {
           <a
             href="#"
             className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'Dashboard' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('get_users_by_doctor')}
+            onClick={() => setActivePage('get_appointments')}
           >
-            get_users_by_doctor
+            get_appointments
           </a>
           <a
             href="#"
             className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('get_appointment')}
+            onClick={() => setActivePage('get_billing')}
           >
-            get_appointment
+            get_billing
+          </a>
+          <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
+            onClick={() => setActivePage('get_medication')}
+          >
+            get_medication
           </a>
          
         </nav>
 
         {/* Sidebar Footer */}
-
           {/* Sidebar Footer */}
           <div className="mt-auto p-4">
           <button
@@ -81,4 +94,4 @@ const DoctorDashboard = () => {
   );
 };
 
-export default DoctorDashboard;
+export default UserDashboard;

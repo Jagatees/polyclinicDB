@@ -37,8 +37,30 @@ const Home = () => {
             alt="Child Vaccination" 
             className="w-full h-32 object-cover rounded-lg mb-4"
           />
-          <h2 className="text-xl font-semibold mb-2">doctordashbaord</h2>
-          <p className="text-gray-600">doctordashbaord</p>
+          <h2 className="text-xl font-semibold mb-2">Doctor Dashboard</h2>
+          <p className="text-gray-600">Doctor Dashboard</p>
+        </Link>
+
+
+        <Link to="/admindashboard" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+          <img 
+            src="https://picsum.photos/200/300" // Placeholder image URL
+            alt="Child Vaccination" 
+            className="w-full h-32 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">Admin Dashboard</h2>
+          <p className="text-gray-600">Admin Dashboard</p>
+        </Link>
+
+
+        <Link to="/userdashboard" className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+          <img 
+            src="https://picsum.photos/200/300" // Placeholder image URL
+            alt="Child Vaccination" 
+            className="w-full h-32 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-xl font-semibold mb-2">User Dashboard</h2>
+          <p className="text-gray-600">User Dashboard</p>
         </Link>
        
       </div>

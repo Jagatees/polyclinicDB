@@ -5,6 +5,8 @@ import Registration from './pages/Registration';
 import Appointments from './pages/Appointments';
 import Bill from './pages/Bill';
 import DoctorDashbaord from './pages/DoctorDashbaord';
+import UserDashboard from './pages/UserDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 
 
@@ -21,7 +23,8 @@ function App() {
             <Route extact path="/appointments" element={<Appointments />} />
             <Route extact path="/bill" element={<Bill />} />
             <Route extact path="/doctordashbaord" element={<DoctorDashbaord />} />
-
+            <Route extact path="/userdashboard" element={<UserDashboard />} />
+            <Route extact path="/admindashboard" element={<AdminDashboard />} />
           </Routes>
         </div>
       </div>

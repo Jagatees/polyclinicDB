@@ -1,24 +1,31 @@
 import React, { useState } from 'react';
 
-const DoctorDashboard = () => {
-  const [activePage, setActivePage] = useState('get_users_by_doctor');
+const AdminDashboard = () => {
+  const [activePage, setActivePage] = useState('insert_user');
 
   const renderContent = () => {
     switch (activePage) {
-      case 'get_users_by_doctor':
+      case 'insert_user':
         return (
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">get_users_by_doctor</h2>
-            <p className="mt-4 text-gray-600">get_users_by_doctor</p>
+            <h2 className="text-2xl font-semibold text-gray-800">insert_user</h2>
+            <p className="mt-4 text-gray-600">insert_user</p>
           </div>
         );
-      case 'get_appointment':
+      case 'update_user':
         return (
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">get_appointment</h2>
-            <p className="mt-4 text-gray-600">get_appointment</p>
+            <h2 className="text-2xl font-semibold text-gray-800">update_user</h2>
+            <p className="mt-4 text-gray-600">update_user</p>
           </div>
         );
+        case 'delete_user':
+          return (
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800">delete_user</h2>
+              <p className="mt-4 text-gray-600">delete_user</p>
+            </div>
+          );
       default:
         return null;
     }
@@ -39,22 +46,28 @@ const DoctorDashboard = () => {
           <a
             href="#"
             className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'Dashboard' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('get_users_by_doctor')}
+            onClick={() => setActivePage('insert_user')}
           >
-            get_users_by_doctor
+            insert_user
           </a>
           <a
             href="#"
             className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('get_appointment')}
+            onClick={() => setActivePage('update_user')}
           >
-            get_appointment
+            update_user
+          </a>
+          <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
+            onClick={() => setActivePage('delete_user')}
+          >
+            delete_user
           </a>
          
         </nav>
 
         {/* Sidebar Footer */}
-
           {/* Sidebar Footer */}
           <div className="mt-auto p-4">
           <button
@@ -81,4 +94,4 @@ const DoctorDashboard = () => {
   );
 };
 
-export default DoctorDashboard;
+export default AdminDashboard;
