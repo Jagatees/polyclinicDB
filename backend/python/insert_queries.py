@@ -12,15 +12,17 @@ from db_connection import get_db_connection, close_db_connection
         - doctor: {'first_name', 'last_name', 'phone_number'}
         - patient: {'first_name', 'last_name', 'age', 'gender', 'phone_number', 'address'}
 """
+
+
 def insert_user(user_info, role_info):
     connection = None
     try:
-        connection = get_db_connection()
+        connection, tunnel = get_db_connection()
 
         with connection.cursor() as cursor:
             insert_query = """
-            INSERT INTO user (role_id_fk, username, password_hash, email)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO user (role_id_fk, username, password_hash, email, create_at)
+            VALUES (%s, %s, %s, %s, NOW())
             """
 
             cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email']))
@@ -48,13 +50,9 @@ def insert_user(user_info, role_info):
         return {"status": "success", "message": "User and related record inserted successfully."}
     
     except Exception as e:
-        return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+        print(f"Status: error, Message: Error has occurred: {str(e)}")
+        #return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
     finally:
         if connection:
-            close_db_connection(connection)
-            
-
-
-
-
+            close_db_connection(connection, tunnel)
