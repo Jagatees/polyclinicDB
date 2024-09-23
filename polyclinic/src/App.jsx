@@ -17,7 +17,8 @@ function App() {
         {/* <Navbar /> */}
         <div className="content">
           <Routes>
-            <Route extact path="/" element={<Home />} />
+            <Route extact path="/" element={<Login />} />
+            <Route extact path="/home" element={<Home />} />
             <Route extact path="/login" element={<Login />} />
             <Route extact path="/registration" element={<Registration />} />
             <Route extact path="/appointments" element={<Appointments />} />

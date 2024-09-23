@@ -1,8 +1,18 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import image from '../assets/images.jpg'; // Correct the path to your image
 
 const Login = () => {
+  const navigate = useNavigate(); // Create the navigate function
+
+  const handleLogIn = (event) => {
+    event.preventDefault(); // Prevent the default form submission behavior
+    // Insert your authentication logic here
+
+    // After successful authentication:
+    navigate('/home'); // Redirect to the dashboard or another page
+  };
+
   return (
     <div className="h-screen w-screen flex">
       {/* Left Side with Background Image */}
@@ -31,7 +41,8 @@ const Login = () => {
       <div className="w-1/2 flex flex-col justify-center items-center bg-gray-800 p-8">
         <div className="w-full max-w-sm">
           <h2 className="text-3xl font-semibold text-white mb-6">Login</h2>
-          <form>
+          <form onSubmit={handleLogIn}>  {/* Update form to use handleSubmit */}
+
             {/* Email Field */}
             <div className="mb-4">
               <label className="block text-sm text-gray-400 mb-2" htmlFor="email">
