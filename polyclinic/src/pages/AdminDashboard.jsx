@@ -48,7 +48,7 @@ const AdminDashboard = () => {
             className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'Dashboard' ? 'bg-gray-800' : ''}`}
             onClick={() => setActivePage('insert_user')}
           >
-            insert_user
+            create_user_doc_paitent
           </a>
           <a
             href="#"
@@ -63,6 +63,30 @@ const AdminDashboard = () => {
             onClick={() => setActivePage('delete_user')}
           >
             delete_user
+          </a>
+
+          <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
+            onClick={() => setActivePage('delete_user')}
+          >
+            get_paitent_bill_medication
+          </a>
+
+          <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
+            onClick={() => setActivePage('delete_user')}
+          >
+            get_docotr_paitent_bill_medication
+          </a>
+
+          <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
+            onClick={() => setActivePage('delete_user')}
+          >
+            set_appoitment_doctor_paitent
           </a>
          
         </nav>

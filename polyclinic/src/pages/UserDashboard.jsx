@@ -8,24 +8,31 @@ const UserDashboard = () => {
       case 'get_appointments':
         return (
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">get_appointments</h2>
-            <p className="mt-4 text-gray-600">get_appointments</p>
+            <h2 className="text-2xl font-semibold text-gray-800">Get Appointments</h2>
+            <p className="mt-4 text-gray-600">Details about appointments.</p>
           </div>
         );
       case 'get_billing':
         return (
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">get_billing</h2>
-            <p className="mt-4 text-gray-600">get_billing</p>
+            <h2 className="text-2xl font-semibold text-gray-800">Billing Information</h2>
+            <p className="mt-4 text-gray-600">Details about billing and payments.</p>
           </div>
         );
-        case 'get_medication':
-          return (
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800">get_medication</h2>
-              <p className="mt-4 text-gray-600">get_medication</p>
-            </div>
-          );
+      case 'get_medication':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-800">Medication Details</h2>
+            <p className="mt-4 text-gray-600">Information on prescribed medication.</p>
+          </div>
+        );
+      case 'create_appointment':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-800">Create New Appointment</h2>
+            <p className="mt-4 text-gray-600">Form to create a new appointment.</p>
+          </div>
+        );
       default:
         return null;
     }
@@ -37,7 +44,7 @@ const UserDashboard = () => {
       <aside className="w-64 bg-gray-900 text-gray-300 flex flex-col h-screen">
         {/* Sidebar Header */}
         <div className="p-4 text-lg font-semibold text-white">
-          Welcome, Dr. Smith
+          Welcome, User Dashboard
           <p className="text-sm text-gray-400">Have a great day!</p>
         </div>
 
@@ -45,31 +52,48 @@ const UserDashboard = () => {
         <nav className="mt-4 flex flex-col space-y-1">
           <a
             href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'Dashboard' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('get_appointments')}
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'get_appointments' ? 'bg-gray-800' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActivePage('get_appointments');
+            }}
           >
-            get_appointments
+            Get Appointments
           </a>
           <a
             href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('get_billing')}
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'get_billing' ? 'bg-gray-800' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActivePage('get_billing');
+            }}
           >
-            get_billing
+            Billing
           </a>
           <a
             href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'Appointments' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('get_medication')}
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'get_medication' ? 'bg-gray-800' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActivePage('get_medication');
+            }}
           >
-            get_medication
+            Medication
           </a>
-         
+          <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'create_appointment' ? 'bg-gray-800' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActivePage('create_appointment');
+            }}
+          >
+            Create Appointment
+          </a>
         </nav>
 
         {/* Sidebar Footer */}
-          {/* Sidebar Footer */}
-          <div className="mt-auto p-4">
+        <div className="mt-auto p-4">
           <button
             className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
             onClick={() => {
@@ -80,11 +104,10 @@ const UserDashboard = () => {
             Log Out
           </button>
         </div>
-        
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 h-screen ">
+      <div className="flex-1 h-screen">
         {/* Page Content */}
         <main className="flex-grow p-6">
           {renderContent()}
