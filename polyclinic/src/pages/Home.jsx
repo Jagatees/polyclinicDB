@@ -1,28 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom"; // Import Link from react-router-dom
-import { useEffect, useState } from "react";
 
 const Home = () => {
-
-  const [apiResponse, setApiResponse] = useState(null); // State to store API response
-
-    useEffect(() => {
-      fetch('/api/test')
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setApiResponse(data); 
-          console.log('Flask API response:', data); 
-        })
-        .catch((error) => {
-          console.error('There was a problem with the fetch operation:', error);
-        });
-    }, []); 
-
 
   return (
     <div className="home h-screen w-screen flex flex-col items-center justify-center bg-blue-500">
