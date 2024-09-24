@@ -67,7 +67,7 @@ medication_id,name,description,price
 66,Dutasteride,0.5 mg Capsule,62.57
 67,Empagliflozin,10mg Tablet,41.87
 68,Empagliflozin,25mg Tablet,46.93
-69,Emulsifying Ointment,,51.22
+69,Emulsifying Ointment,0,51.22
 70,Enalapril Maleate,10 mg Tablet,32.11
 71,Enalapril Maleate,20 mg Tablet,43.8
 72,Enalapril Maleate,5 mg Tablet,14.75
@@ -207,4 +207,4 @@ medication_id,name,description,price
 206,Warfarin Sodium,1 mg Tablet,96.04
 207,Warfarin Sodium,3 mg Tablet,12.41
 208,Warfarin Sodium,5 mg Tablet,10.4
-209,White Soft Paraffin - Ointment,,56.25
+209,White Soft Paraffin - Ointment,0,56.25
