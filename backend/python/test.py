@@ -7,16 +7,16 @@ from select_queries import get_user_by_email
 # Example dummy data for two users
 user_1_info = {
     'role_id': 1,
-    'username': 'drjamesbrown',
+    'username': 'drjamesbro',
     'password_hash': '5f4dcc3b5aa765d61d8327deb882cf99',  # Example hashed password
-    'email': 'james.brown@example.com',
+    'email': 'james.bro@example.com',
     'created_at': '2023-05-12 08:45:30'
 }
 
 user_1_role = {
     'first_name': 'James',
-    'last_name': 'Brown',
-    'phone_number': '93748503'
+    'last_name': 'Bro',
+    'phone_number': '93748513'
 }
 
 user_2_info = {

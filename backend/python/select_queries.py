@@ -1,33 +1,43 @@
 from db_connection import get_db_connection, close_db_connection
 
-def get_user_by_email(email):
-    connection = None
-    try:
-        connection, tunnel = get_db_connection()
+def get_user_by_email(dbConnection = None, email = None, password = None): 
+    # connection = None
+    if dbConnection: 
+        try:
+            #connection, tunnel = get_db_connection()
+        
+            with dbConnection['connection'].cursor() as cursor:
+                if password: 
+                    select_query = """
+                    SELECT * FROM user WHERE email = %s AND password_hash = %s
+                    """
+                    cursor.execute(select_query, (email, password))
+                else:
+                    select_query = """
+                    SELECT * FROM user WHERE email = %s
+                    """
 
-        with connection.cursor() as cursor:
-            select_query = """
-            SELECT * FROM user WHERE email = %s
-            """
+                    cursor.execute(select_query, (email))
+                
+                # fetch single result (assumption of unique email)
+                user = cursor.fetchone()
 
-            cursor.execute(select_query, (email))
-            
-            # fetch single result (assumption of unique email)
-            user = cursor.fetchone()
+                if user:
+                    #print({"status": "success", "user": user})
+                    return {"status": "success", "user": user}
+                else:
+                    #print({"status": "error", "message": "User not found."})
+                    return {"status": "error", "message": "User not found."}
+                
+        except Exception as e:
+            #print(f"Status: error, Message: Error has occurred: {str(e)}")
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+        # finally:
+        #     if connection:
+        #         close_db_connection(connection, tunnel)
 
-            if user:
-                #print({"status": "success", "user": user})
-                return {"status": "success", "user": user}
-            else:
-                #print({"status": "error", "message": "User not found."})
-                return {"status": "error", "message": "User not found."}
-            
-    except Exception as e:
-        #print(f"Status: error, Message: Error has occurred: {str(e)}")
-        return {"status": "error", "message": f"Error has occurred: {str(e)}"}
-    finally:
-        if connection:
-            close_db_connection(connection, tunnel)
+
+
 
 def get_appointments_by_user(user_id, user_role):
     if user_role == 2:
