@@ -63,9 +63,9 @@ def register():
         userInfo = data['userInfo'] 
         roleInfo = data['roleInfo']
 
-        lol = insert_queries.insert_user(dbConnection,userInfo,roleInfo) 
-        print(lol)
-        return jsonify({"message": lol})  # Return JSON instead of plain text
+        res = insert_queries.insert_user(dbConnection,userInfo,roleInfo) 
+        print(res)
+        return jsonify({"message": res})  # Return JSON instead of plain text
     
     #! testing purposes
     # userInfo = test.user_1_info
