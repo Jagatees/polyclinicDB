@@ -1,0 +1,50 @@
+condition_id,name,description
+1,Asthma,A respiratory condition causing difficulty in breathing due to inflamed airways.
+2,Anemia,"A condition where the blood lacks enough healthy red blood cells, leading to fatigue and weakness."
+3,Common Cold,"A viral infection of the nose and throat causing a runny nose, sneezing, and cough."
+4,Flu (Influenza),A contagious respiratory illness caused by influenza viruses.
+5,Sinusitis,Inflammation of the sinuses causing headaches and nasal congestion.
+6,Tonsillitis,"Inflammation of the tonsils, often leading to sore throat and fever."
+7,Bronchitis,Inflammation of the bronchial tubes leading to cough and mucus production.
+8,Gastroenteritis,"An intestinal infection causing diarrhea, cramps, nausea, and vomiting."
+9,Ear Infection,"An infection in the ear, often causing pain and fever."
+10,Strep Throat,A bacterial infection that causes sore throat and fever.
+11,Conjunctivitis (Pink Eye),"Inflammation of the conjunctiva, leading to redness and discharge from the eye."
+12,Food Poisoning,"Illness caused by consuming contaminated food, leading to nausea, vomiting, and diarrhea."
+13,Allergic Rhinitis,"An allergic reaction causing sneezing, runny nose, and itchy eyes."
+14,Sprains,"Injury to ligaments caused by stretching or tearing, often occurring in the ankle or wrist."
+15,Migraine,"A severe headache often accompanied by nausea, vomiting, and sensitivity to light."
+16,Chickenpox,A highly contagious viral infection causing an itchy rash and red spots.
+17,Fungal Skin Infection,Infections like athlete's foot or ringworm caused by fungi on the skin.
+18,UTI (Urinary Tract Infection),"An infection in the urinary system, causing pain and frequent urination."
+19,Cystitis,"Inflammation of the bladder, often causing pain and a burning sensation during urination."
+20,Hives,"An outbreak of swollen, pale red bumps or plaques on the skin due to an allergic reaction."
+21,RSV (Respiratory Syncytial Virus),"A virus that causes respiratory infections, particularly in infants and young children."
+22,Otitis Media,"Middle ear infection causing earache, fever, and trouble hearing."
+23,Impetigo,"A contagious skin infection that causes red sores, usually on the face."
+24,Scabies,"A skin infestation caused by tiny mites, leading to itching and rash."
+25,Laryngitis,Inflammation of the larynx causing a hoarse voice and sore throat.
+26,Stomach Ulcer,"A sore that develops on the lining of the stomach, causing pain and indigestion."
+27,Dehydration,"A condition caused by the excessive loss of body fluids, leading to weakness and dizziness."
+28,Bacterial Vaginosis,An infection caused by an imbalance of bacteria in the vagina.
+29,Shingles,"A viral infection causing a painful rash, usually on one side of the body."
+30,Cold Sores,Small blisters around the mouth caused by the herpes simplex virus.
+31,"Hand, Foot, and Mouth Disease",A viral illness causing sores in the mouth and rashes on the hands and feet.
+32,Hemorrhoids,Swollen veins in the rectum or anus causing discomfort and bleeding.
+33,Diarrhea,"Frequent loose or watery bowel movements, often caused by infections or food intolerance."
+34,Constipation,"Difficulty in passing stools, often accompanied by abdominal pain."
+35,Eczema,"A condition causing itchy, red, and inflamed skin."
+36,Dermatitis,"Inflammation of the skin, leading to red, itchy rashes."
+37,Psoriasis,"A skin disorder that causes red, scaly patches on the skin."
+38,Bursitis,"Inflammation of the bursa, causing pain in joints such as the shoulder or hip."
+39,Tendonitis,"Inflammation of a tendon, often caused by overuse or injury."
+40,Sinus Headache,"A headache caused by inflamed sinuses, leading to pressure and pain in the face."
+41,Boils,"A painful, pus-filled bump caused by bacterial infection of a hair follicle."
+42,Vertigo,"A sensation of spinning or dizziness, often caused by inner ear problems."
+43,Dandruff,"A condition causing flaking of the scalp, often accompanied by itching."
+44,Chilblains,"Painful, itchy swellings on the skin due to exposure to cold temperatures."
+45,Heat Rash,A skin irritation caused by excessive sweating in hot and humid conditions.
+46,Sore Throat,"Pain or irritation in the throat, often due to viral or bacterial infections."
+47,Ingrown Toenail,"A condition where the edge of the toenail grows into the surrounding skin, causing pain and swelling."
+48,Blisters,"Fluid-filled pockets on the skin, often caused by friction or burns."
+49,Jock Itch,A fungal infection in the groin area causing itching and redness.
