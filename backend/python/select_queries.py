@@ -16,15 +16,15 @@ def get_user_by_email(email):
             user = cursor.fetchone()
 
             if user:
-                print({"status": "success", "user": user})
-                #return {"status": "success", "user": user}
+                #print({"status": "success", "user": user})
+                return {"status": "success", "user": user}
             else:
-                print({"status": "error", "message": "User not found."})
-                #return {"status": "error", "message": "User not found."}
+                #print({"status": "error", "message": "User not found."})
+                return {"status": "error", "message": "User not found."}
             
     except Exception as e:
-        print(f"Status: error, Message: Error has occurred: {str(e)}")
-        #return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+        #print(f"Status: error, Message: Error has occurred: {str(e)}")
+        return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     finally:
         if connection:
             close_db_connection(connection, tunnel)
