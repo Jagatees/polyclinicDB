@@ -1,6 +1,8 @@
 from insert_queries import insert_user
 from delete_queries import delete_user
 from csv_queries import insert_data_from_csv
+from db_queries import delete_and_reset_table
+from select_queries import get_user_by_email
 
 # Example dummy data for two users
 user_1_info = {
@@ -39,4 +41,17 @@ user_2_role = {
 #insert_user(user_2_info, user_2_role) #insert patient
 #delete_user(1, 2) # user_id, role_id
 #insert_data_from_csv('../datasets/user.csv', 'user')
-insert_data_from_csv('../datasets/doctor.csv', 'doctor')
+#insert_data_from_csv('../datasets/doctor.csv', 'doctor')
+#delete_and_reset_table('doctor')
+#delete_and_reset_table('user')
+
+#get_user_by_email('kellyolsondoc6@gmail.com')
+
+# add data into tables from csv
+#insert_data_from_csv('../datasets/user.csv', 'user')
+#insert_data_from_csv('../datasets/doctor.csv', 'doctor')
+#insert_data_from_csv('../datasets/patient.csv', 'patient')
+#insert_data_from_csv('../datasets/patient_medication.csv', 'patient_medication')
+#insert_data_from_csv('../datasets/medication.csv', 'medication')
+#insert_data_from_csv('../datasets/medical_condition.csv', 'medical_condition')
+
