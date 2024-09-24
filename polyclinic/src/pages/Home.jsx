@@ -6,9 +6,7 @@ const Home = () => {
 
   const [apiResponse, setApiResponse] = useState(null); // State to store API response
 
-    // useEffect to test the Flask backend
     useEffect(() => {
-      // Replace '/api/test' with the actual Flask API endpoint you want to test
       fetch('/api/test')
         .then((response) => {
           if (!response.ok) {
@@ -17,13 +15,13 @@ const Home = () => {
           return response.json();
         })
         .then((data) => {
-          setApiResponse(data); // Store the API response
-          console.log('Flask API response:', data); // Log the response
+          setApiResponse(data); 
+          console.log('Flask API response:', data); 
         })
         .catch((error) => {
           console.error('There was a problem with the fetch operation:', error);
         });
-    }, []); // Empty dependency array means this runs once when the component mounts
+    }, []); 
 
 
   return (
