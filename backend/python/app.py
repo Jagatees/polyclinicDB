@@ -56,7 +56,6 @@ def login():
 
 @app.route('/api/register', methods=['POST','GET']) 
 def register():
-
     dbConnection = g.dbConnection 
     if request.method == "POST": 
         data = request.get_json() 

@@ -16,8 +16,8 @@ const Login = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: "james.bro@example.com", 
-        password: "5f4dcc3b5aa765d61d8327deb882cf99" 
+        email: "emily.clark@example.com", 
+        password: "emilyclark123" 
       })
     })
     .then(response => {
