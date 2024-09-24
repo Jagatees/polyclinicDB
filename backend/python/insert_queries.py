@@ -6,7 +6,6 @@ from db_connection import get_db_connection, close_db_connection
         -username
         -password_hash
         -email
-        -created_at
     
     role_info (dict)
         - doctor: {'first_name', 'last_name', 'phone_number'}
@@ -50,8 +49,8 @@ def insert_user(user_info, role_info):
     except Exception as e:
         # rollback any changes made to database if any error occurs
         connection.rollback()
-        print(f"Status: error, Message: Error has occurred: {str(e)}")
-        #return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+        #print(f"Status: error, Message: Error has occurred: {str(e)}")
+        return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
     finally:
         if connection:
