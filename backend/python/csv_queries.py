@@ -4,42 +4,37 @@ import pandas as pd
 import pymysql
 from pymysql import IntegrityError, OperationalError, DataError
 
-def insert_data_from_csv(csv_file, table_name):
+def insert_data_from_csv(csv_file, table_name, chunksize=1000):
     connection = None
     inserted_rows = 0  # Counter to track the number of inserted rows
     try:
         connection, tunnel = get_db_connection()
 
-        data = pd.read_csv(csv_file)
+        # Use chunking to read and process large CSVs in parts
+        for chunk in pd.read_csv(csv_file, chunksize=chunksize):
+            with connection.cursor() as cursor:
+                cols = list(chunk.columns)
 
-        with connection.cursor() as cursor:
-            # Check if we're dealing with the 'user' table
-            cols = list(data.columns)
-
-            if table_name == 'user':
-                # If it's the 'user' table, append 'create_at' and use NOW() for the value
-                if 'create_at' not in cols:
-                    cols.append('create_at')  # Append the column to the list
-                    placeholders = ', '.join(['%s'] * (len(cols) - 1)) + ', NOW()'
+                if table_name == 'user':
+                    if 'create_at' not in cols:
+                        cols.append('create_at')
+                        placeholders = ', '.join(['%s'] * (len(cols) - 1)) + ', NOW()'
+                    else:
+                        placeholders = ', '.join(['%s'] * len(cols))
                 else:
                     placeholders = ', '.join(['%s'] * len(cols))
-            else:
-                placeholders = ', '.join(['%s'] * len(cols))
 
-            # Convert column names list to a proper SQL string
-            cols_string = ', '.join(cols)  # Convert list to comma-separated string
-
-            insert_query = f"INSERT INTO {table_name} ({cols_string}) VALUES ({placeholders})"
-
-            for index, row in data.iterrows():
-                row_tuple = tuple(row)
-                if table_name == 'user' and 'create_at' not in data.columns:
-                    cursor.execute(insert_query, row_tuple)
-                else:
-                    cursor.execute(insert_query, row_tuple)
+                cols_string = ', '.join(cols)
+                insert_query = f"INSERT INTO {table_name} ({cols_string}) VALUES ({placeholders})"
                 
-                inserted_rows += 1  # Increment the counter for each successful insertion
+                # Convert DataFrame to list of tuples
+                rows = [tuple(row) for index, row in chunk.iterrows()]
 
+                # Bulk insert using executemany
+                cursor.executemany(insert_query, rows)
+                inserted_rows += len(rows)
+
+            # Commit after processing each chunk
             connection.commit()
 
         return {"status": "success", "message": f"{inserted_rows} rows inserted successfully into {table_name}."}
