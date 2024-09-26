@@ -38,7 +38,7 @@ def login():
         email = data['email']
         password = data['password']
         print (email, password)
-        res = select_queries.get_user_by_email(dbConnection, email, password)
+        res = select_queries.get_user(dbConnection, email, password)
         print(res)
         return jsonify({"message": res})
 

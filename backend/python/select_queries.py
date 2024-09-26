@@ -1,29 +1,36 @@
 from db_connection import get_db_connection, close_db_connection
+import pymysql.cursors # this is to fetch my data as a dictionary instead of a tuple 
 
-def get_user_by_email(dbConnection=None, email=None, password=None): 
-    if dbConnection: 
+def get_user(dbConnection=None, email=None, password=None):
+    if dbConnection:
         try:
             # Use the connection directly to create a cursor
-            with dbConnection.cursor() as cursor:
-                if password: 
-                    select_query = """
-                    SELECT * FROM user WHERE email = %s AND password_hash = %s
-                    """
-                    cursor.execute(select_query, (email, password))
-                else:
-                    select_query = """
-                    SELECT * FROM user WHERE email = %s
-                    """
-                    cursor.execute(select_query, (email,))  # Email must be a tuple, even for single parameter
-                
-                # Fetch single result (assumption of unique email)
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                # Step 1: Check if the user exists by email first
+                select_query = """
+                SELECT * FROM user WHERE email = %s
+                """
+                cursor.execute(select_query, (email,))
                 user = cursor.fetchone()
 
-                if user:
-                    return {"status": "success", "user": user}
-                else:
+                if not user:
+                    # User with the given email does not exist
                     return {"status": "error", "message": "User not found."}
                 
+                # Step 2: If a password is provided, check the password
+                if password:
+                    print (user) 
+                    print (type(user))
+                    if user['password_hash'] == password:
+                        # Correct password
+                        return {"status": "success", "user": user}
+                    else:
+                        # Incorrect password
+                        return {"status": "error", "message": "Incorrect password."}
+                
+                # If no password is provided, just return the user information
+                return {"status": "success", "user": user}
+
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
