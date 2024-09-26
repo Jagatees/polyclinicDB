@@ -17,7 +17,7 @@ def close_db_connection(error):
     connection = g.pop('dbConnection', None)  # Get the connection from the app context 
     if connection:
         db_connection.close_db_connection(connection)
-        print("Database connection returned to pool")
+        print("Database connection returned to pool from flask")
 
 @app.route('/api/test')
 def home():

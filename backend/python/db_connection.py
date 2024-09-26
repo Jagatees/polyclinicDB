@@ -70,7 +70,7 @@ def get_db_connection():
 
 def close_db_connection(connection):
     connection.close()  # Return the connection to the pool
-    print("Database connection returned to pool")
+    print("Database connection returned to pool from function")
 
 def close_ssh_tunnel():
     global ssh_tunnel
