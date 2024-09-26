@@ -87,8 +87,8 @@ def insert_appointment(appointment_info):
     except Exception as e:
         if connection:
             connection.rollback()
-        print(f"Status: error, Message: Error occurred: {str(e)}")
-        #return {"status": "error", "message": f"Error occurred: {str(e)}"}
+        #print(f"Status: error, Message: Error occurred: {str(e)}")
+        return {"status": "error", "message": f"Error occurred: {str(e)}"}
     finally:
         if connection:
             close_db_connection(connection, tunnel)
