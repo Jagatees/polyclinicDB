@@ -1,5 +1,7 @@
 from db_connection import get_db_connection, close_db_connection
 from datetime import datetime
+import random
+
 """
     user_info (dict)
         -role_id
@@ -67,30 +69,49 @@ appointment_info:
 - time
 - type
 """
-
 def insert_appointment(dbConnection, appointment_info):
     connection = None
     if dbConnection:
         try:
-            connection = dbConnection['connection'] 
-
+            connection = dbConnection['connection']
+            
             with connection.cursor() as cursor:
+                
+                available_doctors_query = """
+                SELECT doctor_id FROM doctor WHERE doctor_id NOT IN (
+                    SELECT doctor_id_fk 
+                    FROM appointment 
+                    WHERE date = %s AND time = %s
+                )
+                """
+                
+                cursor.execute(available_doctors_query, (appointment_info['date'], appointment_info['time']))
+                available_doctors = cursor.fetchall()
+                
+                if not available_doctors:
+                    # No doctors available at the selected time
+                    return {"status": "error", "message": "No doctors are available at the selected date and time."}
+
+                # randomise the doctor to be assigned
+                assigned_doctor = random.choice(available_doctors)['doctor_id']
+
+                
                 insert_query = """
                 INSERT INTO appointment (patient_id_fk, doctor_id_fk, date, time, status, type)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """
-            
-                cursor.execute(insert_query, (appointment_info['patient_id_fk'], appointment_info['doctor_id_fk'], appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
+                
+                cursor.execute(insert_query, (appointment_info['patient_id_fk'], assigned_doctor, appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
 
                 connection.commit()
 
-            return {"status": "success", "message": "Appointment added successfully."}
+            return {"status": "success", "message": f"Appointment added successfully with doctor ID: {assigned_doctor}"}
     
         except Exception as e:
             if connection:
                 connection.rollback()
-            #print(f"Status: error, Message: Error occurred: {str(e)}")
-            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+
 
 """
 diagnosis_info:
@@ -154,3 +175,42 @@ def insert_billing(dbConnection, billing_info):
             connection.rollback()
         #print(f"Status: error, Message: Error occurred: {str(e)}")
         return {"status": "error", "message": f"Error occurred: {str(e)}"}
+    
+def insert_appointment(dbConnection, patient_id, appointment_date, appointment_time, appointment_type):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Find an available doctor
+        query = """
+        SELECT d.doctor_id
+        FROM doctor d
+        LEFT JOIN appointment a ON d.doctor_id = a.doctor_id AND a.date = %s AND a.time = %s
+        WHERE a.appointment_id IS NULL;
+        """
+        cursor.execute(query, (appointment_date, appointment_time))
+        available_doctors = cursor.fetchall()
+
+        if not available_doctors:
+            print("No doctors available at this time.")
+            return None
+
+        # Assign the first available doctor
+        assigned_doctor_id = available_doctors[0]['doctor_id']
+
+        # Insert appointment into the database
+        insert_query = """
+        INSERT INTO appointment (patient_id, doctor_id, date, time, type)
+        VALUES (%s, %s, %s, %s, %s);
+        """
+        cursor.execute(insert_query, (patient_id, assigned_doctor_id, appointment_date, appointment_time, appointment_type))
+        connection.commit()
+
+        print(f"Appointment booked with doctor ID: {assigned_doctor_id}")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.rollback()
+    finally:
+        cursor.close()
+        close_db_connection(connection)
