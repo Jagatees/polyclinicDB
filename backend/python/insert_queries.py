@@ -65,7 +65,7 @@ def insert_user(dbConnection, user_info, role_info):
 appointment_info:
 - patient_id_fk
 - doctor_id_fk
-- date
+- date YYYY-MM-DD
 - time
 - type
 """
@@ -84,7 +84,6 @@ def insert_appointment(dbConnection, appointment_info):
                     WHERE date = %s AND time = %s
                 )
                 """
-                
                 cursor.execute(available_doctors_query, (appointment_info['date'], appointment_info['time']))
                 available_doctors = cursor.fetchall()
                 
@@ -115,12 +114,21 @@ def insert_appointment(dbConnection, appointment_info):
 
 """
 diagnosis_info:
-- patient_id_fk
-- condition_id_fk
+- patient_id_
+- condition_id_
 - doctor_id_fk
 - severity
+
+medication_info:
+- patient_id
+- medication_id
+- doctor_id
+- dosage
+- frequency
+- start_date YYYY-MM-DD
+- end_date YYYY-MM-DD
 """
-def insert_diagnosis(dbConnection, diagnosis_info):
+def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
     connection = None
     try:
         connection = dbConnection['connection'] 
@@ -134,6 +142,12 @@ def insert_diagnosis(dbConnection, diagnosis_info):
             current_date = datetime.now().strftime('%Y-%m-%d')
             cursor.execute(insert_query, (diagnosis_info['patient_id_fk'], diagnosis_info['condition_id_fk'], diagnosis_info['doctor_id_fk'], current_date, diagnosis_info['severity']))
 
+            insert_medication_query = """
+            INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, start_date, end_date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+
+            cursor.execute(insert_medication_query, (medication_info['patient_id_fk'], medication_info['medication_id_fk'], medication_info['doctor_id_fk'], medication_info['dosage'], medication_info['frequency'], medication_info['start_date'], medication_info['end_date']))
             connection.commit()
         
         return {"status": "success", "message": "Diagnosis added successfully."}
@@ -146,11 +160,10 @@ def insert_diagnosis(dbConnection, diagnosis_info):
 
 """
 billing_info:
-- appointment_id_fk
+- appointment_id
 - amount_due
 - amount_paid
 - billing_date
-- payment_status
 - payment_method
 """
 def insert_billing(dbConnection, billing_info):
@@ -164,7 +177,7 @@ def insert_billing(dbConnection, billing_info):
             VALUES (%s, %s, %s, %s, %s, %s)
             """
 
-            cursor.execute(insert_query, (billing_info['appointment_id_fk'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], billing_info['payment_status'], billing_info['payment_method']))
+            cursor.execute(insert_query, (billing_info['appointment_id_fk'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
 
             connection.commit()
 
@@ -175,42 +188,3 @@ def insert_billing(dbConnection, billing_info):
             connection.rollback()
         #print(f"Status: error, Message: Error occurred: {str(e)}")
         return {"status": "error", "message": f"Error occurred: {str(e)}"}
-    
-def insert_appointment(dbConnection, patient_id, appointment_date, appointment_time, appointment_type):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    try:
-        # Find an available doctor
-        query = """
-        SELECT d.doctor_id
-        FROM doctor d
-        LEFT JOIN appointment a ON d.doctor_id = a.doctor_id AND a.date = %s AND a.time = %s
-        WHERE a.appointment_id IS NULL;
-        """
-        cursor.execute(query, (appointment_date, appointment_time))
-        available_doctors = cursor.fetchall()
-
-        if not available_doctors:
-            print("No doctors available at this time.")
-            return None
-
-        # Assign the first available doctor
-        assigned_doctor_id = available_doctors[0]['doctor_id']
-
-        # Insert appointment into the database
-        insert_query = """
-        INSERT INTO appointment (patient_id, doctor_id, date, time, type)
-        VALUES (%s, %s, %s, %s, %s);
-        """
-        cursor.execute(insert_query, (patient_id, assigned_doctor_id, appointment_date, appointment_time, appointment_type))
-        connection.commit()
-
-        print(f"Appointment booked with doctor ID: {assigned_doctor_id}")
-
-    except Exception as e:
-        print(f"Error: {e}")
-        connection.rollback()
-    finally:
-        cursor.close()
-        close_db_connection(connection)
