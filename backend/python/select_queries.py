@@ -35,31 +35,41 @@ def get_user(dbConnection=None, email=None, password=None):
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
 
+def get_appointments_by_user(dbConnection=None, user_id=None, user_role=None):
+    if dbConnection:
+        if user_role == 2:
+            query = """
+            SELECT * FROM appointments WHERE patient_id_fk = %s
+            """
+        elif user_role == 1:
+            query = """
+            SELECT * FROM appointments WHERE doctor_id_fk = %s
+            """
+        else:
+            raise ValueError("Invalid user type")
 
+        try:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(query, (user_id))
+                appointments = cursor.fetchall()
+            return appointments
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
+def get_medical_conditions(dbConnection=None):
+    if dbConnection:
+        try:
+            query = """
+            SELECT * FROM medical_condition
+            """
 
-def get_appointments_by_user(user_id, user_role):
-    if user_role == 2:
-        query = """
-        SELECT * FROM appointments WHERE patient_id_fk = %s
-        """
-    elif user_role == 1:
-        query = """
-        SELECT * FROM appointments WHERE doctor_id_fk = %s
-        """
-    else:
-        raise ValueError("Invalid user type")
-    
-    connection, tunnel = get_db_connection()
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(query)
+                medical_conditions = cursor.fetchall()
+            return medical_conditions
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query, (user_id))
-            appointments = cursor.fetchall()
-        return appointments
-    finally:
-        if connection:
-            close_db_connection(connection, tunnel)
 
 def get_billing_by_user(user_id):
     # select appointments
