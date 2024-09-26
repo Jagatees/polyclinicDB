@@ -17,7 +17,7 @@ const Login = () => {
       },
       body: JSON.stringify({
         email: "emily.clark@example.com", 
-        password: "emilyclark123" 
+        password: "123" 
       })
     })
     .then(response => {
