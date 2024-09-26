@@ -1,5 +1,5 @@
 from db_connection import get_db_connection, close_db_connection
-
+from datetime import datetime
 """
     user_info (dict)
         -role_id
@@ -21,10 +21,11 @@ def insert_user(dbConnection, user_info, role_info):
             with connection.cursor() as cursor:
                 insert_query = """
                 INSERT INTO user (role_id_fk, username, password_hash, email, create_at)
-                VALUES (%s, %s, %s, %s, NOW())
+                VALUES (%s, %s, %s, %s, %s)
                 """
 
-                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email']))
+                current_date = datetime.now().strftime('%Y-%m-%d')
+                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], current_date))
 
                 user_id = cursor.lastrowid
 
@@ -67,44 +68,41 @@ appointment_info:
 - type
 """
 
-def insert_appointment(appointment_info):
+def insert_appointment(dbConnection, appointment_info):
     connection = None
-    try:
-        connection, tunnel = get_db_connection()
+    if dbConnection:
+        try:
+            connection = dbConnection['connection'] 
 
-        with connection.cursor() as cursor:
-            insert_query = """
-            INSERT INTO appointment (patient_id_fk, doctor_id_fk, date, time, status, type)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """
+            with connection.cursor() as cursor:
+                insert_query = """
+                INSERT INTO appointment (patient_id_fk, doctor_id_fk, date, time, status, type)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """
+            
+                cursor.execute(insert_query, (appointment_info['patient_id_fk'], appointment_info['doctor_id_fk'], appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
 
-            cursor.execute(insert_query, (appointment_info['patient_id_fk'], appointment_info['doctor_id_fk'], appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
+                connection.commit()
 
-            connection.commit()
-
-        return {"status": "success", "message": "Appointment added successfully."}
+            return {"status": "success", "message": "Appointment added successfully."}
     
-    except Exception as e:
-        if connection:
-            connection.rollback()
-        #print(f"Status: error, Message: Error occurred: {str(e)}")
-        return {"status": "error", "message": f"Error occurred: {str(e)}"}
-    finally:
-        if connection:
-            close_db_connection(connection, tunnel)
+        except Exception as e:
+            if connection:
+                connection.rollback()
+            #print(f"Status: error, Message: Error occurred: {str(e)}")
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
 """
 diagnosis_info:
 - patient_id_fk
 - condition_id_fk
 - doctor_id_fk
-- diagnosis_date
 - severity
 """
-def insert_diagnosis(diagnosis_info):
+def insert_diagnosis(dbConnection, diagnosis_info):
     connection = None
     try:
-        connection, tunnel = get_db_connection()
+        connection = dbConnection['connection'] 
 
         with connection.cursor() as cursor:
             insert_query = """
@@ -112,7 +110,8 @@ def insert_diagnosis(diagnosis_info):
             VALUES (%s, %s, %s, %s, %s)
             """
 
-            cursor.execute(insert_query, (diagnosis_info['patient_id_fk'], diagnosis_info['condition_id_fk'], diagnosis_info['doctor_id_fk'], diagnosis_info['diagnosis_date'], diagnosis_info['severity']))
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            cursor.execute(insert_query, (diagnosis_info['patient_id_fk'], diagnosis_info['condition_id_fk'], diagnosis_info['doctor_id_fk'], current_date, diagnosis_info['severity']))
 
             connection.commit()
         
@@ -121,11 +120,8 @@ def insert_diagnosis(diagnosis_info):
     except Exception as e:
         if connection:
             connection.rollback()
-        print(f"Status: error, Message: Error occurred: {str(e)}")
-        #return {"status": "error", "message": f"Error occurred: {str(e)}"}
-    finally:
-        if connection:
-            close_db_connection(connection, tunnel)
+        #print(f"Status: error, Message: Error occurred: {str(e)}")
+        return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
 """
 billing_info:
@@ -136,10 +132,10 @@ billing_info:
 - payment_status
 - payment_method
 """
-def insert_billing(billing_info):
+def insert_billing(dbConnection, billing_info):
     connection = None
     try:
-        connection, tunnel = get_db_connection()
+        connection = dbConnection['connection']
 
         with connection.cursor() as cursor:
             insert_query = """
@@ -156,8 +152,5 @@ def insert_billing(billing_info):
     except Exception as e:
         if connection:
             connection.rollback()
-        print(f"Status: error, Message: Error occurred: {str(e)}")
-        #return {"status": "error", "message": f"Error occurred: {str(e)}"}
-    finally:
-        if connection:
-            close_db_connection(connection, tunnel)
+        #print(f"Status: error, Message: Error occurred: {str(e)}")
+        return {"status": "error", "message": f"Error occurred: {str(e)}"}
