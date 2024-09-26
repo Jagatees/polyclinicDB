@@ -71,22 +71,96 @@ def get_medical_conditions(dbConnection=None):
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
 
-def get_billing_by_user(user_id):
-    # select appointments
-    # join appointments, patient and user table on user_id_fk
-    return 0
+def get_billing_by_user(dbConnection=None, user_id=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                query = """
+                    SELECT 
+                    b.billing_id, 
+                    b.appointment_id_fk, 
+                    b.amount_due, 
+                    b.amount_paid, 
+                    b.payment_status, 
+                    b.payment_method, 
+                        CASE 
+                            WHEN b.payment_status = 'paid' THEN 'history'
+                            WHEN b.payment_status = 'pending' THEN 'current'
+                            ELSE 'unknown'
+                        END AS billing_category
+                    FROM billing b
+                    JOIN appointment a ON b.appointment_id_fk = a.appointment_id
+                    JOIN patient p ON a.patient_id_fk = p.patient_id
+                    WHERE p.user_id_fk = %s
+                    ORDER BY billing_category;
+                    """
+                
+                cursor.execute(query, (user_id,))
+                billing_records = cursor.fetchall()
 
-def get_medication_by_user(user_id):
-    # medication
-    # join patient_medication, patient on user_id_fk
-    return 0
+                current_billing = [record for record in billing_records if record['billing_category'] == 'current']
+                history_billing = [record for record in billing_records if record['billing_category'] == 'history']
+                
+                return {"status": "success", "current": current_billing, "history": history_billing}
+            
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-def get_patients_by_doctor(doctor_id):
-    # patient
-    # join appointments, doctor and user on doctor_id
-    return 0
+def get_medication_by_user(dbConnection=None, user_id=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                query="""
+                SELECT 
+                    m.medication_id, 
+                    m.name AS medication_name, 
+                    m.description, 
+                    m.price, 
+                    pm.dosage, 
+                    pm.frequency, 
+                    pm.start_date, 
+                    pm.end_date
+                FROM patient_medication pm
+                JOIN patient p ON pm.patient_id_fk = p.patient_id
+                JOIN medication m ON pm.medication_id_fk = m.medication_id
+                WHERE p.user_id_fk = %s;
+                """
+                cursor.execute(query, (user_id,))
+                medications = cursor.fetchall()
+                
+                return {"status": "success", "medications": medications}
+            
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-def get_appointments_by_doctor(doctor_id):
-    # appointments
-    # join on patient on doctor_id_fk
+def get_appointments_by_doctor(dbConnection=None, doctor_id=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                query="""
+                SELECT 
+                    a.appointment_id, 
+                    a.date, 
+                    a.time, 
+                    a.type, 
+                    a.status, 
+                    p.patient_id, 
+                    p.first_name AS patient_first_name, 
+                    p.last_name AS patient_last_name, 
+                    p.age, 
+                    p.gender, 
+                    p.phone_number, 
+                    u.email AS patient_email
+                FROM appointment a
+                JOIN patient p ON a.patient_id_fk = p.patient_id
+                JOIN user u ON p.user_id_fk = u.user_id
+                WHERE a.doctor_id_fk = %s;
+                """
+                cursor.execute(query, (doctor_id,))
+                appointments = cursor.fetchall()
+
+                return {"status": "success", "appointments": appointments}
+            
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     return 0
