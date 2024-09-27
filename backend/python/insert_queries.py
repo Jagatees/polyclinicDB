@@ -1,6 +1,7 @@
 from db_connection import get_db_connection, close_db_connection
 from datetime import datetime
 import random
+import select_queries
 
 """
     user_info (dict)
@@ -18,6 +19,7 @@ def insert_user(dbConnection, user_info, role_info):
         
         try:
             # connection, tunnel = get_db_connection()
+            
             connection = dbConnection['connection'] 
 
             with connection.cursor() as cursor:
@@ -63,20 +65,36 @@ def insert_user(dbConnection, user_info, role_info):
 
 """
 appointment_info:
-- patient_id_fk
-- doctor_id_fk
+# - patient_id_fk //session
+# - doctor_id_fk //you query
+
+- user_id
 - date YYYY-MM-DD
 - time
 - type
+
+
+{
+  "appointment_info": {
+    "date": "2024-09-28",
+    "time": "06:10:05",
+    "type": "Medical Consultation",
+    "user_id": 74
+  }
+}
+
 """
 def insert_appointment(dbConnection, appointment_info):
-    connection = None
+    print (appointment_info)
     if dbConnection:
         try:
-            connection = dbConnection['connection']
-            
-            with connection.cursor() as cursor:
+            #connection = dbConnection['connection']
+            patient_id = select_queries.get_patient_id_by_user(dbConnection, appointment_info['user_id'])
+
+            with dbConnection.cursor() as cursor:
                 
+
+
                 available_doctors_query = """
                 SELECT doctor_id FROM doctor WHERE doctor_id NOT IN (
                     SELECT doctor_id_fk 
@@ -90,25 +108,33 @@ def insert_appointment(dbConnection, appointment_info):
                 if not available_doctors:
                     # No doctors available at the selected time
                     return {"status": "error", "message": "No doctors are available at the selected date and time."}
-
+                
+     
                 # randomise the doctor to be assigned
-                assigned_doctor = random.choice(available_doctors)['doctor_id']
+                assigned_doctor = random.choice(available_doctors)[0]
 
                 
                 insert_query = """
                 INSERT INTO appointment (patient_id_fk, doctor_id_fk, date, time, status, type)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """
-                
-                cursor.execute(insert_query, (appointment_info['patient_id_fk'], assigned_doctor, appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
 
-                connection.commit()
+                print ("appointment_info")
+                print (patient_id)
+                print (assigned_doctor)
+                print (appointment_info['date'])
+                print (appointment_info['time'])
+                print (appointment_info['type'])
+
+                cursor.execute(insert_query, (patient_id, assigned_doctor, appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
+
+                dbConnection.commit()
 
             return {"status": "success", "message": f"Appointment added successfully with doctor ID: {assigned_doctor}"}
     
         except Exception as e:
-            if connection:
-                connection.rollback()
+            if dbConnection:
+                dbConnection.rollback()
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
 

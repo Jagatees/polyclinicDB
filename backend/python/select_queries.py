@@ -34,7 +34,7 @@ def get_user(dbConnection=None, email=None, password=None):
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-
+#! patientid doctor id but we using userid in the arguments ? 
 def get_appointments_by_user(dbConnection=None, user_id=None, user_role=None):
     if dbConnection:
         if user_role == 2:
@@ -164,3 +164,24 @@ def get_appointments_by_doctor(dbConnection=None, doctor_id=None):
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     return 0
+
+
+def get_patient_id_by_user(dbConnection=None, user_id=None):
+
+    if dbConnection:
+        try:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+
+                query = """
+                SELECT patient_id FROM patient WHERE user_id_fk = %s
+                """
+                cursor.execute(query, (user_id,))
+                patient_id = cursor.fetchone()
+                #set it to int instead of a dictionary
+                patient_id = patient_id['patient_id'] 
+                return patient_id
+            
+
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"} 
+        
