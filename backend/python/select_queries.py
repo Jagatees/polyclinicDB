@@ -1,5 +1,7 @@
 from db_connection import get_db_connection, close_db_connection
 import pymysql.cursors # this is to fetch my data as a dictionary instead of a tuple 
+from datetime import timedelta
+
 
 def get_user(dbConnection=None, email=None, password=None):
     if dbConnection:
@@ -34,16 +36,25 @@ def get_user(dbConnection=None, email=None, password=None):
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-#! patientid doctor id but we using userid in the arguments ? 
+
 def get_appointments_by_user(dbConnection=None, user_id=None, user_role=None):
+    #! the user_id in this case is a placeholder 
+    #! its not the userid you are passing in but, if you are a doctor, it will be the doctor_id 
+    #! if you are a patient, it will be the patient_id 
+
     if dbConnection:
+        print (user_id)
+        print (user_role)
+        print (type(user_id))
+        print (type(user_role))
+
         if user_role == 2:
             query = """
-            SELECT * FROM appointments WHERE patient_id_fk = %s
+            SELECT * FROM appointment WHERE patient_id_fk = %s
             """
         elif user_role == 1:
             query = """
-            SELECT * FROM appointments WHERE doctor_id_fk = %s
+            SELECT * FROM appointment WHERE doctor_id_fk = %s
             """
         else:
             raise ValueError("Invalid user type")
@@ -52,9 +63,16 @@ def get_appointments_by_user(dbConnection=None, user_id=None, user_role=None):
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(query, (user_id))
                 appointments = cursor.fetchall()
+
+            # Iterate over the results and convert `timedelta` to string
+            for appointment in appointments:
+                for key, value in appointment.items():
+                    if isinstance(value, timedelta):
+                        appointment[key] = str(value)  # Convert timedelta to string
             return appointments
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+
 
 def get_medical_conditions(dbConnection=None):
     if dbConnection:
@@ -158,7 +176,12 @@ def get_appointments_by_doctor(dbConnection=None, doctor_id=None):
                 """
                 cursor.execute(query, (doctor_id,))
                 appointments = cursor.fetchall()
-
+                
+                # Iterate over the results and convert `timedelta` to string
+                for appointment in appointments:
+                    for key, value in appointment.items():
+                        if isinstance(value, timedelta):
+                            appointment[key] = str(value)  # Convert timedelta to string
                 return {"status": "success", "appointments": appointments}
             
         except Exception as e:
@@ -166,22 +189,62 @@ def get_appointments_by_doctor(dbConnection=None, doctor_id=None):
     return 0
 
 
-def get_patient_id_by_user(dbConnection=None, user_id=None):
-
+def get_id_by_user(dbConnection=None, user_id=None, role=None):
     if dbConnection:
         try:
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
 
-                query = """
-                SELECT patient_id FROM patient WHERE user_id_fk = %s
-                """
-                cursor.execute(query, (user_id,))
-                patient_id = cursor.fetchone()
-                #set it to int instead of a dictionary
-                patient_id = patient_id['patient_id'] 
-                return patient_id
-            
+                # Step 1: Determine the role
+                if role is None:
+                    # Fetch the user's role from the database
+                    query = """
+                    SELECT role FROM user WHERE user_id = %s
+                    """
+                    cursor.execute(query, (user_id,))
+                    result = cursor.fetchone()
+                    
+                    if not result:
+                        return {"status": "error", "message": "User not found"}
+                    
+                    role = result['role']
+                else:
+                    # Validate the provided role
+                    if role not in [1, 2]:
+                        return {"status": "error", "message": "Invalid role provided"}
+
+                # Step 2: Fetch the ID based on the role
+                if role == 1:
+                    # Role 1: Fetch from doctor table
+                    query = """
+                    SELECT doctor_id FROM doctor WHERE user_id_fk = %s
+                    """
+                    cursor.execute(query, (user_id,))
+                    doctor = cursor.fetchone()
+                    
+                    if doctor:
+                        doctor_id = doctor['doctor_id']
+                        return {"status": "success", "doctor_id": doctor_id}
+                    else:
+                        return {"status": "error", "message": "Doctor not found"}
+
+                elif role == 2:
+                    # Role 2: Fetch from patient table
+                    query = """
+                    SELECT patient_id FROM patient WHERE user_id_fk = %s
+                    """
+                    cursor.execute(query, (user_id,))
+                    patient = cursor.fetchone()
+                    
+                    if patient:
+                        patient_id = patient['patient_id']
+                        return {"status": "success", "patient_id": patient_id}
+                    else:
+                        return {"status": "error", "message": "Patient not found"}
+                
 
         except Exception as e:
-            return {"status": "error", "message": f"Error has occurred: {str(e)}"} 
+            return {"status": "error", "message": f"An error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
+
         

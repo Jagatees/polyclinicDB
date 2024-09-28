@@ -74,14 +74,7 @@ appointment_info:
 - type
 
 
-{
-  "appointment_info": {
-    "date": "2024-09-28",
-    "time": "06:10:05",
-    "type": "Medical Consultation",
-    "user_id": 74
-  }
-}
+
 
 """
 def insert_appointment(dbConnection, appointment_info):
@@ -89,7 +82,9 @@ def insert_appointment(dbConnection, appointment_info):
     if dbConnection:
         try:
             #connection = dbConnection['connection']
-            patient_id = select_queries.get_patient_id_by_user(dbConnection, appointment_info['user_id'])
+            #! this is scrapped since on login, i will pass the user_id and role_id to the frontend 
+            #! so they can pass it back to the backend when they want to make an appointment 
+            #patient_id = select_queries.get_patient_id_by_user(dbConnection, appointment_info['user_id'])
 
             with dbConnection.cursor() as cursor:
                 
@@ -119,14 +114,7 @@ def insert_appointment(dbConnection, appointment_info):
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """
 
-                print ("appointment_info")
-                print (patient_id)
-                print (assigned_doctor)
-                print (appointment_info['date'])
-                print (appointment_info['time'])
-                print (appointment_info['type'])
-
-                cursor.execute(insert_query, (patient_id, assigned_doctor, appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
+                cursor.execute(insert_query, (appointment_info['patient_id'], assigned_doctor, appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
 
                 dbConnection.commit()
 
@@ -155,34 +143,36 @@ medication_info:
 - end_date YYYY-MM-DD
 """
 def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
-    connection = None
-    try:
-        connection = dbConnection['connection'] 
-
-        with connection.cursor() as cursor:
-            insert_query = """
-            INSERT INTO diagnosis (patient_id_fk, condition_id_fk, doctor_id_fk, diagnosis_date, severity)
-            VALUES (%s, %s, %s, %s, %s)
-            """
-
-            current_date = datetime.now().strftime('%Y-%m-%d')
-            cursor.execute(insert_query, (diagnosis_info['patient_id_fk'], diagnosis_info['condition_id_fk'], diagnosis_info['doctor_id_fk'], current_date, diagnosis_info['severity']))
-
-            insert_medication_query = """
-            INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, start_date, end_date)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-
-            cursor.execute(insert_medication_query, (medication_info['patient_id_fk'], medication_info['medication_id_fk'], medication_info['doctor_id_fk'], medication_info['dosage'], medication_info['frequency'], medication_info['start_date'], medication_info['end_date']))
-            connection.commit()
+    if dbConnection:
+        connection = dbConnection
+        try:
         
-        return {"status": "success", "message": "Diagnosis added successfully."}
 
-    except Exception as e:
-        if connection:
-            connection.rollback()
-        #print(f"Status: error, Message: Error occurred: {str(e)}")
-        return {"status": "error", "message": f"Error occurred: {str(e)}"}
+
+            with connection.cursor() as cursor:
+                insert_query = """
+                INSERT INTO diagnosis (patient_id_fk, condition_id_fk, doctor_id_fk, diagnosis_date, severity)
+                VALUES (%s, %s, %s, %s, %s)
+                """
+
+                current_date = datetime.now().strftime('%Y-%m-%d')
+                cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['condition_id'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity']))
+
+                insert_medication_query = """
+                INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, start_date, end_date)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+
+                cursor.execute(insert_medication_query, (medication_info['patient_id'], medication_info['medication_id'], medication_info['doctor_id'], medication_info['dosage'], medication_info['frequency'], medication_info['start_date'], medication_info['end_date']))
+                connection.commit()
+            
+            return {"status": "success", "message": "Diagnosis added successfully."}
+
+        except Exception as e:
+            if connection:
+                connection.rollback()
+            #print(f"Status: error, Message: Error occurred: {str(e)}")
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
 """
 billing_info:
@@ -192,25 +182,25 @@ billing_info:
 - billing_date
 - payment_method
 """
-def insert_billing(dbConnection, billing_info):
-    connection = None
-    try:
-        connection = dbConnection['connection']
+def insert_billing(dbConnection = None, billing_info = None):
+   if dbConnection:
+        try:
+            
 
-        with connection.cursor() as cursor:
-            insert_query = """
-            INSERT INTO billing (appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """
+            with dbConnection.cursor() as cursor:
+                insert_query = """
+                INSERT INTO billing (appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """
 
-            cursor.execute(insert_query, (billing_info['appointment_id_fk'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
+                cursor.execute(insert_query, (billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
 
-            connection.commit()
+                dbConnection.commit()
 
-        return {"status": "success", "message": "Billing added successfully."}
-    
-    except Exception as e:
-        if connection:
-            connection.rollback()
-        #print(f"Status: error, Message: Error occurred: {str(e)}")
-        return {"status": "error", "message": f"Error occurred: {str(e)}"}
+            return {"status": "success", "message": "Billing added successfully."}
+        
+        except Exception as e:
+            if dbConnection:
+                dbConnection.rollback()
+            #print(f"Status: error, Message: Error occurred: {str(e)}")
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}

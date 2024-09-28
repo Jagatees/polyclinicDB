@@ -22,7 +22,7 @@ def close_db_connection(error):
 
 #! Test Routes
 #! ===========================================================================================
-@app.route('/api/test')
+@app.route('/test')
 def home():
     return jsonify({"message": "Hello, Flask!"})  # Return JSON instead of plain text
 
@@ -37,7 +37,15 @@ def getUserData():
 
 
 #!=============================================================================
-@app.route('/api/login', methods=['POST']) 
+#* =============================================================================
+"""
+{
+"email":"emily.clark@example.com",
+"password":"123"
+}
+
+"""
+@app.route('/login', methods=['POST']) 
 def login():
     dbConnection = g.dbConnection 
     if request.method == 'POST':
@@ -47,9 +55,22 @@ def login():
         print (email, password)
         res = select_queries.get_user(dbConnection, email, password)
         print(res)
+
+        if res['status'] == 'success':
+            user_id = res['user']['user_id'] 
+            user_role = res['user']['role_id_fk'] 
+            if user_role == 1: 
+                role = 'doctor'
+            else :
+                role = 'patient'
+            #get the id by user 
+            roleRES = select_queries.get_id_by_user(dbConnection, user_id, user_role)
+
+            res['user'][f'{role}_id'] = roleRES[f"{role}_id"] 
+
         return jsonify({"message": res})
 
-@app.route('/api/register', methods=['POST', 'GET']) 
+@app.route('/register', methods=['POST', 'GET']) 
 def register():
     dbConnection = g.dbConnection 
     if request.method == "POST": 
@@ -59,19 +80,23 @@ def register():
         res = insert_queries.insert_user(dbConnection, userInfo, roleInfo) 
         print(res)
         return jsonify({"message": res})
+    
 #!===============================================================================
-
-@app.route('/api/appointments', methods=['POST','GET'])
+'''
+POST appointment 
+{
+  "appointment_info": {
+    "date": "2024-09-28",
+    "time": "06:10:05",
+    "type": "Medical Consultation",
+    "user_id": 74,
+    "patient_id": 1
+  }
+}
+'''
+@app.route('/appointments', methods=['POST','GET'])
 def getAppointment():
     dbConnection = g.dbConnection
-    if request.method == 'GET':
-        data = request.get_json()
-        user_id = data['user_id']
-        user_role = data['user_role']
-        res = select_queries.get_appointments_by_user(dbConnection, user_id, user_role)
-        print(res)
-        return jsonify({"message": res})
-    
 
     if request.method == 'POST':
         data = request.get_json()
@@ -81,6 +106,123 @@ def getAppointment():
         print(res)
         return jsonify({"message": res})
 
+@app.route('/appointments/<user_id>/<role_id>', methods=['GET'])
+def getAppointments(user_id,role_id):
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        user_id = int(user_id)
+        role_id = int(role_id)
+
+        res = select_queries.get_appointments_by_user(dbConnection, user_id, role_id)
+        print(res)
+        return jsonify({"message": res})
+
+
+
+@app.route('/appointments/<doctor_id>/', methods=['GET'])
+def getAppointmentsbyDoctor(doctor_id):
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        doctor_id = int(doctor_id)
+        res = select_queries.get_appointments_by_doctor(dbConnection, doctor_id)
+        print(res)
+        return jsonify({"message": res})
+#!===============================================================================
+'''
+POST diagnosis 
+{
+    "diagnosis_info": {
+                    "patient_id": 1,
+                    "condition_id": 1,
+                    "doctor_id": 1,
+                    "severity": "moderate"}, 
+    "medication_info": {
+                    "patient_id": 1,
+                    "medication_id": 1,
+                    "doctor_id": 1,
+                    "dosage": 1,
+                    "frequency": 1,
+                    "start_date": "2021-01-01",
+                    "end_date": "2021-02-01"
+
+    }, 
+    "role": 1}
+'''
+# GET all diagnoses for a user
+#Post a diagnosis for a user
+@app.route('/diagnosis', methods=['POST'])
+def Diagnosis():
+    dbConnection = g.dbConnection
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        #diagnosis info should be a dictionary
+        diagnosis_info = data['diagnosis_info'] 
+        medication_info = data['medication_info'] 
+        role = data['role']
+
+        # run the function if role is doctor 
+        if role == 1: 
+            res = insert_queries.insert_diagnosis(dbConnection, diagnosis_info, medication_info)
+            print(res)
+        else:
+            res = {"status": "error", "message": "Only doctors can add a diagnosis."}
+        return jsonify({"message": res})
+
+
+@app.route('/medication/<user_id>', methods=['GET'])
+def getMedication(user_id):
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        # Assuming `get_medication_by_user` takes a db connection and user_id
+        res = select_queries.get_medication_by_user(dbConnection, user_id)
+        print(res)
+        return jsonify({"message": res})
+    
+#! function not implemented  ?
+@app.route('/diagnosis/<user_id>', methods=['GET'])
+def getDiagnosis(user_id):
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        # Assuming `get_diagnosis_by_user` takes a db connection and user_id
+        res = select_queries.get_diagnosis_by_user(dbConnection, user_id)
+        print(res)
+        return jsonify({"message": res})
+    
+#!===============================================================================
+'''
+POST BILLING 
+{
+    "billing_info": {
+                    "appointment_id": 1,
+                    "amount_due": 1,
+                    "amount_paid": 10,
+                    "billing_date": "2023-01-01",
+                    "payment_method":"cash"}
+}
+'''
+
+
+@app.route('/billing', methods=['POST'])
+def billing():
+    dbConnection = g.dbConnection
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        billing_info = data['billing_info'] 
+        res = insert_queries.insert_billing(dbConnection, billing_info)
+        print(res)
+        return jsonify({"message": res})
+
+
+@app.route('/billing/<user_id>', methods=['GET'])
+def getBilling(user_id):
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        # Assuming `get_billing_by_user` takes a db connection and user_id
+        res = select_queries.get_billing_by_user(dbConnection, user_id)
+        print(res)
+        return jsonify({"message": res})
 
 
 if __name__ == '__main__':
