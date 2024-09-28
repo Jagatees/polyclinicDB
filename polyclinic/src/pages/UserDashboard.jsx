@@ -1,38 +1,127 @@
 import React, { useState } from 'react';
 
-const UserDashboard = () => {
-  const [activePage, setActivePage] = useState('get_users_by_doctor');
+const AdminDashboard = () => {
+  const [activePage, setActivePage] = useState('appointments');
+  const [billingTab, setBillingTab] = useState('current');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  const [appointments, setAppointments] = useState([
+    { 
+      id: 1, 
+      doctorName: 'Dr. Smith', 
+      date: '2024-09-30', 
+      time: '10:00 AM', 
+      status: 'Pending',
+      comment: 'Pending doctor confirmation.',
+      medication: 'N/A',
+      diagnosis: 'Under review'
+    },
+    { 
+      id: 2, 
+      doctorName: 'Dr. Doe', 
+      date: '2024-10-01', 
+      time: '02:00 PM', 
+      status: 'Confirmed', 
+      comment: 'Please arrive 10 minutes early.',
+      medication: 'Paracetamol',
+      diagnosis: 'Flu'
+    },
+  ]);
+
+  const [billingData, setBillingData] = useState([
+    { id: 1, institution: 'National University Polyclinics', invoice: '0F24002204', amount: 22.45, status: 'current' },
+    { id: 2, institution: 'National University Polyclinics', invoice: '0F23306097', amount: 47.85, status: 'current' },
+    { id: 3, institution: 'National University Polyclinics', invoice: '0F24567023', amount: 0.00, status: 'history' },
+  ]);
+
+  const openModal = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedAppointment(null);
+  };
+
+  const renderBillingContent = () => {
+    const filteredBilling = billingData.filter(item => item.status === billingTab);
+    
+    return (
+      <div>
+        <div className="flex space-x-4 mb-4">
+          <button 
+            onClick={() => setBillingTab('current')}
+            className={`px-4 py-2 rounded ${billingTab === 'current' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+          >
+            Current
+          </button>
+          <button 
+            onClick={() => setBillingTab('history')}
+            className={`px-4 py-2 rounded ${billingTab === 'history' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+          >
+            History
+          </button>
+        </div>
+        {filteredBilling.map(item => (
+          <div key={item.id} className="border p-4 mb-2 flex justify-between items-center rounded shadow">
+            <div>
+              <div className="text-lg font-bold">{item.institution}</div>
+              <div className="text-gray-500">Invoice: {item.invoice}</div>
+            </div>
+            <div className={`text-xl font-semibold ${item.amount > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+              S${item.amount.toFixed(2)}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   const renderContent = () => {
     switch (activePage) {
-      case 'get_appointments':
+      case 'appointments':
         return (
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">Get Appointments</h2>
-            <p className="mt-4 text-gray-600">Details about appointments.</p>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Appointments</h2>
+            <table className="min-w-full bg-white shadow-md rounded-lg">
+              <thead>
+                <tr>
+                  <th className="border px-4 py-2 text-left">Doctor Name</th>
+                  <th className="border px-4 py-2 text-left">Date</th>
+                  <th className="border px-4 py-2 text-left">Time</th>
+                  <th className="border px-4 py-2 text-left">Status</th>
+                  <th className="border px-4 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.map(appointment => (
+                  <tr key={appointment.id}>
+                    <td className="border px-4 py-2">{appointment.doctorName}</td>
+                    <td className="border px-4 py-2">{appointment.date}</td>
+                    <td className="border px-4 py-2">{appointment.time}</td>
+                    <td className="border px-4 py-2">{appointment.status}</td>
+                    <td className="border px-4 py-2">
+                      {appointment.status === 'Pending' ? (
+                        <span className="text-yellow-600">Waiting for doctor to confirm</span>
+                      ) : (
+                        <button
+                          onClick={() => openModal(appointment)}
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                          View Comment
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         );
-      case 'get_billing':
-        return (
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-800">Billing Information</h2>
-            <p className="mt-4 text-gray-600">Details about billing and payments.</p>
-          </div>
-        );
-      case 'get_medication':
-        return (
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-800">Medication Details</h2>
-            <p className="mt-4 text-gray-600">Information on prescribed medication.</p>
-          </div>
-        );
-      case 'create_appointment':
-        return (
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-800">Create New Appointment</h2>
-            <p className="mt-4 text-gray-600">Form to create a new appointment.</p>
-          </div>
-        );
+      case 'billing':
+        return renderBillingContent();
       default:
         return null;
     }
@@ -44,51 +133,24 @@ const UserDashboard = () => {
       <aside className="w-64 bg-gray-900 text-gray-300 flex flex-col h-screen">
         {/* Sidebar Header */}
         <div className="p-4 text-lg font-semibold text-white">
-          Welcome, User Dashboard
+          Welcome, Admin Dashboard
           <p className="text-sm text-gray-400">Have a great day!</p>
         </div>
-
         {/* Navigation Menu */}
         <nav className="mt-4 flex flex-col space-y-1">
           <a
             href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'get_appointments' ? 'bg-gray-800' : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActivePage('get_appointments');
-            }}
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'appointments' ? 'bg-gray-800' : ''}`}
+            onClick={() => setActivePage('appointments')}
           >
-            Get Appointments
+            Appointments
           </a>
           <a
             href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'get_billing' ? 'bg-gray-800' : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActivePage('get_billing');
-            }}
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'billing' ? 'bg-gray-800' : ''}`}
+            onClick={() => setActivePage('billing')}
           >
             Billing
-          </a>
-          <a
-            href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'get_medication' ? 'bg-gray-800' : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActivePage('get_medication');
-            }}
-          >
-            Medication
-          </a>
-          <a
-            href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === 'create_appointment' ? 'bg-gray-800' : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActivePage('create_appointment');
-            }}
-          >
-            Create Appointment
           </a>
         </nav>
 
@@ -97,7 +159,6 @@ const UserDashboard = () => {
           <button
             className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
             onClick={() => {
-              // Log out logic here
               alert('Logging out...');
             }}
           >
@@ -113,8 +174,33 @@ const UserDashboard = () => {
           {renderContent()}
         </main>
       </div>
+
+      {/* Modal for Appointment Details */}
+      {showModal && selectedAppointment && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Appointment Details</h2>
+            <p><strong>Doctor:</strong> {selectedAppointment.doctorName}</p>
+            <p><strong>Date:</strong> {selectedAppointment.date}</p>
+            <p><strong>Time:</strong> {selectedAppointment.time}</p>
+            <p><strong>Status:</strong> {selectedAppointment.status}</p>
+            <p><strong>Comment:</strong> {selectedAppointment.comment}</p>
+            <p><strong>Medication:</strong> {selectedAppointment.medication}</p>
+            <p><strong>Diagnosis:</strong> {selectedAppointment.diagnosis}</p>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeModal}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default UserDashboard;
+export default AdminDashboard;

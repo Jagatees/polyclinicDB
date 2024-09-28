@@ -9,30 +9,7 @@ const Login = () => {
 
   const handleLogIn = (event) => {
     event.preventDefault(); 
-  
-    fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: "emily.clark@example.com", 
-        password: "emilyclark123" 
-      })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Login successful:', data);
-      navigate('/home'); 
-    })
-    .catch(error => {
-      console.error('Login failed:', error);
-    });
+    navigate('/home'); 
   };
   
 
