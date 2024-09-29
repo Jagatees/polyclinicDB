@@ -60,23 +60,14 @@ const Registration = () => {
       };
   
       const role_info = {
-        doctor: {
-          first_name: [], 
-          last_name: [], 
-          phone_number: []
-        },
-        patient: {
           first_name: formData.firstName,
           last_name: formData.lastName,
           age: formData.age,
           gender: formData.gender,
           phone_number: formData.phone,
           address: formData.address
-        }
       };
 
-      console.log("user_info", user_info      )
-      console.log("role_info", role_info      )
 
       // Submit the data
       fetch('/api/register', {
