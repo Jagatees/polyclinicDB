@@ -3,13 +3,6 @@ import { MultiSelect } from "react-multi-select-component";
 
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState("get_users_by_doctor");
-  const options = [
-    { label: "Grapes 🍇", value: "grapes" },
-    { label: "Mango 🥭", value: "mango" },
-    { label: "Strawberry 🍓", value: "strawberry", disabled: true },
-  ];
-  const [selected, setSelected] = useState([]);
-
   const [medications, setMedications] = useState([
     {
       id: 1,
@@ -42,6 +35,10 @@ const DoctorDashboard = () => {
       price: 18,
     },
   ]);
+  const medicationOptions = medications.map(med => ({
+    label: `${med.name} - $${med.price}`,
+    value: med.name
+  }));
   const [appointments, setAppointments] = useState([
     {
       id: 1,
@@ -453,23 +450,18 @@ const DoctorDashboard = () => {
                 </div>
 
                 <div className="mb-2">
-                  <label className="block text-sm font-medium">
-                    Medication
-                  </label>
-                  <select
-                    name="medication"
-                    value={editFormData.medication}
-                    onChange={handleFormChange}
-                    className="mt-1 p-2 border rounded w-full bg-white text-black"
-                  >
-                    <option value="">Select Medication</option>
-                    {medications.map((med) => (
-                      <option key={med.id} value={med.name}>
-                        {med.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+  <label className="block text-sm font-medium">Medication</label>
+  <MultiSelect
+    options={medicationOptions}
+    value={editFormData.medication}
+    onChange={(selectedOptions) => setEditFormData((prevData) => ({
+      ...prevData,
+      medication: selectedOptions
+    }))}
+    labelledBy="Select Medication"
+  />
+</div>
+
                 <div className="mb-2">
                   <label className="block text-sm font-medium">
                     Medical Condition
