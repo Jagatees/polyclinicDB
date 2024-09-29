@@ -1,7 +1,15 @@
 import React, { useState } from "react";
+import { MultiSelect } from "react-multi-select-component";
 
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState("get_users_by_doctor");
+  const options = [
+    { label: "Grapes 🍇", value: "grapes" },
+    { label: "Mango 🥭", value: "mango" },
+    { label: "Strawberry 🍓", value: "strawberry", disabled: true },
+  ];
+  const [selected, setSelected] = useState([]);
+
   const [medications, setMedications] = useState([
     {
       id: 1,
@@ -77,11 +85,15 @@ const DoctorDashboard = () => {
   const [editFormData, setEditFormData] = useState({
     diagnosisDate: "",
     severity: "",
-    medication: "",
-    medicalCondition: "",
+    medication: [], // For multiple medications
+    medicalCondition: [], // For multiple conditions
   });
-
-  const medicalConditions = ["Diabetes", "Hypertension", "Asthma", "Cholesterol"];
+  const medicalConditionsOptions = [
+    { label: "Diabetes", value: "Diabetes" },
+    { label: "Hypertension", value: "Hypertension" },
+    { label: "Asthma", value: "Asthma" },
+    { label: "Cholesterol", value: "Cholesterol" },
+  ];
 
   const handleRemoveMedication = (medId) => {
     setMedications((meds) => meds.filter((med) => med.id !== medId));
@@ -185,9 +197,15 @@ const DoctorDashboard = () => {
               <tbody>
                 {appointments.map((appointment) => (
                   <tr key={appointment.id}>
-                    <td className="border px-4 py-2">{appointment.appointmentId}</td>
-                    <td className="border px-4 py-2">{appointment.patientName}</td>
-                    <td className="border px-4 py-2">{appointment.doctorName}</td>
+                    <td className="border px-4 py-2">
+                      {appointment.appointmentId}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {appointment.patientName}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {appointment.doctorName}
+                    </td>
                     <td className="border px-4 py-2">{appointment.date}</td>
                     <td className="border px-4 py-2">{appointment.time}</td>
                     <td className="border px-4 py-2">
@@ -383,15 +401,17 @@ const DoctorDashboard = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
             <h3 className="text-lg font-semibold mb-4">
-              {isEditing ? "Edit Appointment" : "Appointment Details"}
+              {isEditing ? "Add Diagnosis" : "Appointment Details"}
             </h3>
             {!isEditing ? (
               <>
                 <p>
-                  <strong>Appointment ID:</strong> {selectedAppointment.appointmentId}
+                  <strong>Appointment ID:</strong>{" "}
+                  {selectedAppointment.appointmentId}
                 </p>
                 <p>
-                  <strong>Patient Name:</strong> {selectedAppointment.patientName}
+                  <strong>Patient Name:</strong>{" "}
+                  {selectedAppointment.patientName}
                 </p>
                 <p>
                   <strong>Doctor Name:</strong> {selectedAppointment.doctorName}
@@ -418,27 +438,24 @@ const DoctorDashboard = () => {
             ) : (
               <div>
                 <div className="mb-2">
-                  <label className="block text-sm font-medium">Diagnosis Date</label>
-                  <input
-                    type="date"
-                    name="diagnosisDate"
-                    value={editFormData.diagnosisDate}
-                    onChange={handleFormChange}
-                    className="mt-1 p-2 border rounded w-full bg-white text-black"
-                  />
-                </div>
-                <div className="mb-2">
                   <label className="block text-sm font-medium">Severity</label>
-                  <input
-                    type="text"
+                  <select
                     name="severity"
                     value={editFormData.severity}
                     onChange={handleFormChange}
                     className="mt-1 p-2 border rounded w-full bg-white text-black"
-                  />
+                  >
+                    <option value="">Select Severity</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
                 </div>
+
                 <div className="mb-2">
-                  <label className="block text-sm font-medium">Medication</label>
+                  <label className="block text-sm font-medium">
+                    Medication
+                  </label>
                   <select
                     name="medication"
                     value={editFormData.medication}
@@ -454,21 +471,22 @@ const DoctorDashboard = () => {
                   </select>
                 </div>
                 <div className="mb-2">
-                  <label className="block text-sm font-medium">Medical Condition</label>
-                  <select
-                    name="medicalCondition"
+                  <label className="block text-sm font-medium">
+                    Medical Condition
+                  </label>
+                  <MultiSelect
+                    options={medicalConditionsOptions}
                     value={editFormData.medicalCondition}
-                    onChange={handleFormChange}
-                    className="mt-1 p-2 border rounded w-full bg-white text-black"
-                  >
-                    <option value="">Select Condition</option>
-                    {medicalConditions.map((condition, index) => (
-                      <option key={index} value={condition}>
-                        {condition}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(selectedOptions) =>
+                      setEditFormData((prevData) => ({
+                        ...prevData,
+                        medicalCondition: selectedOptions,
+                      }))
+                    }
+                    labelledBy="Select Conditions"
+                  />
                 </div>
+
                 <div className="flex mt-4">
                   <button
                     className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"

@@ -12,6 +12,8 @@ const Login = () => {
     navigate('/home'); 
   };
   
+  // Commnet 
+  // i will recieve the paitente ID or Doc ID to store into session
 
   return (
     <div className="h-screen w-screen flex">

@@ -14,9 +14,15 @@ const UserDashboard = () => {
       date: "2024-09-30",
       time: "10:00 AM",
       status: "Pending",
-      comment: "Pending doctor confirmation.",
-      medication: "N/A",
       diagnosis: "Under review",
+      consultationType: "General Checkup",
+      medications: [ // Add medications as an array of objects
+        {
+          name: "N/A",
+          dosage: "N/A",
+          frequency: "N/A"
+        }
+      ],
     },
     {
       id: 2,
@@ -24,11 +30,19 @@ const UserDashboard = () => {
       date: "2024-10-01",
       time: "02:00 PM",
       status: "Confirmed",
-      comment: "Please arrive 10 minutes early.",
-      medication: "Paracetamol",
       diagnosis: "Flu",
+      consultationType: "Specialist Consultation",
+      medications: [
+        {
+          name: "Paracetamol",
+          dosage: "500mg",
+          frequency: "Twice a day"
+        }
+      ],
     },
   ]);
+  
+  
 
   const [billingData, setBillingData] = useState([
     {
@@ -126,50 +140,51 @@ const UserDashboard = () => {
   const renderContent = () => {
     switch (activePage) {
       case "appointments":
-        return (
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              Appointments
-            </h2>
-            <table className="min-w-full bg-white shadow-md rounded-lg">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2 text-left">Doctor Name</th>
-                  <th className="border px-4 py-2 text-left">Date</th>
-                  <th className="border px-4 py-2 text-left">Time</th>
-                  <th className="border px-4 py-2 text-left">Status</th>
-                  <th className="border px-4 py-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {appointments.map((appointment) => (
-                  <tr key={appointment.id}>
-                    <td className="border px-4 py-2">
-                      {appointment.doctorName}
-                    </td>
-                    <td className="border px-4 py-2">{appointment.date}</td>
-                    <td className="border px-4 py-2">{appointment.time}</td>
-                    <td className="border px-4 py-2">{appointment.status}</td>
-                    <td className="border px-4 py-2">
-                      {appointment.status === "Pending" ? (
-                        <span className="text-yellow-600">
-                          Waiting for doctor to confirm
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => openModal(appointment)}
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                          View Comment
-                        </button>
-                      )}
-                    </td>
+          return (
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                Appointments
+              </h2>
+              <table className="min-w-full bg-white shadow-md rounded-lg">
+                <thead>
+                  <tr>
+                    <th className="border px-4 py-2 text-left">Date</th>
+                    <th className="border px-4 py-2 text-left">Time</th>
+                    <th className="border px-4 py-2 text-left">Doctor Name</th>
+                    <th className="border px-4 py-2 text-left">Status</th>
+                    <th className="border px-4 py-2 text-left">Type of Consultation</th>
+                    <th className="border px-4 py-2 text-left">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        );
+                </thead>
+                <tbody>
+                  {appointments.map((appointment) => (
+                    <tr key={appointment.id}>
+                      <td className="border px-4 py-2">{appointment.date}</td>
+                      <td className="border px-4 py-2">{appointment.time}</td>
+                      <td className="border px-4 py-2">{appointment.doctorName}</td>
+                      <td className="border px-4 py-2">{appointment.status}</td>
+                      <td className="border px-4 py-2">{appointment.consultationType}</td>
+                      <td className="border px-4 py-2">
+                        {appointment.status === "Pending" ? (
+                          <span className="text-yellow-600">
+                            Waiting for doctor to confirm
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => openModal(appointment)}
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                          >
+                            View Details
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+          
       case "billing":
         return renderBillingContent();
       default:
@@ -244,42 +259,48 @@ const UserDashboard = () => {
 
       {/* Modal for Appointment Details */}
       {showModal && selectedAppointment && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Appointment Details</h2>
-            <p>
-              <strong>Doctor:</strong> {selectedAppointment.doctorName}
-            </p>
-            <p>
-              <strong>Date:</strong> {selectedAppointment.date}
-            </p>
-            <p>
-              <strong>Time:</strong> {selectedAppointment.time}
-            </p>
-            <p>
-              <strong>Status:</strong> {selectedAppointment.status}
-            </p>
-            <p>
-              <strong>Comment:</strong> {selectedAppointment.comment}
-            </p>
-            <p>
-              <strong>Medication:</strong> {selectedAppointment.medication}
-            </p>
-            <p>
-              <strong>Diagnosis:</strong> {selectedAppointment.diagnosis}
-            </p>
+  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+    <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+      <h2 className="text-xl font-bold mb-4">Appointment Details</h2>
+      <p><strong>Doctor:</strong> {selectedAppointment.doctorName}</p>
+      <p><strong>Date:</strong> {selectedAppointment.date}</p>
+      <p><strong>Time:</strong> {selectedAppointment.time}</p>
+      <p><strong>Status:</strong> {selectedAppointment.status}</p>
+      <p><strong>Diagnosis:</strong> {selectedAppointment.diagnosis}</p>
+      {/* Medications Table */}
+      <div className="mt-4">
+        <h3 className="text-lg font-bold mb-2">Medications</h3>
+        <table className="min-w-full bg-white border-collapse">
+          <thead>
+            <tr>
+              <th className="border px-4 py-2">Name</th>
+              <th className="border px-4 py-2">Dosage</th>
+              <th className="border px-4 py-2">Frequency</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedAppointment.medications.map((med, index) => (
+              <tr key={index}>
+                <td className="border px-4 py-2">{med.name}</td>
+                <td className="border px-4 py-2">{med.dosage}</td>
+                <td className="border px-4 py-2">{med.frequency}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="mt-6 flex justify-end">
+        <button
+          onClick={closeModal}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={closeModal}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Booking Form Modal */}
       {showBookingForm && (
@@ -287,22 +308,6 @@ const UserDashboard = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">
             <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
             <form>
-              <div className="mb-4">
-                <label className="block text-gray-800 text-sm font-bold mb-2">Your Name</label>
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  className="w-full px-3 py-2 border rounded shadow bg-white text-black"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-800 text-sm font-bold mb-2">Phone Number</label>
-                <input
-                  type="text"
-                  placeholder="Your phone number"
-                  className="w-full px-3 py-2 border rounded shadow bg-white text-black"
-                />
-              </div>
               <div className="mb-4">
                 <label className="block text-gray-800 text-sm font-bold mb-2">Describe Your Problem</label>
                 <textarea
@@ -314,6 +319,10 @@ const UserDashboard = () => {
                 <label className="block text-gray-800 text-sm font-bold mb-2">Type of Visit</label>
                 <select className="w-full px-3 py-2 border rounded shadow bg-white text-black">
                   <option>Select a visit type</option>
+                  <option>Medical Consulation</option>
+                  <option>Checkup</option>
+                  <option>Vaccination</option>
+
                   {/* Add your options here */}
                 </select>
               </div>
