@@ -52,14 +52,14 @@ const Registration = () => {
     try {
       const result = await formSchema.parseAsync(formData);
   
-      const userInfo = {
+      const user_info = {
         role_id: 1, 
         username: formData.username,
         password_hash: formData.password, 
         email: formData.email,
       };
   
-      const roleInfo = {
+      const role_info = {
         doctor: {
           first_name: [], 
           last_name: [], 
@@ -81,7 +81,7 @@ const Registration = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userInfo, roleInfo }),
+        body: JSON.stringify({ user_info, role_info }),
       })
         .then((response) => {
           if (!response.ok) throw new Error('Registration failed');
