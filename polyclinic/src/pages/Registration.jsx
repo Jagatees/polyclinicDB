@@ -46,21 +46,42 @@ const Registration = () => {
     setFormData(prev => ({ ...prev, [id]: formattedValue }));
   };
   
-
   // Handle form submission
   const handleRegistration = async (event) => {
     event.preventDefault();
     try {
-      // Attempt to parse the form data according to the schema
       const result = await formSchema.parseAsync(formData);
+  
+      const userInfo = {
+        role_id: 1, 
+        username: formData.username,
+        password_hash: formData.password, 
+        email: formData.email,
+      };
+  
+      const roleInfo = {
+        doctor: {
+          first_name: [], 
+          last_name: [], 
+          phone_number: []
+        },
+        patient: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          age: formData.age,
+          gender: formData.gender,
+          phone_number: formData.phone,
+          address: formData.address
+        }
+      };
 
-      // If successful, submit the data
+      // Submit the data
       fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userInfo: result, roleInfo: { role_id_fk: 1 } }),
+        body: JSON.stringify({ userInfo, roleInfo }),
       })
         .then((response) => {
           if (!response.ok) throw new Error('Registration failed');
@@ -68,15 +89,18 @@ const Registration = () => {
         })
         .then((data) => {
           console.log('Registration successful:', data);
-          navigate('/home'); // Navigate to the home page on success
+          navigate('/userdashboard'); // Navigate to the home page on success
         })
         .catch((error) => {
           console.error('Registration failed:', error);
+          // You can handle errors specific to your fields if needed
         });
     } catch (error) {
       setErrors(error.flatten().fieldErrors);
+      console.error('Validation failed:', error);
     }
   };
+  
 
   return (
     <div className="h-screen w-screen flex">
