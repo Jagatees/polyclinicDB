@@ -20,8 +20,8 @@ def insert_user(dbConnection, user_info, role_info):
         try:
             # connection, tunnel = get_db_connection()
             
-            connection = dbConnection['connection'] 
-
+            #connection = dbConnection['connection'] 
+            connection = dbConnection
             with connection.cursor() as cursor:
                 insert_query = """
                 INSERT INTO user (role_id_fk, username, password_hash, email, create_at)

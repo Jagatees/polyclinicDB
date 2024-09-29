@@ -201,8 +201,6 @@ POST BILLING
                     "payment_method":"cash"}
 }
 '''
-
-
 @app.route('/billing', methods=['POST'])
 def billing():
     dbConnection = g.dbConnection
