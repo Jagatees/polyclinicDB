@@ -62,12 +62,15 @@ def login():
             user_role = res['user']['role_id_fk'] 
             if user_role == 1: 
                 role = 'doctor'
-            else :
+            elif user_role == 2:
                 role = 'patient'
-            #get the id by user 
-            roleRES = select_queries.get_id_by_user(dbConnection, user_id, user_role)
+            else:
+                role = 'admin'
+            #get the id by user unless the user is an admin 
+            if role != 'admin':
+                roleRES = select_queries.get_id_by_user(dbConnection, user_id, user_role)
 
-            res['user'][f'{role}_id'] = roleRES[f"{role}_id"] 
+                res['user'][f'{role}_id'] = roleRES[f"{role}_id"] 
 
         return jsonify({"message": res})
     
@@ -259,6 +262,22 @@ def getBilling(user_id):
         print(res)
         return jsonify({"message": res})
 
+#!=============================================================================== 
+# get all users 
+@app.route('/users/<role_id>', methods=['GET'])
+def getUsers(role_id):
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        role_id = int(role_id) 
+        if role_id == 3: 
+            res = select_queries.get_all_users_with_details(dbConnection)
+            print(res)
+            return jsonify({"message": res})
+        else:
+            res = {"status": "error", "message": "Only admin can view all users."}
+            return jsonify({"message": res})
+        
+#!===============================================================================
 
 if __name__ == '__main__':
     with app.app_context():
