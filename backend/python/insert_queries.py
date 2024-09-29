@@ -37,8 +37,8 @@ def insert_user(dbConnection, user_info, role_info):
                 VALUES (%s, %s, %s, %s, %s)
                 """
 
-                current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], current_date))
+                current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], current_datetime))
 
                 user_id = cursor.lastrowid
 
@@ -92,9 +92,6 @@ def insert_appointment(dbConnection, appointment_info):
             #patient_id = select_queries.get_patient_id_by_user(dbConnection, appointment_info['user_id'])
 
             with dbConnection.cursor() as cursor:
-                
-
-
                 available_doctors_query = """
                 SELECT doctor_id FROM doctor WHERE doctor_id NOT IN (
                     SELECT doctor_id_fk 
@@ -187,8 +184,6 @@ billing_info:
 def insert_billing(dbConnection = None, billing_info = None):
     if dbConnection:
         try:
-            
-
             with dbConnection.cursor() as cursor:
                 insert_query = """
                 INSERT INTO billing (appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
