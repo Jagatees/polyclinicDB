@@ -10,7 +10,7 @@ const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
   age: z.number().min(18, "You must be at least 18 years old"),
   gender: z.enum(['Male', 'Female', 'Other'], "Gender selection is required"),
-  phone: z.string().length(10, "Phone number must be exactly 10 digits"),
+  phone: z.string().length(8, "Phone number must be exactly 10 digits"),
   address: z.string().min(1, "Address is required"),
   email: z.string().email("Must be a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters long")
@@ -74,6 +74,9 @@ const Registration = () => {
           address: formData.address
         }
       };
+
+      console.log("user_info", user_info      )
+      console.log("role_info", role_info      )
 
       // Submit the data
       fetch('/api/register', {
