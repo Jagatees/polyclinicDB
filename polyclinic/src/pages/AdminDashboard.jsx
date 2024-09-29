@@ -49,12 +49,12 @@ const AdminDashboard = () => {
       };
   
       const role_info = {
-          first_name: '',
-          last_name: '',
-          age: '',
-          gender: '',
+          first_name: 'qwe',
+          last_name: 'test',
+          age: '13',
+          gender: 'Male',
           phone_number: '00000000',
-          address: ''
+          address: 'jurgon east'
       };
 
       // Submit the data
