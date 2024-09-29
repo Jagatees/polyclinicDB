@@ -51,7 +51,7 @@ def insert_user(dbConnection, user_info, role_info):
                     VALUES (%s, %s, %s, %s)
                     """
 
-                    cursor.execute(doc_insert_query, (user_id, role_info['doctor']['first_name'], role_info['doctor']['last_name'], role_info['doctor']['phone_number']))
+                    cursor.execute(doc_insert_query, (user_id, role_info['first_name'], role_info['last_name'], role_info['phone_number']))
 
                 elif user_info['role_id'] == 2: # patient role
 
@@ -63,7 +63,7 @@ def insert_user(dbConnection, user_info, role_info):
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                     """
 
-                    cursor.execute(pat_insert_query, (user_id, role_info['patient']['first_name'], role_info['patient']['last_name'], role_info['patient']['age'], role_info['patient']['gender'], role_info['patient']['phone_number'], role_info['patient']['address']))
+                    cursor.execute(pat_insert_query, (user_id, role_info['first_name'], role_info['last_name'], role_info['age'], role_info['gender'], role_info['phone_number'], role_info['address']))
 
                 connection.commit()
             
