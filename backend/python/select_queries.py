@@ -32,9 +32,16 @@ def get_user(dbConnection=None, email=None, password=None):
                 
                 # If no password is provided, just return the user information
                 return {"status": "success", "user": user}
-
+            
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
 
 
 def get_appointments_by_user(dbConnection=None, user_id=None, user_role=None):
@@ -70,8 +77,16 @@ def get_appointments_by_user(dbConnection=None, user_id=None, user_role=None):
                     if isinstance(value, timedelta):
                         appointment[key] = str(value)  # Convert timedelta to string
             return appointments
+        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
 
 
 def get_medical_conditions(dbConnection=None):
@@ -85,8 +100,16 @@ def get_medical_conditions(dbConnection=None):
                 cursor.execute(query)
                 medical_conditions = cursor.fetchall()
             return medical_conditions
+        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
 
 
 def get_billing_by_user(dbConnection=None, user_id=None):
@@ -120,9 +143,16 @@ def get_billing_by_user(dbConnection=None, user_id=None):
                 history_billing = [record for record in billing_records if record['billing_category'] == 'history']
                 
                 return {"status": "success", "current": current_billing, "history": history_billing}
-            
+        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
 
 def get_medication_by_user(dbConnection=None, user_id=None):
     if dbConnection:
@@ -147,9 +177,16 @@ def get_medication_by_user(dbConnection=None, user_id=None):
                 medications = cursor.fetchall()
                 
                 return {"status": "success", "medications": medications}
-            
+        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
 
 def get_appointments_by_doctor(dbConnection=None, doctor_id=None):
     if dbConnection:
@@ -184,9 +221,15 @@ def get_appointments_by_doctor(dbConnection=None, doctor_id=None):
                             appointment[key] = str(value)  # Convert timedelta to string
                 return {"status": "success", "appointments": appointments}
             
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
-    return 0
+    else:
+        return {"status": "error", "message": "No database connection provided"}
 
 
 def get_id_by_user(dbConnection=None, user_id=None, role=None):
@@ -240,11 +283,79 @@ def get_id_by_user(dbConnection=None, user_id=None, role=None):
                         return {"status": "success", "patient_id": patient_id}
                     else:
                         return {"status": "error", "message": "Patient not found"}
-                
-
+        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             return {"status": "error", "message": f"An error has occurred: {str(e)}"}
     else:
         return {"status": "error", "message": "No database connection provided"}
 
-        
+def get_user_details_by_id(dbConnection=None, user_id=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+
+                # select from user table first
+                query = """
+                SELECT u.user_id, u.username, u.email, u.create_at, r.role_id
+                FROM user u
+                JOIN role r ON u.role_id_fk = r.role_id
+                WHERE u.user_id = %s;
+                """
+                cursor.execute(query, (user_id,))
+                user_details = cursor.fetchone()
+                
+                if not user_details:
+                    return {"status": "error", "message": "User not found"}
+
+                # using role id from user query
+                role_id = user_details['role_id']
+
+                # retrieve respective table details
+                if role_id == 1: # 1 is doctor role
+                    doctor_query = """
+                    SELECT d.first_name, d.last_name, d.phone_number
+                    FROM doctor d
+                    WHERE d.user_id_fk = %s;
+                    """
+                    cursor.execute(doctor_query, (user_id,))
+                    doctor_details = cursor.fetchone()
+                    
+                    if doctor_details:
+                        user_details.update(doctor_details)
+                    else:
+                        return {"status": "error", "message": "Doctor details not found"}
+
+                elif role_id == 2: # 2 is patient role
+                    patient_query = """
+                    SELECT p.first_name, p.last_name, p.age, p.gender, p.phone_number, p.address
+                    FROM patient p
+                    WHERE p.user_id_fk = %s;
+                    """
+                    cursor.execute(patient_query, (user_id,))
+                    patient_details = cursor.fetchone()
+                    
+                    if patient_details:
+                        user_details.update(patient_details)
+                    else:
+                        return {"status": "error", "message": "Patient details not found"}
+                else:
+                    return {"status": "error", "message": "Role not recognized"}
+                
+                # success
+                return {"status": "success", "user_details": user_details}
+            
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
+
