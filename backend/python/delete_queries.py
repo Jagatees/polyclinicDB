@@ -1,6 +1,6 @@
 from db_connection import get_db_connection, close_db_connection
 
-def delete_user(dbConnection, user_id, role_id):
+def delete_user(dbConnection, user_id):
     if dbConnection: 
         try:
             connection = dbConnection
@@ -8,13 +8,15 @@ def delete_user(dbConnection, user_id, role_id):
             with connection.cursor() as cursor:
                 # Check if user exists
                 check_user_query = """
-                SELECT user_id FROM user WHERE user_id = %s
+                SELECT user_id, role_id_fk FROM user WHERE user_id = %s
                 """
                 cursor.execute(check_user_query, (user_id))
                 existing_user = cursor.fetchone()
 
                 if not existing_user:
                     return {"status": "error", "message": "User does not exist."}
+
+                role_id = existing_user['role_id_fk']
 
                 # Delete from role-specific table first
                 if role_id == 1:  # doctor role
