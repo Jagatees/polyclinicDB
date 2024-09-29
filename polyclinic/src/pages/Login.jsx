@@ -1,19 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import image from '../assets/images.jpg';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import image from "../assets/images.jpg";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogIn = (event) => {
-    event.preventDefault(); 
-    navigate('/home'); 
+    event.preventDefault();
+    fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "emily.clark@example.com",
+        password: "123",
+      }),
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Login successful:", data);
+      if (data) {
+
+        localStorage.setItem("patient_id", data.message.user.patient_id);
+        localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
+        localStorage.setItem("user_id", data.message.user.user_id);
+      
+        switch (data.message.user.role_id_fk) {
+          case 1:
+            navigate("/doctordashboard");
+            break;
+          case 2:
+            navigate("/userdashboard");
+            break;
+          case 3:
+            navigate("/admindashboard");
+            break;
+          default:
+            navigate("/home");
+            break;
+        }
+      
+      }
+    })
+    .catch((error) => {
+      console.error("Login failed:", error);
+    });
   };
-  
-  // Commnet 
-  // i will recieve the paitente ID or Doc ID to store into session
+
 
   return (
     <div className="h-screen w-screen flex">
@@ -21,10 +62,10 @@ const Login = () => {
         className="w-1/2 flex flex-col justify-between p-8 text-white"
         style={{
           backgroundImage: `url(${image})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundBlendMode: 'multiply',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundBlendMode: "multiply",
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
         }}
       >
         <h1 className="text-4xl font-bold mb-8">Polyclinic Inc</h1>
@@ -49,7 +90,10 @@ const Login = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm text-gray-400 mb-2" htmlFor="password">
+            <label
+              className="block text-sm text-gray-400 mb-2"
+              htmlFor="password"
+            >
               Password
             </label>
             <input
@@ -62,20 +106,20 @@ const Login = () => {
             />
           </div>
           <div className="mb-6">
-              <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
-                Sign In
-              </button>
-            </div>
+            <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
+              Sign In
+            </button>
+          </div>
           <div className="mb-6 text-center text-gray-400">OR</div>
 
-           {/* Go to Registration Button */}
-           <div>
-              <Link to="/registration">
-                <button className="w-full px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">
-                  Go to Registration
-                </button>
-              </Link>
-            </div>
+          {/* Go to Registration Button */}
+          <div>
+            <Link to="/registration">
+              <button className="w-full px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">
+                Go to Registration
+              </button>
+            </Link>
+          </div>
           <div className="mt-6 text-sm text-center text-gray-500">
             By clicking Sign In, you agree to our{" "}
             <a href="#" className="text-indigo-500 hover:underline">
@@ -84,7 +128,8 @@ const Login = () => {
             and{" "}
             <a href="#" className="text-indigo-500 hover:underline">
               Privacy Policy
-            </a>.
+            </a>
+            .
           </div>
         </form>
       </div>
