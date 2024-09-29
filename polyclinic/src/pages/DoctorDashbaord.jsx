@@ -310,7 +310,7 @@ const DoctorDashboard = () => {
           >
             Appointments
           </a>
-          <a
+          {/* <a
             href="#"
             className={`px-4 py-2 hover:bg-gray-800 rounded-md ${
               activePage === "view_medication" ? "bg-gray-800" : ""
@@ -318,7 +318,7 @@ const DoctorDashboard = () => {
             onClick={() => setActivePage("view_medication")}
           >
             View Medications
-          </a>
+          </a> */}
         </nav>
         {/* Sidebar Footer */}
         <div className="mt-auto p-4">
