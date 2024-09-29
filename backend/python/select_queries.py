@@ -294,7 +294,7 @@ def get_id_by_user(dbConnection=None, user_id=None, role=None):
     else:
         return {"status": "error", "message": "No database connection provided"}
 
-def get_user_details_by_id(dbConnection=None, user_id=None):
+def get_all_users_with_details(dbConnection=None):
     if dbConnection:
         try:
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -303,51 +303,56 @@ def get_user_details_by_id(dbConnection=None, user_id=None):
                 query = """
                 SELECT u.user_id, u.username, u.email, u.create_at, r.role_id
                 FROM user u
-                JOIN role r ON u.role_id_fk = r.role_id
-                WHERE u.user_id = %s;
+                JOIN role r ON u.role_id_fk = r.role_id;
                 """
-                cursor.execute(query, (user_id,))
-                user_details = cursor.fetchone()
+                cursor.execute(query)
+                users = cursor.fetchall()
                 
-                if not user_details:
-                    return {"status": "error", "message": "User not found"}
+                if not users:
+                    return {"status": "error", "message": "No users found"}
 
                 # using role id from user query
-                role_id = user_details['role_id']
+                all_users_details = []
 
-                # retrieve respective table details
-                if role_id == 1: # 1 is doctor role
-                    doctor_query = """
-                    SELECT d.first_name, d.last_name, d.phone_number
-                    FROM doctor d
-                    WHERE d.user_id_fk = %s;
-                    """
-                    cursor.execute(doctor_query, (user_id,))
-                    doctor_details = cursor.fetchone()
-                    
-                    if doctor_details:
-                        user_details.update(doctor_details)
-                    else:
-                        return {"status": "error", "message": "Doctor details not found"}
+                for user in users:
+                    user_details = dict(user) 
 
-                elif role_id == 2: # 2 is patient role
-                    patient_query = """
-                    SELECT p.first_name, p.last_name, p.age, p.gender, p.phone_number, p.address
-                    FROM patient p
-                    WHERE p.user_id_fk = %s;
-                    """
-                    cursor.execute(patient_query, (user_id,))
-                    patient_details = cursor.fetchone()
+                    role_id = user['role_id']
+
+                    if role_id == 1:  # 1 id doctor role
+                        doctor_query = """
+                        SELECT d.first_name, d.last_name, d.phone_number
+                        FROM doctor d
+                        WHERE d.user_id_fk = %s;
+                        """
+                        cursor.execute(doctor_query, (user['user_id'],))
+                        doctor_details = cursor.fetchone()
+                        
+                        if doctor_details:
+                            user_details.update(doctor_details)
+                        else:
+                            user_details.update({"doctor_details": "Doctor details not found"})
+
+                    elif role_id == 2:  # 2 is patient role
+                        patient_query = """
+                        SELECT p.first_name, p.last_name, p.age, p.gender, p.phone_number, p.address
+                        FROM patient p
+                        WHERE p.user_id_fk = %s;
+                        """
+                        cursor.execute(patient_query, (user['user_id'],))
+                        patient_details = cursor.fetchone()
+                        
+                        if patient_details:
+                            user_details.update(patient_details)
+                        else:
+                            user_details.update({"patient_details": "Patient details not found"})
                     
-                    if patient_details:
-                        user_details.update(patient_details)
                     else:
-                        return {"status": "error", "message": "Patient details not found"}
-                else:
-                    return {"status": "error", "message": "Role not recognized"}
-                
-                # success
-                return {"status": "success", "user_details": user_details}
+                        user_details.update({"role": "Role not recognized"})
+
+                    all_users_details.append(user_details)
+
+                return {"status": "success", "users": all_users_details}
             
         # Error Handling
         except KeyError as e:
