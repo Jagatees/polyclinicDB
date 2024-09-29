@@ -23,6 +23,15 @@ def insert_user(dbConnection, user_info, role_info):
             connection = dbConnection['connection'] 
 
             with connection.cursor() as cursor:
+                check_user_query = """
+                SELECT user_id FROM user WHERE username = %s OR email = %s
+                """
+                cursor.execute(check_user_query, (user_info['username'], user_info['email']))
+                existing_user = cursor.fetchone()
+                
+                if existing_user:
+                    return {"status": "error", "message": "User already exists with this username or email."}
+
                 insert_query = """
                 INSERT INTO user (role_id_fk, username, password_hash, email, create_at)
                 VALUES (%s, %s, %s, %s, %s)
@@ -72,10 +81,6 @@ appointment_info:
 - date YYYY-MM-DD
 - time
 - type
-
-
-
-
 """
 def insert_appointment(dbConnection, appointment_info):
     print (appointment_info)
@@ -146,9 +151,6 @@ def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
     if dbConnection:
         connection = dbConnection
         try:
-        
-
-
             with connection.cursor() as cursor:
                 insert_query = """
                 INSERT INTO diagnosis (patient_id_fk, condition_id_fk, doctor_id_fk, diagnosis_date, severity)
@@ -183,7 +185,7 @@ billing_info:
 - payment_method
 """
 def insert_billing(dbConnection = None, billing_info = None):
-   if dbConnection:
+    if dbConnection:
         try:
             
 
