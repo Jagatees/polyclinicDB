@@ -10,7 +10,7 @@ def delete_user(dbConnection, user_id, role_id):
                 check_user_query = """
                 SELECT user_id FROM user WHERE user_id = %s
                 """
-                cursor.execute(check_user_query, (user_id,))
+                cursor.execute(check_user_query, (user_id))
                 existing_user = cursor.fetchone()
 
                 if not existing_user:
@@ -21,19 +21,19 @@ def delete_user(dbConnection, user_id, role_id):
                     doc_delete_query = """
                     DELETE FROM doctor WHERE user_id_fk = %s
                     """
-                    cursor.execute(doc_delete_query, (user_id,))
+                    cursor.execute(doc_delete_query, (user_id))
                 
                 elif role_id == 2:  # patient role
                     pat_delete_query = """
                     DELETE FROM patient WHERE user_id_fk = %s
                     """
-                    cursor.execute(pat_delete_query, (user_id,))
+                    cursor.execute(pat_delete_query, (user_id))
 
                 # Delete from user table
                 user_delete_query = """
                 DELETE FROM user WHERE user_id = %s
                 """
-                cursor.execute(user_delete_query, (user_id,))
+                cursor.execute(user_delete_query, (user_id))
 
                 # Commit the changes to the database
                 connection.commit()
