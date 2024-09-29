@@ -106,17 +106,16 @@ def register():
 '''
 {
   "user_id": 3,
-  "role_id": 96
   }
 '''
-@app.route('/delete', methods=['POST']) 
+
+@app.route('/delete_user', methods=['POST']) 
 def deleteUser():
     dbConnection = g.dbConnection 
     if request.method == "POST": 
         data = request.get_json() 
         user_id = data['user_id'] 
-        role_id = data['role_id'] 
-        res = delete_queries.delete_user(dbConnection, user_id, role_id) 
+        res = delete_queries.delete_user(dbConnection, user_id) 
         return jsonify({"message": res}) 
     
 #!===============================================================================
@@ -262,4 +261,6 @@ def getBilling(user_id):
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        get_db_connection()
     app.run(debug=True)
