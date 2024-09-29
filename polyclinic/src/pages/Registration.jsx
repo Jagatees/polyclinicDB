@@ -49,11 +49,9 @@ const Registration = () => {
   // Handle form submission
   const handleRegistration = async (event) => {
     event.preventDefault();
-    try {
-      const result = await formSchema.parseAsync(formData);
-  
+    try {  
       const user_info = {
-        role_id: 1, 
+        role_id: 2, 
         username: formData.username,
         password_hash: formData.password, 
         email: formData.email,
@@ -82,17 +80,68 @@ const Registration = () => {
           return response.json();
         })
         .then((data) => {
-          console.log('Registration successful:', data);
-          navigate('/userdashboard'); // Navigate to the home page on success
+          console.log('Registration successful:', data.message.status);
+          if (data.message.status === 'success') {
+            handleLogIn(formData.email, formData.password)
+          } else if (data.message.message === 'User already exists with this username or email.') {
+            alert("account already registeration go to login page")
+          }
         })
         .catch((error) => {
           console.error('Registration failed:', error);
-          // You can handle errors specific to your fields if needed
         });
     } catch (error) {
       setErrors(error.flatten().fieldErrors);
       console.error('Validation failed:', error);
     }
+  };
+
+
+  const handleLogIn = (email, password) => {
+    fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password
+      }),
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Login successful:", data);
+      if (data) {
+
+        localStorage.setItem("patient_id", data.message.user.patient_id);
+        localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
+        localStorage.setItem("user_id", data.message.user.user_id);
+      
+        switch (data.message.user.role_id_fk) {
+          case 1:
+            navigate("/doctordashboard");
+            break;
+          case 2:
+            navigate("/userdashboard");
+            break;
+          case 3:
+            navigate("/admindashboard");
+            break;
+          default:
+            navigate("/home");
+            break;
+        }
+      
+      }
+    })
+    .catch((error) => {
+      console.error("Login failed:", error);
+    });
   };
   
 
