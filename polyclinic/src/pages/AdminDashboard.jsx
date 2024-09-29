@@ -42,7 +42,7 @@ const AdminDashboard = () => {
     try {  
       // Prepare user_info using values from newUser
       const user_info = {
-        role_id: newUser.role, 
+        role_id: Number(newUser.role), 
         username: newUser.username,
         password_hash: newUser.password, 
         email: newUser.email,
@@ -51,11 +51,12 @@ const AdminDashboard = () => {
       const role_info = {
           first_name: 'qwe',
           last_name: 'test',
-          age: '13',
+          age: 12,
           gender: 'Male',
-          phone_number: '00000000',
+          phone_number: '0101000',
           address: 'jurgon east'
       };
+      
 
       // Submit the data
       fetch('/api/register', {

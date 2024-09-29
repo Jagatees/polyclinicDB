@@ -42,6 +42,7 @@ def insert_user(dbConnection, user_info, role_info):
 
                 user_id = cursor.lastrowid
                 print (user_id) 
+                print (user_info['role_id']) 
                 print ("inserted role , now inserting the patient table")
 
 
