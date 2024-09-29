@@ -69,14 +69,34 @@ def login():
             res['user'][f'{role}_id'] = roleRES[f"{role}_id"] 
 
         return jsonify({"message": res})
+    
+'''
+{
+  "user_info" : {
+    "role_id": 2,
+    "username": "johndoe",
+    "password_hash": "123",
+    "email": "baba@gmail.com"
+  }
+    ,
+	"role_info" : {
+      "first_name": "John",
+      "last_name": "Doe",
+      "age": 23,
+      "gender": "male",
+      "phone_number": "89482392",
+      "address": "123, Ang Mo Kio, Lagos"
+    }
+}
+'''
 
 @app.route('/register', methods=['POST', 'GET']) 
 def register():
     dbConnection = g.dbConnection 
     if request.method == "POST": 
         data = request.get_json() 
-        userInfo = data['userInfo'] 
-        roleInfo = data['roleInfo']
+        userInfo = data['user_info'] 
+        roleInfo = data['role_info']
         res = insert_queries.insert_user(dbConnection, userInfo, roleInfo) 
         print(res)
         return jsonify({"message": res})
@@ -201,8 +221,6 @@ POST BILLING
                     "payment_method":"cash"}
 }
 '''
-
-
 @app.route('/billing', methods=['POST'])
 def billing():
     dbConnection = g.dbConnection

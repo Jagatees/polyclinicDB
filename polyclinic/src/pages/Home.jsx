@@ -13,35 +13,6 @@ const Home = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {/* Card 1 */}
-        <Link
-          to="/appointments"
-          className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition"
-        >
-          <img
-            src="https://picsum.photos/200/300" // Placeholder image URL
-            alt="Vaccination"
-            className="w-full h-32 object-cover rounded-lg mb-4"
-          />
-          <h2 className="text-xl font-semibold mb-2">Book an Appointments</h2>
-          <p className="text-gray-600">Able to book appoiments with doctor</p>
-        </Link>
-
-        <Link
-          to="/bill"
-          className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition"
-        >
-          <img
-            src="https://picsum.photos/200/300" // Placeholder image URL
-            alt="Child Vaccination"
-            className="w-full h-32 object-cover rounded-lg mb-4"
-          />
-          <h2 className="text-xl font-semibold mb-2">View Bills</h2>
-          <p className="text-gray-600">
-            Get the vaccinations your child needs, free of charge
-          </p>
-        </Link>
-
         <Link
           to="/doctordashbaord"
           className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition"

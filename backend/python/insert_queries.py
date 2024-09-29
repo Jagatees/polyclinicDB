@@ -14,13 +14,13 @@ import select_queries
         - doctor: {'first_name', 'last_name', 'phone_number'}
         - patient: {'first_name', 'last_name', 'age', 'gender', 'phone_number', 'address'}
 """
+
+
 def insert_user(dbConnection, user_info, role_info):
     if dbConnection: 
         
         try:
-            # connection, tunnel = get_db_connection()
-            
-            connection = dbConnection['connection'] 
+            connection = dbConnection
 
             with connection.cursor() as cursor:
                 check_user_query = """
@@ -41,6 +41,9 @@ def insert_user(dbConnection, user_info, role_info):
                 cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], current_datetime))
 
                 user_id = cursor.lastrowid
+                print (user_id) 
+                print ("inserted role , now inserting the patient table")
+
 
                 if user_info['role_id'] == 1: # doctor role
                     doc_insert_query = """
@@ -51,6 +54,10 @@ def insert_user(dbConnection, user_info, role_info):
                     cursor.execute(doc_insert_query, (user_id, role_info['first_name'], role_info['last_name'], role_info['phone_number']))
 
                 elif user_info['role_id'] == 2: # patient role
+
+
+                    print ("inserting patient table") 
+                    print (role_info) 
                     pat_insert_query = """
                     INSERT INTO patient (user_id_fk, first_name, last_name, age, gender, phone_number, address)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
