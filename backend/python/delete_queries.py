@@ -1,36 +1,48 @@
 from db_connection import get_db_connection, close_db_connection
 
-def delete_user(user_id, role_id):
-    connection = None
-    try:
-        connection, tunnel = get_db_connection()
+def delete_user(dbConnection, user_id, role_id):
+    if dbConnection: 
+        try:
+            connection = dbConnection
 
-        with connection.cursor() as cursor:
-            if role_id == 1:  # doctor role
-                delete_doc_query = """
-                DELETE FROM doctor WHERE user_id_fk = %s
+            with connection.cursor() as cursor:
+                # Check if user exists
+                check_user_query = """
+                SELECT user_id FROM user WHERE user_id = %s
                 """
-                cursor.execute(delete_doc_query, (user_id,))
+                cursor.execute(check_user_query, (user_id,))
+                existing_user = cursor.fetchone()
 
-            elif role_id == 2:  # patient role
-                delete_pat_query = """
-                DELETE FROM patient WHERE user_id_fk = %s
+                if not existing_user:
+                    return {"status": "error", "message": "User does not exist."}
+
+                # Delete from role-specific table first
+                if role_id == 1:  # doctor role
+                    doc_delete_query = """
+                    DELETE FROM doctor WHERE user_id_fk = %s
+                    """
+                    cursor.execute(doc_delete_query, (user_id,))
+                
+                elif role_id == 2:  # patient role
+                    pat_delete_query = """
+                    DELETE FROM patient WHERE user_id_fk = %s
+                    """
+                    cursor.execute(pat_delete_query, (user_id,))
+
+                # Delete from user table
+                user_delete_query = """
+                DELETE FROM user WHERE user_id = %s
                 """
-                cursor.execute(delete_pat_query, (user_id,))
+                cursor.execute(user_delete_query, (user_id,))
 
-            delete_user_query = """
-            DELETE FROM user WHERE user_id = %s
-            """
-            cursor.execute(delete_user_query, (user_id,))
+                # Commit the changes to the database
+                connection.commit()
 
-            connection.commit()
+            return {"status": "success", "message": "User and related records deleted successfully."}
+        
+        except Exception as e:
+            # Rollback any changes if an error occurs
+            connection.rollback()
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-        return {"status": "success", "message": "User and related record deleted successfully."}
 
-    except Exception as e:
-        print(f"Status: error, Message: Error has occurred: {str(e)}")
-        # return {"status": "error", "message": f"Error has occurred: {str(e)}"}
-
-    finally:
-        if connection:
-            close_db_connection(connection, tunnel)

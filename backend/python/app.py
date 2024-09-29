@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, g
 import select_queries
 import insert_queries
 import db_connection
+import delete_queries
 
 app = Flask(__name__)
 
@@ -100,6 +101,23 @@ def register():
         res = insert_queries.insert_user(dbConnection, userInfo, roleInfo) 
         print(res)
         return jsonify({"message": res})
+    
+
+'''
+{
+  "user_id": 3,
+  "role_id": 96
+  }
+'''
+@app.route('/delete', methods=['POST']) 
+def deleteUser():
+    dbConnection = g.dbConnection 
+    if request.method == "POST": 
+        data = request.get_json() 
+        user_id = data['user_id'] 
+        role_id = data['role_id'] 
+        res = delete_queries.delete_user(dbConnection, user_id, role_id) 
+        return jsonify({"message": res}) 
     
 #!===============================================================================
 '''
