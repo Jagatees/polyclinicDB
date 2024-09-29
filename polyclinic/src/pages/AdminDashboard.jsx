@@ -10,6 +10,31 @@ const AdminDashboard = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUser, setNewUser] = useState({ firstName: '', role: '' });
 
+
+    event.preventDefault();
+    fetch("/api/get-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "emily.clark@example.com",
+        password: "123",
+      }),
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Login successful:", data);
+    })
+    .catch((error) => {
+      console.error("Login failed:", error);
+    });
+
   const handleDeleteUser = (userId) => {
     const updatedUsers = users.filter(user => user.id !== userId);
     setUsers(updatedUsers);
