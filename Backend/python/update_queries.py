@@ -1,5 +1,14 @@
 from datetime import datetime
 
+"""
+user_info:
+- username
+- email
+- password
+- last_name
+- phone_number
+- address
+"""
 def update_user_info(dbConnection, user_id, user_info):
     if dbConnection:
         connection = dbConnection
@@ -14,10 +23,10 @@ def update_user_info(dbConnection, user_id, user_info):
                 # update user infos
                 update_user_query = """
                 UPDATE user
-                SET username = %s, email = %s
+                SET username = %s, email = %s, password = %s
                 WHERE user_id = %s
                 """
-                cursor.execute(update_user_query, (user_info['username'], user_info['email'], user_id))
+                cursor.execute(update_user_query, (user_info['username'], user_info['email'], user_info['password'], user_id))
                 
                 if role_id == 1:  # 1 is for doctor
                     update_doctor_query = """
@@ -44,7 +53,12 @@ def update_user_info(dbConnection, user_id, user_info):
                 connection.rollback()
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
-
+"""
+appointment_info:
+- date
+- time
+- type
+"""
 def update_appointment(dbConnection, patient_id, appointment_info):
     if dbConnection:
         connection = dbConnection
