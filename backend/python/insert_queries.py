@@ -69,6 +69,11 @@ def insert_user(dbConnection, user_info, role_info):
             
             return {"status": "success", "message": "User and related record inserted successfully."}
         
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             # rollback any changes made to database if any error occurs
             connection.rollback()
@@ -128,7 +133,12 @@ def insert_appointment(dbConnection, appointment_info):
                 dbConnection.commit()
 
             return {"status": "success", "message": f"Appointment added successfully with doctor ID: {assigned_doctor}"}
-    
+            
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             if dbConnection:
                 dbConnection.rollback()
@@ -173,7 +183,12 @@ def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
                 connection.commit()
             
             return {"status": "success", "message": "Diagnosis added successfully."}
-
+        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             if connection:
                 connection.rollback()
@@ -203,6 +218,11 @@ def insert_billing(dbConnection = None, billing_info = None):
 
             return {"status": "success", "message": "Billing added successfully."}
         
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             if dbConnection:
                 dbConnection.rollback()
