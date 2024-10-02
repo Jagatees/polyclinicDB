@@ -32,10 +32,11 @@ const Login = () => {
         localStorage.setItem("patient_id", data.message.user.patient_id);
         localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
         localStorage.setItem("user_id", data.message.user.user_id);
-      
+        localStorage.setItem("doctor_id", data.message.user.doctor_id);
+
         switch (data.message.user.role_id_fk) {
           case 1:
-            navigate("/doctordashboard");
+            navigate("/DoctorDashbaord");
             break;
           case 2:
             navigate("/userdashboard");

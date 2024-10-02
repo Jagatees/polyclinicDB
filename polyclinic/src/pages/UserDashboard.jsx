@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("appointments");
@@ -10,6 +11,7 @@ const UserDashboard = () => {
   const [userId, setUserId] = useState(null);
   const [patientId, setPatientId] = useState(null);
   const [role_id_fk_ID, setrole_id_fk] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
@@ -152,28 +154,7 @@ const UserDashboard = () => {
 
     return (
       <div>
-        <div className="flex space-x-4 mb-4">
-          <button
-            onClick={() => setBillingTab("current")}
-            className={`px-4 py-2 rounded ${
-              billingTab === "current"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300"
-            }`}
-          >
-            Current
-          </button>
-          <button
-            onClick={() => setBillingTab("history")}
-            className={`px-4 py-2 rounded ${
-              billingTab === "history"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300"
-            }`}
-          >
-            History
-          </button>
-        </div>
+        <div className="flex space-x-4 mb-4"></div>
         {filteredBilling.map((item) => (
           <div
             key={item.id}
@@ -211,9 +192,7 @@ const UserDashboard = () => {
                   <th className="border px-4 py-2 text-left">Time</th>
                   <th className="border px-4 py-2 text-left">doctor_id_fk</th>
                   <th className="border px-4 py-2 text-left">patient_id_fk</th>
-                  <th className="border px-4 py-2 text-left">
-                  status
-                  </th>
+                  <th className="border px-4 py-2 text-left">status</th>
                   <th className="border px-4 py-2 text-left">type</th>
                 </tr>
               </thead>
@@ -294,7 +273,11 @@ const UserDashboard = () => {
           <button
             className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
             onClick={() => {
-              alert("Logging out...");
+              // Perform any logout logic
+              localStorage.clear();
+
+              // Redirect to the login page
+              navigate("/login");
             }}
           >
             Log Out
@@ -339,12 +322,12 @@ const UserDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                {appointments.map((appointment) => (
-                  <tr key={appointment.appointment_id}>
-                    <td className="border px-4 py-2">{appointment.date}</td>
-                    <td className="border px-4 py-2">{appointment.time}</td>
-                  </tr>
-                ))}
+                  {appointments.map((appointment) => (
+                    <tr key={appointment.appointment_id}>
+                      <td className="border px-4 py-2">{appointment.date}</td>
+                      <td className="border px-4 py-2">{appointment.time}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
