@@ -210,14 +210,23 @@ def Diagnosis():
         return jsonify({"message": res})
 
 
+@app.route('/medication', methods=['GET'])
+def getMedication():
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        res = select_queries.get_medications(dbConnection)
+        print(res)
+        return jsonify({"message": res})
+
 @app.route('/medication/<user_id>', methods=['GET'])
-def getMedication(user_id):
+def getMedicationByUser(user_id):
     dbConnection = g.dbConnection
     if request.method == 'GET':
         # Assuming `get_medication_by_user` takes a db connection and user_id
         res = select_queries.get_medication_by_user(dbConnection, user_id)
         print(res)
         return jsonify({"message": res})
+    
     
 #! function not implemented  ?
 @app.route('/diagnosis/<user_id>', methods=['GET'])
@@ -279,6 +288,8 @@ def getUsers(role_id):
         
 #!===============================================================================
 
+
+#!===============================================================================
 if __name__ == '__main__':
     with app.app_context():
         get_db_connection()
