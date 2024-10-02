@@ -111,6 +111,28 @@ def get_medical_conditions(dbConnection=None):
     else:
         return {"status": "error", "message": "No database connection provided"}
 
+def get_medications(dbConnection=None):
+    if dbConnection:
+        try:
+            query = """
+            SELECT * FROM medication
+            """
+
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(query)
+                medications = cursor.fetchall()
+            return medications
+        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
+    
 
 def get_billing_by_user(dbConnection=None, user_id=None):
     if dbConnection:
