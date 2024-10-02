@@ -6,64 +6,28 @@ const UserDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
-   // State to hold localStorage data
-   const [userId, setUserId] = useState(null);
-   const [patientId, setPatientId] = useState(null);
+  // State to hold localStorage data
+  const [userId, setUserId] = useState(null);
+  const [patientId, setPatientId] = useState(null);
+  const [role_id_fk_ID, setrole_id_fk] = useState(null);
 
-
-   
-   useEffect(() => {
+  useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
     const localUserId = localStorage.getItem("user_id");
     const localPatientId = localStorage.getItem("patient_id");
+    const role_id_fk = localStorage.getItem("role_id_fk");
 
     setUserId(localUserId);
     setPatientId(localPatientId);
+    setrole_id_fk(role_id_fk);
   }, []);
-  
-
 
   // New state variables for form inputs
   const [description, setDescription] = useState("");
   const [visitType, setVisitType] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
   const [appointmentTime, setAppointmentTime] = useState("");
-  const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      doctorName: "Dr. Smith",
-      date: "2024-09-30",
-      time: "10:00 AM",
-      status: "Pending",
-      diagnosis: "Under review",
-      consultationType: "General Checkup",
-      medications: [ // Add medications as an array of objects
-        {
-          name: "N/A",
-          dosage: "N/A",
-          frequency: "N/A"
-        }
-      ],
-    },
-    {
-      id: 2,
-      doctorName: "Dr. Doe",
-      date: "2024-10-01",
-      time: "02:00 PM",
-      status: "Confirmed",
-      diagnosis: "Flu",
-      consultationType: "Specialist Consultation",
-      medications: [
-        {
-          name: "Paracetamol",
-          dosage: "500mg",
-          frequency: "Twice a day"
-        }
-      ],
-    },
-  ]);
-  
-  
+  const [appointments, setAppointments] = useState([]);
 
   const [billingData, setBillingData] = useState([
     {
@@ -89,14 +53,19 @@ const UserDashboard = () => {
     },
   ]);
 
-
-
   const handleBookAppointment = (event) => {
     event.preventDefault();
-    
+
     // Use the state values from the form
-    console.log("Booking details:", visitType, appointmentDate, appointmentTime, userId , patientId);
-  
+    console.log(
+      "Booking details:",
+      visitType,
+      appointmentDate,
+      appointmentTime,
+      userId,
+      patientId
+    );
+
     fetch("/api/appointments", {
       method: "POST",
       headers: {
@@ -112,22 +81,51 @@ const UserDashboard = () => {
         },
       }),
     })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Booking failed");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Booking successful:", data);
-      // Close booking form on successful booking
-      setShowBookingForm(false);
-    })
-    .catch((error) => {
-      console.error("Booking failed:", error);
-    });
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Booking failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Booking successful:", data);
+        setShowBookingForm(false);
+      })
+      .catch((error) => {
+        console.error("Booking failed:", error);
+      });
   };
-  
+
+  const handleGetAppointments = () => {
+    // Define the API endpoint with user_id and role_id
+    const apiUrl = `/api/appointments/${patientId}/${role_id_fk_ID}`;
+
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching appointments failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Appointments fetched:", data.message);
+        setAppointments(data.message);
+      })
+      .catch((error) => {
+        console.error("Fetching appointments failed:", error);
+      });
+  };
+  useEffect(() => {
+    console.log("patientId:", patientId, "role_id_fk_ID:", role_id_fk_ID);
+    if (patientId && role_id_fk_ID) {
+      handleGetAppointments();
+    }
+  }, [patientId, role_id_fk_ID]); // Add dependencies to ensure re-render
 
   const openModal = (appointment) => {
     setSelectedAppointment(appointment);
@@ -201,51 +199,58 @@ const UserDashboard = () => {
   const renderContent = () => {
     switch (activePage) {
       case "appointments":
-          return (
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                Appointments
-              </h2>
-              <table className="min-w-full bg-white shadow-md rounded-lg">
-                <thead>
-                  <tr>
-                    <th className="border px-4 py-2 text-left">Date</th>
-                    <th className="border px-4 py-2 text-left">Time</th>
-                    <th className="border px-4 py-2 text-left">Doctor Name</th>
-                    <th className="border px-4 py-2 text-left">Status</th>
-                    <th className="border px-4 py-2 text-left">Type of Consultation</th>
-                    <th className="border px-4 py-2 text-left">Actions</th>
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              Appointments
+            </h2>
+            <table className="min-w-full bg-white shadow-md rounded-lg">
+              <thead>
+                <tr>
+                  <th className="border px-4 py-2 text-left">Date</th>
+                  <th className="border px-4 py-2 text-left">Time</th>
+                  <th className="border px-4 py-2 text-left">doctor_id_fk</th>
+                  <th className="border px-4 py-2 text-left">patient_id_fk</th>
+                  <th className="border px-4 py-2 text-left">
+                  status
+                  </th>
+                  <th className="border px-4 py-2 text-left">type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.map((appointment) => (
+                  <tr key={appointment.appointment_id}>
+                    <td className="border px-4 py-2">{appointment.date}</td>
+                    <td className="border px-4 py-2">{appointment.time}</td>
+                    <td className="border px-4 py-2">
+                      {appointment.doctor_id_fk}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {appointment.patient_id_fk}
+                    </td>
+                    <td className="border px-4 py-2">{appointment.status}</td>
+                    <td className="border px-4 py-2">{appointment.type}</td>
+                    <td className="border px-4 py-2">
+                      {appointment.status === "pending" ? (
+                        <span className="text-yellow-600">
+                          Waiting for doctor to confirm
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => openModal(appointment)}
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                          View Details
+                        </button>
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {appointments.map((appointment) => (
-                    <tr key={appointment.id}>
-                      <td className="border px-4 py-2">{appointment.date}</td>
-                      <td className="border px-4 py-2">{appointment.time}</td>
-                      <td className="border px-4 py-2">{appointment.doctorName}</td>
-                      <td className="border px-4 py-2">{appointment.status}</td>
-                      <td className="border px-4 py-2">{appointment.consultationType}</td>
-                      <td className="border px-4 py-2">
-                        {appointment.status === "Pending" ? (
-                          <span className="text-yellow-600">
-                            Waiting for doctor to confirm
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => openModal(appointment)}
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                          >
-                            View Details
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-          
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+
       case "billing":
         return renderBillingContent();
       default:
@@ -320,48 +325,40 @@ const UserDashboard = () => {
 
       {/* Modal for Appointment Details */}
       {showModal && selectedAppointment && (
-  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-    <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-      <h2 className="text-xl font-bold mb-4">Appointment Details</h2>
-      <p><strong>Doctor:</strong> {selectedAppointment.doctorName}</p>
-      <p><strong>Date:</strong> {selectedAppointment.date}</p>
-      <p><strong>Time:</strong> {selectedAppointment.time}</p>
-      <p><strong>Status:</strong> {selectedAppointment.status}</p>
-      <p><strong>Diagnosis:</strong> {selectedAppointment.diagnosis}</p>
-      {/* Medications Table */}
-      <div className="mt-4">
-        <h3 className="text-lg font-bold mb-2">Medications</h3>
-        <table className="min-w-full bg-white border-collapse">
-          <thead>
-            <tr>
-              <th className="border px-4 py-2">Name</th>
-              <th className="border px-4 py-2">Dosage</th>
-              <th className="border px-4 py-2">Frequency</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedAppointment.medications.map((med, index) => (
-              <tr key={index}>
-                <td className="border px-4 py-2">{med.name}</td>
-                <td className="border px-4 py-2">{med.dosage}</td>
-                <td className="border px-4 py-2">{med.frequency}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={closeModal}
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Appointment Details</h2>
+            {/* Medications Table */}
+            <div className="mt-4">
+              <h3 className="text-lg font-bold mb-2">Medications</h3>
+              <table className="min-w-full bg-white border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border px-4 py-2">Name</th>
+                    <th className="border px-4 py-2">Dosage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {appointments.map((appointment) => (
+                  <tr key={appointment.appointment_id}>
+                    <td className="border px-4 py-2">{appointment.date}</td>
+                    <td className="border px-4 py-2">{appointment.time}</td>
+                  </tr>
+                ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeModal}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Booking Form Modal */}
       {showBookingForm && (
@@ -377,20 +374,26 @@ const UserDashboard = () => {
                 /> */}
               </div>
               <div className="mb-4">
-                <label className="block text-gray-800 text-sm font-bold mb-2">Type of Visit</label>
+                <label className="block text-gray-800 text-sm font-bold mb-2">
+                  Type of Visit
+                </label>
                 <select
                   className="w-full px-3 py-2 border rounded shadow bg-white text-black"
                   value={visitType}
                   onChange={(e) => setVisitType(e.target.value)}
                 >
                   <option value="">Select a visit type</option>
-                  <option value="Medical Consultation">Medical Consultation</option>
+                  <option value="Medical Consultation">
+                    Medical Consultation
+                  </option>
                   <option value="Checkup">Checkup</option>
                   <option value="Vaccination">Vaccination</option>
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-gray-800 text-sm font-bold mb-2">Select Date</label>
+                <label className="block text-gray-800 text-sm font-bold mb-2">
+                  Select Date
+                </label>
                 <input
                   type="date"
                   className="w-full px-3 py-2 border rounded shadow bg-white text-black"
@@ -399,7 +402,9 @@ const UserDashboard = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-800 text-sm font-bold mb-2">Select Time</label>
+                <label className="block text-gray-800 text-sm font-bold mb-2">
+                  Select Time
+                </label>
                 <input
                   type="time"
                   className="w-full px-3 py-2 border rounded shadow bg-white text-black"
