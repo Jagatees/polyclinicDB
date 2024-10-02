@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MultiSelect } from "react-multi-select-component";
+import { useNavigate } from "react-router-dom";
 
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState("get_users_by_doctor");
@@ -35,32 +36,11 @@ const DoctorDashboard = () => {
       price: 18,
     },
   ]);
-  const medicationOptions = medications.map(med => ({
+  const medicationOptions = medications.map((med) => ({
     label: `${med.name} - $${med.price}`,
-    value: med.name
+    value: med.name,
   }));
-  const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      appointmentId: "APPT001",
-      patientName: "John Doe",
-      doctorName: "Dr. Smith",
-      date: "2024-09-28",
-      time: "10:00 AM",
-      status: "Completed",
-      type: "Check-up",
-    },
-    {
-      id: 2,
-      appointmentId: "APPT002",
-      patientName: "Jane Smith",
-      doctorName: "Dr. Brown",
-      date: "2024-09-29",
-      time: "02:00 PM",
-      status: "Pending",
-      type: "Consultation",
-    },
-  ]);
+  const [appointments, setAppointments] = useState([]);
 
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -91,6 +71,60 @@ const DoctorDashboard = () => {
     { label: "Asthma", value: "Asthma" },
     { label: "Cholesterol", value: "Cholesterol" },
   ];
+  // State to hold localStorage data
+  const [userId, setUserId] = useState(null);
+  const [patientId, setPatientId] = useState(null);
+  const [role_id_fk_ID, setrole_id_fk] = useState(null);
+  const [doctor_id_ID, setdoctor_id] = useState(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Retrieve and set user_id and patient_id from local storage
+    const localUserId = localStorage.getItem("user_id");
+    const localPatientId = localStorage.getItem("patient_id");
+    const role_id_fk = localStorage.getItem("role_id_fk");
+    const doctor_id = localStorage.getItem("doctor_id");
+
+    setUserId(localUserId);
+    setPatientId(localPatientId);
+    setrole_id_fk(role_id_fk);
+    setdoctor_id(doctor_id);
+  }, []);
+
+  const handleGetAppointments = () => {
+    // Define the API endpoint with user_id and role_id
+    const apiUrl = `/api/appointments/${doctor_id_ID}/`;
+
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching appointments failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Appointments fetched:", data.message.appointments);
+
+        // Update appointments state with fetched data
+        setAppointments(data.message.appointments);
+      })
+      .catch((error) => {
+        console.error("Fetching appointments failed:", error);
+      });
+  };
+
+  useEffect(() => {
+    console.log("doctor_id_ID:", doctor_id_ID);
+    if (doctor_id_ID) {
+      handleGetAppointments();
+    }
+  }, [doctor_id_ID]); // Add dependencies to ensure re-render
 
   const handleRemoveMedication = (medId) => {
     setMedications((meds) => meds.filter((med) => med.id !== medId));
@@ -181,56 +215,42 @@ const DoctorDashboard = () => {
             <table className="mt-4 min-w-full bg-white shadow-md rounded-lg p-4">
               <thead>
                 <tr>
-                  <th className="border px-4 py-2 text-left">Appointment ID</th>
+                  <th className="border px-4 py-2 text-left">ID</th>
                   <th className="border px-4 py-2 text-left">Patient Name</th>
-                  <th className="border px-4 py-2 text-left">Doctor Name</th>
-                  <th className="border px-4 py-2 text-left">Date</th>
-                  <th className="border px-4 py-2 text-left">Time</th>
-                  <th className="border px-4 py-2 text-left">Status</th>
-                  <th className="border px-4 py-2 text-left">Type</th>
-                  <th className="border px-4 py-2 text-left">Actions</th>
+                  <th className="border px-4 py-2 text-left">age</th>
+                  <th className="border px-4 py-2 text-left">date</th>
+                  <th className="border px-4 py-2 text-left">time</th>
+                 
+                  <th className="border px-4 py-2 text-left">status</th>
+                  <th className="border px-4 py-2 text-left">type</th>
                 </tr>
               </thead>
               <tbody>
                 {appointments.map((appointment) => (
-                  <tr key={appointment.id}>
-                    <td className="border px-4 py-2">
-                      {appointment.appointmentId}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {appointment.patientName}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {appointment.doctorName}
-                    </td>
+                  <tr key={appointment.appointment_id}>
+                    <td className="border px-4 py-2">{appointment.appointment_id}</td>
+                    <td className="border px-4 py-2">{appointment.patient_first_name + " " +appointment.patient_last_name}</td>
+
+                    <td className="border px-4 py-2">{appointment.age}</td>
                     <td className="border px-4 py-2">{appointment.date}</td>
                     <td className="border px-4 py-2">{appointment.time}</td>
-                    <td className="border px-4 py-2">
-                      <span
-                        className={`font-bold ${
-                          appointment.status === "Pending"
-                            ? "text-orange-500"
-                            : "text-green-500"
-                        }`}
-                      >
-                        {appointment.status}
-                      </span>
-                    </td>
+                    <td className="border px-4 py-2">{appointment.status}</td>
                     <td className="border px-4 py-2">{appointment.type}</td>
                     <td className="border px-4 py-2">
-                      {appointment.status === "Completed" ? (
-                        <button
-                          onClick={() => handleViewAppointment(appointment)}
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                          View
-                        </button>
-                      ) : (
+                      {/* Conditional button based on status */}
+                      {appointment.status === "pending" ? (
                         <button
                           onClick={() => handleEditAppointment(appointment)}
                           className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
                         >
                           Edit
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleViewAppointment(appointment)}
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                          View
                         </button>
                       )}
                     </td>
@@ -260,28 +280,11 @@ const DoctorDashboard = () => {
                   <th className="border px-4 py-2 text-left">
                     Medication Name
                   </th>
-                  <th className="border px-4 py-2 text-left">Description</th>
-                  <th className="border px-4 py-2 text-left">Price ($)</th>
-                  <th className="border px-4 py-2 text-left">Action</th>
+                  <th className="border px-4 py-2 text-left">
+                    More Description
+                  </th>
                 </tr>
               </thead>
-              <tbody>
-                {medications.map((med) => (
-                  <tr key={med.id}>
-                    <td className="border px-4 py-2">{med.name}</td>
-                    <td className="border px-4 py-2">{med.description}</td>
-                    <td className="border px-4 py-2">{med.price}</td>
-                    <td className="border px-4 py-2">
-                      <button
-                        onClick={() => handleRemoveMedication(med.id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
             </table>
           </div>
         );
@@ -325,7 +328,11 @@ const DoctorDashboard = () => {
           <button
             className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
             onClick={() => {
-              alert("Logging out...");
+              // Perform any logout logic
+              localStorage.clear();
+
+              // Redirect to the login page
+              navigate("/login");
             }}
           >
             Log Out
@@ -450,17 +457,21 @@ const DoctorDashboard = () => {
                 </div>
 
                 <div className="mb-2">
-  <label className="block text-sm font-medium">Medication</label>
-  <MultiSelect
-    options={medicationOptions}
-    value={editFormData.medication}
-    onChange={(selectedOptions) => setEditFormData((prevData) => ({
-      ...prevData,
-      medication: selectedOptions
-    }))}
-    labelledBy="Select Medication"
-  />
-</div>
+                  <label className="block text-sm font-medium">
+                    Medication
+                  </label>
+                  <MultiSelect
+                    options={medicationOptions}
+                    value={editFormData.medication}
+                    onChange={(selectedOptions) =>
+                      setEditFormData((prevData) => ({
+                        ...prevData,
+                        medication: selectedOptions,
+                      }))
+                    }
+                    labelledBy="Select Medication"
+                  />
+                </div>
 
                 <div className="mb-2">
                   <label className="block text-sm font-medium">
