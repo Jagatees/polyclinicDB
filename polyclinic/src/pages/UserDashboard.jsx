@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("appointments");
@@ -6,7 +6,28 @@ const UserDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+   // State to hold localStorage data
+   const [userId, setUserId] = useState(null);
+   const [patientId, setPatientId] = useState(null);
 
+
+   
+   useEffect(() => {
+    // Retrieve and set user_id and patient_id from local storage
+    const localUserId = localStorage.getItem("user_id");
+    const localPatientId = localStorage.getItem("patient_id");
+
+    setUserId(localUserId);
+    setPatientId(localPatientId);
+  }, []);
+  
+
+
+  // New state variables for form inputs
+  const [description, setDescription] = useState("");
+  const [visitType, setVisitType] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState("");
+  const [appointmentTime, setAppointmentTime] = useState("");
   const [appointments, setAppointments] = useState([
     {
       id: 1,
@@ -67,6 +88,46 @@ const UserDashboard = () => {
       status: "history",
     },
   ]);
+
+
+
+  const handleBookAppointment = (event) => {
+    event.preventDefault();
+    
+    // Use the state values from the form
+    console.log("Booking details:", visitType, appointmentDate, appointmentTime, userId , patientId);
+  
+    fetch("/api/appointments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        appointment_info: {
+          date: appointmentDate,
+          time: appointmentTime,
+          type: visitType,
+          user_id: userId, // Use user ID from local storage
+          patient_id: patientId, // Use patient ID from local storage
+        },
+      }),
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Booking failed");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Booking successful:", data);
+      // Close booking form on successful booking
+      setShowBookingForm(false);
+    })
+    .catch((error) => {
+      console.error("Booking failed:", error);
+    });
+  };
+  
 
   const openModal = (appointment) => {
     setSelectedAppointment(appointment);
@@ -307,23 +368,25 @@ const UserDashboard = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">
             <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
-            <form>
+            <form onSubmit={handleBookAppointment}>
               <div className="mb-4">
-                <label className="block text-gray-800 text-sm font-bold mb-2">Describe Your Problem</label>
-                <textarea
+                {/* <label className="block text-gray-800 text-sm font-bold mb-2">Describe Your Problem</label> */}
+                {/* <textarea
                   placeholder="Brief description of your issue"
                   className="w-full px-3 py-2 border rounded shadow bg-white text-black"
-                />
+                /> */}
               </div>
               <div className="mb-4">
                 <label className="block text-gray-800 text-sm font-bold mb-2">Type of Visit</label>
-                <select className="w-full px-3 py-2 border rounded shadow bg-white text-black">
-                  <option>Select a visit type</option>
-                  <option>Medical Consulation</option>
-                  <option>Checkup</option>
-                  <option>Vaccination</option>
-
-                  {/* Add your options here */}
+                <select
+                  className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+                  value={visitType}
+                  onChange={(e) => setVisitType(e.target.value)}
+                >
+                  <option value="">Select a visit type</option>
+                  <option value="Medical Consultation">Medical Consultation</option>
+                  <option value="Checkup">Checkup</option>
+                  <option value="Vaccination">Vaccination</option>
                 </select>
               </div>
               <div className="mb-4">
@@ -331,6 +394,8 @@ const UserDashboard = () => {
                 <input
                   type="date"
                   className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+                  value={appointmentDate}
+                  onChange={(e) => setAppointmentDate(e.target.value)}
                 />
               </div>
               <div className="mb-4">
@@ -338,6 +403,8 @@ const UserDashboard = () => {
                 <input
                   type="time"
                   className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+                  value={appointmentTime}
+                  onChange={(e) => setAppointmentTime(e.target.value)}
                 />
               </div>
               <div className="flex justify-end">
