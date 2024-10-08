@@ -1,8 +1,21 @@
 from db_connection import get_db_connection, close_db_connection
 from datetime import datetime
 import random
-import select_queries
+import uuid
 
+
+def generate_unique_uuid4(cursor):
+    while True:
+      
+        new_uuid = str(uuid.uuid4())
+
+        check_uuid_query = "SELECT license_number FROM doctor WHERE license_number = %s"
+        cursor.execute(check_uuid_query, (new_uuid,))
+        existing_uuid = cursor.fetchone()
+
+        if not existing_uuid:
+            return new_uuid
+        
 """
     user_info (dict)
         - role_id
@@ -16,8 +29,6 @@ import select_queries
         - doctor: {'phone_number', 'speciality', 'license_number'}
         - patient: {'age', 'gender', 'phone_number', 'address'}
 """
-
-
 def insert_user(dbConnection, user_info, role_info):
     if dbConnection: 
         
@@ -49,12 +60,15 @@ def insert_user(dbConnection, user_info, role_info):
 
 
                 if user_info['role_id'] == 1: # doctor role
+
+                    license_number = generate_unique_uuid4(cursor)
+
                     doc_insert_query = """
                     INSERT INTO doctor (user_id_fk, phone_number, speciality, license_number)
                     VALUES (%s, %s, %s, %s)
                     """
 
-                    cursor.execute(doc_insert_query, (user_id, role_info['phone_number'], role_info['speciality'], role_info['license_number']))
+                    cursor.execute(doc_insert_query, (user_id, role_info['phone_number'], role_info['speciality'], license_number))
 
                 elif user_info['role_id'] == 2: # patient role
 
