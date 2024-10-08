@@ -8,6 +8,7 @@ def verify_password(plain_password, hashed_password):
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def get_user(dbConnection=None, email=None, password=None):
+    print ('in get_user')
     if dbConnection:
         try:
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:

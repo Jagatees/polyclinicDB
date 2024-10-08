@@ -116,6 +116,7 @@ appointment_info:
 - type
 """
 def insert_billing(dbConnection=None, billing_info=None):
+    print ('inside insert billing', flush=True)
     if dbConnection:
         try:
             with dbConnection.cursor() as cursor:
@@ -125,15 +126,17 @@ def insert_billing(dbConnection=None, billing_info=None):
                 FROM billing 
                 WHERE patient_id_fk = %s
                 """
+                print ('before retrieving max billing id') 
                 cursor.execute(get_max_billing_id_query, (billing_info['patient_id'],))
                 max_billing_id = cursor.fetchone()[0]
-                
+                print ('after retrieving max billing id')
                 # If no billing id exists for the current patient, reset to 0, else +1 to max billing id
                 if max_billing_id is None:
                     new_billing_id = 0
                 else:
                     new_billing_id = max_billing_id + 1
 
+                print (new_billing_id)
                 # Insert the billing information with the new billing ID
                 insert_query = """
                 INSERT INTO billing (billing_id, patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
@@ -218,31 +221,31 @@ billing_info:
 - billing_date
 - payment_method
 """
-def insert_billing(dbConnection = None, billing_info = None):
-    if dbConnection:
-        try:
-            with dbConnection.cursor() as cursor:
+# def insert_billing(dbConnection = None, billing_info = None):
+#     if dbConnection:
+#         try:
+#             with dbConnection.cursor() as cursor:
             
-                insert_query = """
-                INSERT INTO billing (patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """
+#                 insert_query = """
+#                 INSERT INTO billing (patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
+#                 VALUES (%s, %s, %s, %s, %s, %s, %s)
+#                 """
 
-                cursor.execute(insert_query, (billing_info['patient_id'], billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
+#                 cursor.execute(insert_query, (billing_info['patient_id'], billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
 
-                dbConnection.commit()
+#                 dbConnection.commit()
 
-            return {"status": "success", "message": "Billing added successfully."}
+#             return {"status": "success", "message": "Billing added successfully."}
         
-        # Error Handling
-        except KeyError as e:
-            return {"status": "error", "message": f"Missing key: {str(e)}"}
-        except ValueError as e:
-            return {"status": "error", "message": f"Invalid value: {str(e)}"}
-        except Exception as e:
-            if dbConnection:
-                dbConnection.rollback()
-            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+#         # Error Handling
+#         except KeyError as e:
+#             return {"status": "error", "message": f"Missing key: {str(e)}"}
+#         except ValueError as e:
+#             return {"status": "error", "message": f"Invalid value: {str(e)}"}
+#         except Exception as e:
+#             if dbConnection:
+#                 dbConnection.rollback()
+#             return {"status": "error", "message": f"Error occurred: {str(e)}"}
         
 """
 On Assumption that it is a single insert
@@ -258,14 +261,14 @@ def insert_medical_conditions(dbConnection=None, condition_info=None):
                 
                 # checks for duplicate, if there is update it instead
                 insert_query = """
-                INSERT INTO medical_conditions (name, description)
+                INSERT INTO medical_condition (name, description)
                 VALUES (%s, %s)
                 ON DUPLICATE KEY UPDATE 
                 name = VALUES(name), 
                 description = VALUES(description);
                 """
            
-                cursor.executemany(insert_query, (condition_info['name'], condition_info['description']))
+                cursor.execute(insert_query, (condition_info['name'], condition_info['description']))
 
                 dbConnection.commit()  
 
@@ -305,7 +308,7 @@ def insert_medication(dbConnection=None, medication_info=None):
                 price = VALUES(price);
                 """
            
-                cursor.executemany(insert_query, (medication_info['name'], medication_info['description']. medication_info['price']))
+                cursor.execute(insert_query, (medication_info['name'], medication_info['description'], medication_info['price']))
 
                 dbConnection.commit()  
 

@@ -3,6 +3,8 @@ import select_queries
 import insert_queries
 import db_connection
 import delete_queries
+import update_queries 
+
 
 app = Flask(__name__)
 
@@ -137,6 +139,8 @@ def deleteUser():
         res = delete_queries.delete_user(dbConnection, user_id) 
         return jsonify({"message": res}) 
 
+
+
 #!===============================================================================
 '''
 POST appointment 
@@ -184,6 +188,21 @@ def getAppointmentsbyDoctor(doctor_id):
         res = select_queries.get_appointments_by_doctor(dbConnection, doctor_id)
         print(res)
         return jsonify({"message": res})
+    
+
+
+#! delete an appointment you need the patient_id and the appointment_id
+#! not done in backend
+@app.route('/delete_appointment/<patient_id>/<appointment_id>', methods=['DELETE'])
+def deleteAppointment(appointment_id, patient_id):
+    dbConnection = g.dbConnection
+    if request.method == 'DELETE':
+        appointment_id = int(appointment_id) 
+        patient_id = int(patient_id) 
+        res = delete_queries.delete_appointment(dbConnection, appointment_id, patient_id)
+        print(res)
+        return jsonify({"message": res})
+    
 #!===============================================================================
 '''
 POST diagnosis 
@@ -227,6 +246,24 @@ def Diagnosis():
         return jsonify({"message": res})
 
 
+'''
+{
+  "diagnosis_id": 2
+}
+'''
+#delete a diagnosis
+#!DELETE method is not working for some reason
+@app.route('/delete_diagnosis/<diagnosis_id>', methods=['GET'])
+def deleteDiagnosis(diagnosis_id):
+    dbConnection = g.dbConnection
+    if request.method == 'GET':
+        diagnosis_id = int (diagnosis_id) 
+        res = delete_queries.delete_diagnosis(dbConnection, diagnosis_id)
+        print(res)
+        return jsonify({"message": res})
+    
+
+
 @app.route('/medication', methods=['GET'])
 def getMedications():
     dbConnection = g.dbConnection
@@ -244,6 +281,16 @@ def getMedicationByUser(user_id):
         print(res)
         return jsonify({"message": res})
     
+
+# delete medicaiton 
+@app.route('/medication/<medication_id>', methods=['DELETE'])
+def deleteMedication(medication_id):
+    dbConnection = g.dbConnection
+    if request.method == 'DELETE':
+        medication_id = int (medication_id) 
+        res = delete_queries.delete_medication(dbConnection, medication_id)
+        print(res)
+        return jsonify({"message": res})  
     
 #! function not implemented  ?
 @app.route('/diagnosis/<user_id>', methods=['GET'])
@@ -260,6 +307,7 @@ def getDiagnosis(user_id):
 POST BILLING 
 {
     "billing_info": {
+                    "patient_id": 1,
                     "appointment_id": 1,
                     "amount_due": 1,
                     "amount_paid": 10,
@@ -274,9 +322,21 @@ def billing():
     if request.method == 'POST':
         data = request.get_json()
         billing_info = data['billing_info'] 
+        print ("i am here")
         res = insert_queries.insert_billing(dbConnection, billing_info)
         print(res)
         return jsonify({"message": res})
+
+#delete a billing
+@app.route('/billing/<billing_id>', methods=['DELETE'])
+def deleteBilling(billing_id):
+    dbConnection = g.dbConnection
+    if request.method == 'DELETE':
+        billing_id = int(billing_id) 
+        res = delete_queries.delete_billing(dbConnection, billing_id)
+        print(res)
+        return jsonify({"message": res})
+    
 
 
 @app.route('/billing/<user_id>', methods=['GET'])
@@ -289,6 +349,7 @@ def getBilling(user_id):
         return jsonify({"message": res})
 
 #!=============================================================================== 
+#admin functions
 # get all users 
 @app.route('/users/<role_id>', methods=['GET'])
 def getUsers(role_id):
@@ -302,9 +363,92 @@ def getUsers(role_id):
         else:
             res = {"status": "error", "message": "Only admin can view all users."}
             return jsonify({"message": res})
-        
-#!===============================================================================
+'''
+{
+    "condition_info":{
+        "name":"Ibuprofen",
+        "description":"For pain"
+    }
+}
+'''
+# insert medical condition 
+@app.route('/medical_condition', methods=['POST'])
+def medicalCondition():
+    dbConnection = g.dbConnection
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        condition_info = data['condition_info'] 
+        res = insert_queries.insert_medical_conditions(dbConnection, condition_info)
+        print(res)
+        return jsonify({"message": res})     
+    
+#delete a medical condition
+@app.route('/medical_condition/<condition_id>', methods=['DELETE'])
+def deleteMedicalCondition(condition_id):
+    dbConnection = g.dbConnection
+    if request.method == 'DELETE':
+        condition_id = int(condition_id) 
+        res = delete_queries.delete_medical_condition(dbConnection, condition_id)
+        print(res)
+        return jsonify({"message": res})
+    
+    
+#get all medical conditions (split out so only amdmoin)
+@app.route('/medical_condition/<role_id>', methods=['GET'])
+def getMedicalConditions(role_id):
+    dbConnection = g.dbConnection
+    role_id = int(role_id)
+    if request.method == 'GET':
+        if role_id == 3: 
+            res = select_queries.get_medical_conditions(dbConnection)
+            print(res)
+            return jsonify({"message": res})
+        else:
+            res = {"status": "error", "message": "Only admin can view all medical conditions."}
+            return jsonify({"message": res})
 
+'''
+{
+    "medication_info":{
+        "name":"Ibuprofen",
+        "description":"For pain",
+        "price": 10
+    }
+}
+'''
+#insert medication
+@app.route('/medication', methods=['POST'])
+def medication():
+    dbConnection = g.dbConnection
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        medication_info = data['medication_info'] 
+        res = insert_queries.insert_medication(dbConnection, medication_info)
+        print(res)
+        return jsonify({"message": res})
+    
+#!===============================================================================
+#update user info
+'''
+{
+  "user_info" : {
+    "role_id": 2,
+    "username": "johndoe",
+    "password_hash": "123",
+    "email": "
+'''
+@app.route('/user', methods=['PUT'])
+def updateUser():
+    dbConnection = g.dbConnection
+    
+    if request.method == 'PUT':
+        data = request.get_json()
+        userInfo = data['user_info'] 
+        res = update_queries.update_user(dbConnection, userInfo) 
+        print(res)
+        return jsonify({"message": res})
 
 #!===============================================================================
 if __name__ == '__main__':
