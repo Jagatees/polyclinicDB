@@ -41,7 +41,7 @@ def getUserData():
 #* =============================================================================
 """
 {
-"email":"emily.clark@example.com",
+"email":"baba@gmail.com",
 "password":"123"
 }
 
@@ -80,16 +80,32 @@ def login():
     "role_id": 2,
     "username": "johndoe",
     "password_hash": "123",
-    "email": "baba@gmail.com"
+    "email": "baba@gmail.com",
+    "first_name": "John",
+    "last_name": "Doe"
   }
     ,
 	"role_info" : {
-      "first_name": "John",
-      "last_name": "Doe",
       "age": 23,
-      "gender": "male",
+      "gender": "m",
       "phone_number": "89482392",
       "address": "123, Ang Mo Kio, Lagos"
+    }
+}
+if doctor, 
+{
+  "user_info" : {
+    "role_id": 1,
+    "username": "BOBON",
+    "password_hash": "12345",
+    "email": "mama123@gmail.com",
+    "first_name": "Bobon",
+    "last_name": "Dobo"
+  }
+    ,
+	"role_info" : {
+      "phone_number": "89482312",
+      "specialty": "Woman"
     }
 }
 '''

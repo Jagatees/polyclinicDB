@@ -46,7 +46,7 @@ def insert_user(dbConnection, user_info, role_info):
                     return {"status": "error", "message": "User already exists with this username or email."}
 
                 insert_query = """
-                INSERT INTO user (role_id_fk, username, password_hash, email, first_name, last_name created_at)
+                INSERT INTO user (role_id_fk, username, password_hash, email, first_name, last_name, created_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
 
@@ -64,11 +64,11 @@ def insert_user(dbConnection, user_info, role_info):
                     license_number = generate_unique_uuid4(cursor)
 
                     doc_insert_query = """
-                    INSERT INTO doctor (user_id_fk, phone_number, speciality, license_number)
+                    INSERT INTO doctor (user_id_fk, phone_number, specialty, license_number)
                     VALUES (%s, %s, %s, %s)
                     """
 
-                    cursor.execute(doc_insert_query, (user_id, role_info['phone_number'], role_info['speciality'], license_number))
+                    cursor.execute(doc_insert_query, (user_id, role_info['phone_number'], role_info['specialty'], license_number))
 
                 elif user_info['role_id'] == 2: # patient role
 
