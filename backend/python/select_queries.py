@@ -1,14 +1,16 @@
 from db_connection import get_db_connection, close_db_connection
 import pymysql.cursors # this is to fetch my data as a dictionary instead of a tuple 
 from datetime import timedelta
+import bcrypt
 
+def verify_password(plain_password, hashed_password):
+    # Function to verify if the provided password matches the hashed value
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def get_user(dbConnection=None, email=None, password=None):
     if dbConnection:
         try:
-            # Use the connection directly to create a cursor
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
-                # Step 1: Check if the user exists by email first
                 select_query = """
                 SELECT * FROM user WHERE email = %s
                 """
@@ -16,21 +18,15 @@ def get_user(dbConnection=None, email=None, password=None):
                 user = cursor.fetchone()
 
                 if not user:
-                    # User with the given email does not exist
                     return {"status": "error", "message": "User not found."}
                 
-                # Step 2: If a password is provided, check the password
                 if password:
-                    print (user) 
-                    print (type(user))
-                    if user['password_hash'] == password:
-                        # Correct password
+                    stored_hashed_password = user['password_hash'] 
+                    if verify_password(password, stored_hashed_password):
                         return {"status": "success", "user": user}
                     else:
-                        # Incorrect password
                         return {"status": "error", "message": "Incorrect password."}
                 
-                # If no password is provided, just return the user information
                 return {"status": "success", "user": user}
             
         # Error Handling
