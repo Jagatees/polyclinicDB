@@ -26,7 +26,7 @@ def update_user_info(dbConnection, user_id, user_info):
                 SET username = %s, email = %s, password_hash = %s, first_name = %s, last_name = %s
                 WHERE user_id = %s
                 """
-                cursor.execute(update_user_query, (user_id, user_info['username'], user_info['email'], user_info['password_hash'],user_info['first_name'],user_info['last_name']))
+                cursor.execute(update_user_query, (user_id, user_info['username'], user_info['password_hash'], user_info['email'], user_info['first_name'],user_info['last_name']))
                 
                 if role_id == 1:  # 1 is for doctor
                     update_doctor_query = """
@@ -153,7 +153,7 @@ def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_diagnosis_query, (diagnosis_id, diagnosis_info['condition_id_fk'],diagnosis_info['severity'],current_date))
+                cursor.execute(update_diagnosis_query, (diagnosis_id, diagnosis_info['condition_id_fk'],current_date,diagnosis_info['severity'],))
 
                 connection.commit()
             
