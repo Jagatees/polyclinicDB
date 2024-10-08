@@ -1,21 +1,34 @@
 from db_connection import get_db_connection, close_db_connection
 from datetime import datetime
 import random
-import select_queries
+import uuid
 
+
+def generate_unique_uuid4(cursor):
+    while True:
+      
+        new_uuid = str(uuid.uuid4())
+
+        check_uuid_query = "SELECT license_number FROM doctor WHERE license_number = %s"
+        cursor.execute(check_uuid_query, (new_uuid,))
+        existing_uuid = cursor.fetchone()
+
+        if not existing_uuid:
+            return new_uuid
+        
 """
     user_info (dict)
-        -role_id
-        -username
-        -password_hash
-        -email
+        - role_id
+        - username
+        - password_hash
+        - email
+        - first_name
+        - last_name
     
     role_info (dict)
-        - doctor: {'first_name', 'last_name', 'phone_number'}
-        - patient: {'first_name', 'last_name', 'age', 'gender', 'phone_number', 'address'}
+        - doctor: {'phone_number', 'speciality', 'license_number'}
+        - patient: {'age', 'gender', 'phone_number', 'address'}
 """
-
-
 def insert_user(dbConnection, user_info, role_info):
     if dbConnection: 
         
@@ -33,12 +46,12 @@ def insert_user(dbConnection, user_info, role_info):
                     return {"status": "error", "message": "User already exists with this username or email."}
 
                 insert_query = """
-                INSERT INTO user (role_id_fk, username, password_hash, email, create_at)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO user (role_id_fk, username, password_hash, email, first_name, last_name created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
 
                 current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], current_datetime))
+                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], user_info['first_name'], user_info['last_name'], current_datetime))
 
                 user_id = cursor.lastrowid
                 print (user_id) 
@@ -47,12 +60,15 @@ def insert_user(dbConnection, user_info, role_info):
 
 
                 if user_info['role_id'] == 1: # doctor role
+
+                    license_number = generate_unique_uuid4(cursor)
+
                     doc_insert_query = """
-                    INSERT INTO doctor (user_id_fk, first_name, last_name, phone_number)
+                    INSERT INTO doctor (user_id_fk, phone_number, speciality, license_number)
                     VALUES (%s, %s, %s, %s)
                     """
 
-                    cursor.execute(doc_insert_query, (user_id, role_info['first_name'], role_info['last_name'], role_info['phone_number']))
+                    cursor.execute(doc_insert_query, (user_id, role_info['phone_number'], role_info['speciality'], license_number))
 
                 elif user_info['role_id'] == 2: # patient role
 
@@ -60,11 +76,11 @@ def insert_user(dbConnection, user_info, role_info):
                     print ("inserting patient table") 
                     print (role_info) 
                     pat_insert_query = """
-                    INSERT INTO patient (user_id_fk, first_name, last_name, age, gender, phone_number, address)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO patient (user_id_fk, age, gender, phone_number, address)
+                    VALUES (%s, %s, %s, %s, %s)
                     """
 
-                    cursor.execute(pat_insert_query, (user_id, role_info['first_name'], role_info['last_name'], role_info['age'], role_info['gender'], role_info['phone_number'], role_info['address']))
+                    cursor.execute(pat_insert_query, (user_id, role_info['age'], role_info['gender'], role_info['phone_number'], role_info['address']))
 
                 connection.commit()
             
@@ -86,6 +102,7 @@ def insert_user(dbConnection, user_info, role_info):
         #         close_db_connection(connection, tunnel)
 
 """
+appointment_id, patient_id_fk (composite key)
 appointment_info:
 # - patient_id_fk //session
 # - doctor_id_fk //you query
@@ -96,45 +113,61 @@ appointment_info:
 - type
 """
 def insert_appointment(dbConnection, appointment_info):
-    print (appointment_info)
+    print(appointment_info)
     if dbConnection:
         try:
-            #connection = dbConnection['connection']
-            #! this is scrapped since on login, i will pass the user_id and role_id to the frontend 
-            #! so they can pass it back to the backend when they want to make an appointment 
-            #patient_id = select_queries.get_patient_id_by_user(dbConnection, appointment_info['user_id'])
-
             with dbConnection.cursor() as cursor:
+                # get max appointment id of current patient
+                get_max_appointment_id_query = """
+                SELECT MAX(appointment_id) 
+                FROM appointment 
+                WHERE patient_id_fk = %s
+                """
+                cursor.execute(get_max_appointment_id_query, (appointment_info['patient_id'],))
+                max_appointment_id = cursor.fetchone()[0]
+                
+                # if no appointment id exist for current patient id, reset to 0, else + 1 to max appointment id
+                if max_appointment_id is None:
+                    new_appointment_id = 0
+                else:
+                    new_appointment_id = max_appointment_id + 1
+
+                # check for available doctors on the current date and time
                 available_doctors_query = """
-                SELECT doctor_id FROM doctor WHERE doctor_id NOT IN (
-                    SELECT doctor_id_fk 
-                    FROM appointment 
-                    WHERE date = %s AND time = %s
-                )
+                SELECT d.doctor_id 
+                FROM doctor d
+                LEFT JOIN appointment a 
+                ON d.doctor_id = a.doctor_id_fk AND a.date = %s AND a.time = %s
+                WHERE a.doctor_id_fk IS NULL;
                 """
                 cursor.execute(available_doctors_query, (appointment_info['date'], appointment_info['time']))
                 available_doctors = cursor.fetchall()
                 
+                # if there are no available doctors, send error
                 if not available_doctors:
-                    # No doctors available at the selected time
                     return {"status": "error", "message": "No doctors are available at the selected date and time."}
                 
-     
-                # randomise the doctor to be assigned
+                # randomly assign the doctor
                 assigned_doctor = random.choice(available_doctors)[0]
 
-                
                 insert_query = """
-                INSERT INTO appointment (patient_id_fk, doctor_id_fk, date, time, status, type)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO appointment (appointment_id, patient_id_fk, doctor_id_fk, date, time, status, type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
-
-                cursor.execute(insert_query, (appointment_info['patient_id'], assigned_doctor, appointment_info['date'], appointment_info['time'], 'pending', appointment_info['type']))
+                cursor.execute(insert_query, (
+                    new_appointment_id, 
+                    appointment_info['patient_id'], 
+                    assigned_doctor, 
+                    appointment_info['date'], 
+                    appointment_info['time'], 
+                    'pending', 
+                    appointment_info['type']
+                ))
 
                 dbConnection.commit()
 
-            return {"status": "success", "message": f"Appointment added successfully with doctor ID: {assigned_doctor}"}
-            
+            return {"status": "success", "message": f"Appointment added successfully with doctor ID: {assigned_doctor} for appointment ID: {new_appointment_id}"}
+        
         # Error Handling
         except KeyError as e:
             return {"status": "error", "message": f"Missing key: {str(e)}"}
@@ -197,7 +230,10 @@ def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
 """
+
+billing_id, patient_id_fk, appointment_id_fk (composite key)
 billing_info:
+- patient_id 
 - appointment_id
 - amount_due
 - amount_paid
@@ -208,12 +244,13 @@ def insert_billing(dbConnection = None, billing_info = None):
     if dbConnection:
         try:
             with dbConnection.cursor() as cursor:
+            
                 insert_query = """
-                INSERT INTO billing (appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO billing (patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
 
-                cursor.execute(insert_query, (billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
+                cursor.execute(insert_query, (billing_info['patient_id'], billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
 
                 dbConnection.commit()
 
@@ -227,5 +264,85 @@ def insert_billing(dbConnection = None, billing_info = None):
         except Exception as e:
             if dbConnection:
                 dbConnection.rollback()
-            #print(f"Status: error, Message: Error occurred: {str(e)}")
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
+        
+"""
+On Assumption that it is a single insert
+condition_info:
+- name
+- description
+
+"""
+def insert_medical_conditions(dbConnection=None, condition_info=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor() as cursor:
+                
+                # checks for duplicate, if there is update it instead
+                insert_query = """
+                INSERT INTO medical_conditions (name, description)
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE 
+                name = VALUES(name), 
+                description = VALUES(description);
+                """
+           
+                cursor.executemany(insert_query, (condition_info['name'], condition_info['description']))
+
+                dbConnection.commit()  
+
+            return {"status": "success", "message": "Medical conditions added/updated successfully."}
+
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            if dbConnection:
+                dbConnection.rollback()  
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+        
+
+"""
+On Assumption that it is a single insert
+medication_info:
+- name
+- description
+- price
+
+"""
+def insert_medication(dbConnection=None, medication_info=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor() as cursor:
+                
+                # checks for duplicate, if there is update it instead
+                insert_query = """
+                INSERT INTO medication (name, description, price)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE 
+                name = VALUES(name), 
+                description = VALUES(description),
+                price = VALUES(price);
+                """
+           
+                cursor.executemany(insert_query, (medication_info['name'], medication_info['description']. medication_info['price']))
+
+                dbConnection.commit()  
+
+            return {"status": "success", "message": "Medication added/updated successfully."}
+
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            if dbConnection:
+                dbConnection.rollback()  
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+
+        
+
+

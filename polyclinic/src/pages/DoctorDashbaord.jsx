@@ -5,40 +5,10 @@ import { useNavigate } from "react-router-dom";
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState("get_users_by_doctor");
   const [medications, setMedications] = useState([
-    {
-      id: 1,
-      name: "Amoxicillin",
-      description: "Antibiotic for treating infections",
-      price: 25,
-    },
-    {
-      id: 2,
-      name: "Lisinopril",
-      description: "Medication for high blood pressure",
-      price: 10,
-    },
-    {
-      id: 3,
-      name: "Metformin",
-      description: "Diabetes management medication",
-      price: 15,
-    },
-    {
-      id: 4,
-      name: "Simvastatin",
-      description: "Used to lower cholesterol",
-      price: 20,
-    },
-    {
-      id: 5,
-      name: "Albuterol",
-      description: "Inhaler for asthma symptoms",
-      price: 18,
-    },
   ]);
   const medicationOptions = medications.map((med) => ({
-    label: `${med.name} - $${med.price}`,
-    value: med.name,
+    label: `${med.name} - ${med.description} - $${med.price}`,
+    value: med.medication_id, // Use medication_id as the unique value
   }));
   const [appointments, setAppointments] = useState([]);
 
@@ -119,12 +89,45 @@ const DoctorDashboard = () => {
       });
   };
 
+  const handleGetMedication = () => {
+    // Define the API endpoint with user_id and role_id
+    const apiUrl = `/api/medication`;
+
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching medication failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("medication fetched:", data.message);
+         // Map the fetched data to match the expected format
+         const formattedMedications = data.message.map((med) => ({
+          medication_id: med.medication_id,
+          name: med.name,
+          description: med.description,
+          price: parseFloat(med.price).toFixed(2), // Ensure price is a string in 2 decimal places
+        }));
+        setMedications(formattedMedications);
+      })
+      .catch((error) => {
+        console.error("Fetching medication failed:", error);
+      });
+  };
+
   useEffect(() => {
     console.log("doctor_id_ID:", doctor_id_ID);
     if (doctor_id_ID) {
       handleGetAppointments();
+      handleGetMedication();
     }
-  }, [doctor_id_ID]); // Add dependencies to ensure re-render
+  }, [doctor_id_ID]); 
 
   const handleRemoveMedication = (medId) => {
     setMedications((meds) => meds.filter((med) => med.id !== medId));
@@ -220,7 +223,6 @@ const DoctorDashboard = () => {
                   <th className="border px-4 py-2 text-left">age</th>
                   <th className="border px-4 py-2 text-left">date</th>
                   <th className="border px-4 py-2 text-left">time</th>
-                 
                   <th className="border px-4 py-2 text-left">status</th>
                   <th className="border px-4 py-2 text-left">type</th>
                 </tr>
