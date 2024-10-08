@@ -145,8 +145,8 @@ POST appointment
     "date": "2024-09-28",
     "time": "06:10:05",
     "type": "Medical Consultation",
-    "user_id": 74,
-    "patient_id": 1
+    #! dont need anymore "user_id": 74,
+    "patient_id": 4
   }
 }
 '''
@@ -161,6 +161,7 @@ def getAppointment():
         res = insert_queries.insert_appointment(dbConnection, appointment_info)
         print(res)
         return jsonify({"message": res})
+
 
 @app.route('/appointments/<user_id>/<role_id>', methods=['GET'])
 def getAppointments(user_id,role_id):

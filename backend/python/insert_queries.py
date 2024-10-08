@@ -111,7 +111,6 @@ appointment_info:
 # - patient_id_fk //session
 # - doctor_id_fk //you query
 
-- user_id
 - date YYYY-MM-DD
 - time
 - type
