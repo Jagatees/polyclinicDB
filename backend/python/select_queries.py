@@ -320,7 +320,7 @@ def get_all_users_with_details(dbConnection=None):
 
                 # select from user table first
                 query = """
-                SELECT u.user_id, u.username, u.email, u.create_at, r.role_id
+                SELECT u.user_id, u.username, u.email, u.first_name, u.last_name, u.created_at, r.role_id
                 FROM user u
                 JOIN role r ON u.role_id_fk = r.role_id;
                 """
@@ -340,7 +340,7 @@ def get_all_users_with_details(dbConnection=None):
 
                     if role_id == 1:  # 1 id doctor role
                         doctor_query = """
-                        SELECT d.first_name, d.last_name, d.phone_number
+                        SELECT d.phone_number, d.specialty
                         FROM doctor d
                         WHERE d.user_id_fk = %s;
                         """
@@ -349,12 +349,17 @@ def get_all_users_with_details(dbConnection=None):
                         
                         if doctor_details:
                             user_details.update(doctor_details)
+
+                            user_details.update({
+                                'first_name': user['first_name'],
+                                'last_name': user['last_name']
+                            })
                         else:
                             user_details.update({"doctor_details": "Doctor details not found"})
 
                     elif role_id == 2:  # 2 is patient role
                         patient_query = """
-                        SELECT p.first_name, p.last_name, p.age, p.gender, p.phone_number, p.address
+                        SELECT p.age, p.gender, p.phone_number, p.address
                         FROM patient p
                         WHERE p.user_id_fk = %s;
                         """
@@ -363,6 +368,11 @@ def get_all_users_with_details(dbConnection=None):
                         
                         if patient_details:
                             user_details.update(patient_details)
+
+                            user_details.update({
+                                'first_name': user['first_name'],
+                                'last_name': user['last_name']
+                            })
                         else:
                             user_details.update({"patient_details": "Patient details not found"})
                     
