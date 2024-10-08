@@ -153,7 +153,7 @@ def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_diagnosis_query, (diagnosis_id, diagnosis_info['condition_id_fk'],diagnosis_info['severity'],current_date))
+                cursor.execute(update_diagnosis_query, (diagnosis_id, diagnosis_info['condition_id_fk'],current_date,diagnosis_info['severity'],))
 
                 connection.commit()
             
