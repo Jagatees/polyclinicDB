@@ -55,7 +55,7 @@ def insert_user(dbConnection, user_info, role_info):
                 """
 
                 current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['email'],hashed_password, user_info['first_name'], user_info['last_name'],  current_datetime))
+                cursor.execute(insert_query, (user_info['role_id'], user_info['username'],hashed_password, user_info['email'], user_info['first_name'], user_info['last_name'],  current_datetime))
 
                 user_id = cursor.lastrowid
                 print (user_id) 
