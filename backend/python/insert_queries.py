@@ -5,14 +5,16 @@ import select_queries
 
 """
     user_info (dict)
-        -role_id
-        -username
-        -password_hash
-        -email
+        - role_id
+        - username
+        - password_hash
+        - email
+        - first_name
+        - last_name
     
     role_info (dict)
-        - doctor: {'first_name', 'last_name', 'phone_number'}
-        - patient: {'first_name', 'last_name', 'age', 'gender', 'phone_number', 'address'}
+        - doctor: {'phone_number', 'speciality', 'license_number'}
+        - patient: {'age', 'gender', 'phone_number', 'address'}
 """
 
 
