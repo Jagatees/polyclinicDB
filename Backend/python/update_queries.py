@@ -23,15 +23,15 @@ def update_user_info(dbConnection, user_id, user_info):
                 # update user infos
                 update_user_query = """
                 UPDATE user
-                SET username = %s, email = %s, password = %s
+                SET username = %s, email = %s, password_hash = %s, first_name = %s, last_name = %s
                 WHERE user_id = %s
                 """
-                cursor.execute(update_user_query, (user_info['username'], user_info['email'], user_info['password'], user_id))
+                cursor.execute(update_user_query, (user_info['username'], user_info['email'], user_info['password_hash'],user_info['first_name'],user_info['last_name'], user_id))
                 
                 if role_id == 1:  # 1 is for doctor
                     update_doctor_query = """
                     UPDATE doctor
-                    SET last_name = %s, phone_number = %s
+                    SET specialty = %s, phone_number = %s
                     WHERE user_id_fk = %s
                     """
                     cursor.execute(update_doctor_query, (user_info['last_name'], user_info['phone_number'], user_id))
@@ -39,14 +39,20 @@ def update_user_info(dbConnection, user_id, user_info):
                 elif role_id == 2:  # 2 is for patient
                     update_patient_query = """
                     UPDATE patient
-                    SET last_name = %s, phone_number = %s, address = %s
+                    SET phone_number = %s, address = %s, age = %s
                     WHERE user_id_fk = %s
                     """
-                    cursor.execute(update_patient_query, (user_info['last_name'], user_info['phone_number'], user_info['address'], user_id))
+                    cursor.execute(update_patient_query, (user_info['phone_number'], user_info['address'], user_info['age'], user_id))
                 
                 connection.commit()
 
             return {"status": "success", "message": "User information updated successfully."}
+        
+        except KeyError as ke:
+            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
+
+        except ValueError as ve:
+            return {"status": "error", "message": f"Invalid data: {str(ve)}"}
         
         except Exception as e:
             if connection:
@@ -76,10 +82,17 @@ def update_appointment(dbConnection, patient_id, appointment_info):
             
             return {"status": "success", "message": "Appointment updated successfully."}
 
+        except KeyError as ke:
+            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
+
+        except ValueError as ve:
+            return {"status": "error", "message": f"Invalid data: {str(ve)}"}
+        
         except Exception as e:
             if connection:
                 connection.rollback()
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
+
 
 """
 assuming user pays full of the amount due
@@ -107,8 +120,125 @@ def update_billing_status(dbConnection, billing_id, payment_info):
             
             return {"status": "success", "message": "Billing status updated successfully."}
 
+        except KeyError as ke:
+            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
+
+        except ValueError as ve:
+            return {"status": "error", "message": f"Invalid data: {str(ve)}"}
+        
         except Exception as e:
-            connection.rollback()
+            if connection:
+                connection.rollback()
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
 
+"""
+Update Diagnosis
+
+diagnosis_info:
+- condition_id_fk
+- diagnosis_date
+- severity
+"""
+def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
+    if dbConnection:
+        try:
+            connection = dbConnection['connection']
+
+            with connection.cursor() as cursor:
+                update_diagnosis_query = """
+                UPDATE diagnosis
+                SET condition_id_fk= %s, diagnosis_date = %s, severity = %s
+                WHERE diagnosis_id = %s
+                """
+
+                current_date = datetime.now().strftime('%Y-%m-%d')
+                cursor.execute(update_diagnosis_query, (diagnosis_info['condition_id_fk'],diagnosis_info['severity'],current_date, diagnosis_id))
+
+                connection.commit()
+            
+            return {"status": "success", "message": "Diagnosis updated successfully."}
+
+        except KeyError as ke:
+            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
+
+        except ValueError as ve:
+            return {"status": "error", "message": f"Invalid data: {str(ve)}"}
+        
+        except Exception as e:
+            if connection:
+                connection.rollback()
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+
+"""
+Update Medication
+
+medication_info:
+- name
+- description
+- price
+"""        
+def update_medication(dbConnection, medication_id, medication_info):
+    if dbConnection:
+        try:
+            connection = dbConnection['connection']
+
+            with connection.cursor() as cursor:
+                update_medication_query = """
+                UPDATE medication
+                SET name= %s, description = %s, price = %s
+                WHERE medication_id = %s
+                """
+
+                cursor.execute(update_medication_query, (medication_info['name'],medication_info['description'], medication_info['price'], medication_id))
+
+                connection.commit()
+            
+            return {"status": "success", "message": "Medication updated successfully."}
+
+        except KeyError as ke:
+            return {"status": "error", "message": f"Missing data in medication_info: {str(ke)}"}
+
+        except ValueError as ve:
+            return {"status": "error", "message": f"Invalid data: {str(ve)}"}
+        
+        except Exception as e:
+            if connection:
+                connection.rollback()
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}    
+
+"""
+Update Medical Condtion
+
+medical_condition_info:
+- name
+- description
+"""
+def update_medical_condition(dbConnection, condition_id, condition_info):
+    if dbConnection:
+        try:
+            connection = dbConnection['connection']
+
+            with connection.cursor() as cursor:
+                update_condition_query = """
+                UPDATE medical_condition
+                SET name= %s, description = %s
+                WHERE condition_id = %s
+                """
+
+                cursor.execute(update_condition_query, (condition_info['name'],condition_info['description'], condition_id))
+
+                connection.commit()
+            
+            return {"status": "success", "message": "Medical Condition updated successfully."}
+
+        except KeyError as ke:
+            return {"status": "error", "message": f"Missing data in condition_info: {str(ke)}"}
+
+        except ValueError as ve:
+            return {"status": "error", "message": f"Invalid data: {str(ve)}"}
+        
+        except Exception as e:
+            if connection:
+                connection.rollback()
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}  
