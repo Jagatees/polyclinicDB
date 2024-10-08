@@ -249,3 +249,84 @@ def insert_billing(dbConnection = None, billing_info = None):
             if dbConnection:
                 dbConnection.rollback()
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
+        
+"""
+On Assumption that it is a single insert
+condition_info:
+- name
+- description
+
+"""
+def insert_medical_conditions(dbConnection=None, condition_info=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor() as cursor:
+                
+                # checks for duplicate, if there is update it instead
+                insert_query = """
+                INSERT INTO medical_conditions (name, description)
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE 
+                name = VALUES(name), 
+                description = VALUES(description);
+                """
+           
+                cursor.executemany(insert_query, (condition_info['name'], condition_info['description']))
+
+                dbConnection.commit()  
+
+            return {"status": "success", "message": "Medical conditions added/updated successfully."}
+
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            if dbConnection:
+                dbConnection.rollback()  
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+        
+
+"""
+On Assumption that it is a single insert
+medication_info:
+- name
+- description
+- price
+
+"""
+def insert_medication(dbConnection=None, medication_info=None):
+    if dbConnection:
+        try:
+            with dbConnection.cursor() as cursor:
+                
+                # checks for duplicate, if there is update it instead
+                insert_query = """
+                INSERT INTO medication (name, description, price)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE 
+                name = VALUES(name), 
+                description = VALUES(description),
+                price = VALUES(price);
+                """
+           
+                cursor.executemany(insert_query, (medication_info['name'], medication_info['description']. medication_info['price']))
+
+                dbConnection.commit()  
+
+            return {"status": "success", "message": "Medication added/updated successfully."}
+
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            if dbConnection:
+                dbConnection.rollback()  
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+
+        
+
+
