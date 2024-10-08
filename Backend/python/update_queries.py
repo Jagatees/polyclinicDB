@@ -26,7 +26,7 @@ def update_user_info(dbConnection, user_id, user_info):
                 SET username = %s, email = %s, password_hash = %s, first_name = %s, last_name = %s
                 WHERE user_id = %s
                 """
-                cursor.execute(update_user_query, (user_info['username'], user_info['email'], user_info['password_hash'],user_info['first_name'],user_info['last_name'], user_id))
+                cursor.execute(update_user_query, (user_id, user_info['username'], user_info['password_hash'], user_info['email'], user_info['first_name'],user_info['last_name']))
                 
                 if role_id == 1:  # 1 is for doctor
                     update_doctor_query = """
@@ -76,7 +76,7 @@ def update_appointment(dbConnection, patient_id, appointment_info):
                 WHERE patient_id_fk = %s
                 """
 
-                cursor.execute(update_query, (appointment_info['date'], appointment_info['time'], appointment_info['type'], patient_id))
+                cursor.execute(update_query, (patient_id, appointment_info['date'], appointment_info['time'], appointment_info['type']))
                 
                 connection.commit()
             
@@ -114,7 +114,7 @@ def update_billing_status(dbConnection, billing_id, payment_info):
                 """
                 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_billing_query, (payment_info['amount_paid'], 'paid', payment_info['payment_method'], current_date, billing_id))
+                cursor.execute(update_billing_query, (billing_id, payment_info['amount_paid'],current_date, 'paid', payment_info['payment_method'] ))
 
                 connection.commit()
             
@@ -153,7 +153,7 @@ def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_diagnosis_query, (diagnosis_info['condition_id_fk'],diagnosis_info['severity'],current_date, diagnosis_id))
+                cursor.execute(update_diagnosis_query, (diagnosis_id, diagnosis_info['condition_id_fk'],current_date,diagnosis_info['severity'],))
 
                 connection.commit()
             
@@ -190,7 +190,7 @@ def update_medication(dbConnection, medication_id, medication_info):
                 WHERE medication_id = %s
                 """
 
-                cursor.execute(update_medication_query, (medication_info['name'],medication_info['description'], medication_info['price'], medication_id))
+                cursor.execute(update_medication_query, (medication_id, medication_info['name'],medication_info['description'], medication_info['price']))
 
                 connection.commit()
             
@@ -226,7 +226,7 @@ def update_medical_condition(dbConnection, condition_id, condition_info):
                 WHERE condition_id = %s
                 """
 
-                cursor.execute(update_condition_query, (condition_info['name'],condition_info['description'], condition_id))
+                cursor.execute(update_condition_query, (condition_id, condition_info['name'],condition_info['description']))
 
                 connection.commit()
             
