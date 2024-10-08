@@ -211,7 +211,7 @@ def Diagnosis():
 
 
 @app.route('/medication', methods=['GET'])
-def getMedication():
+def getMedications():
     dbConnection = g.dbConnection
     if request.method == 'GET':
         res = select_queries.get_medications(dbConnection)
