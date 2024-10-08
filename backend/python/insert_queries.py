@@ -33,12 +33,12 @@ def insert_user(dbConnection, user_info, role_info):
                     return {"status": "error", "message": "User already exists with this username or email."}
 
                 insert_query = """
-                INSERT INTO user (role_id_fk, username, password_hash, email, create_at)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO user (role_id_fk, username, password_hash, email, first_name, last_name created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
 
                 current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], current_datetime))
+                cursor.execute(insert_query, (user_info['role_id'], user_info['username'], user_info['password_hash'], user_info['email'], user_info['first_name'], user_info['last_name'], current_datetime))
 
                 user_id = cursor.lastrowid
                 print (user_id) 
@@ -48,11 +48,11 @@ def insert_user(dbConnection, user_info, role_info):
 
                 if user_info['role_id'] == 1: # doctor role
                     doc_insert_query = """
-                    INSERT INTO doctor (user_id_fk, first_name, last_name, phone_number)
+                    INSERT INTO doctor (user_id_fk, phone_number, speciality, license_number)
                     VALUES (%s, %s, %s, %s)
                     """
 
-                    cursor.execute(doc_insert_query, (user_id, role_info['first_name'], role_info['last_name'], role_info['phone_number']))
+                    cursor.execute(doc_insert_query, (user_id, role_info['phone_number'], role_info['speciality'], role_info['license_number']))
 
                 elif user_info['role_id'] == 2: # patient role
 
@@ -60,11 +60,11 @@ def insert_user(dbConnection, user_info, role_info):
                     print ("inserting patient table") 
                     print (role_info) 
                     pat_insert_query = """
-                    INSERT INTO patient (user_id_fk, first_name, last_name, age, gender, phone_number, address)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO patient (user_id_fk, age, gender, phone_number, address)
+                    VALUES (%s, %s, %s, %s, %s)
                     """
 
-                    cursor.execute(pat_insert_query, (user_id, role_info['first_name'], role_info['last_name'], role_info['age'], role_info['gender'], role_info['phone_number'], role_info['address']))
+                    cursor.execute(pat_insert_query, (user_id, role_info['age'], role_info['gender'], role_info['phone_number'], role_info['address']))
 
                 connection.commit()
             
