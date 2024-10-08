@@ -136,7 +136,7 @@ def deleteUser():
         user_id = data['user_id'] 
         res = delete_queries.delete_user(dbConnection, user_id) 
         return jsonify({"message": res}) 
-    
+
 #!===============================================================================
 '''
 POST appointment 

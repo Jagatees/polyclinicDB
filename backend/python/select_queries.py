@@ -22,7 +22,6 @@ def get_user(dbConnection=None, email=None, password=None):
                 
                 if password:
                     stored_hashed_password = user['password_hash'] 
-                    print ('verifying password')
                     if verify_password(password, stored_hashed_password):
                         
                         return {"status": "success", "user": user}
