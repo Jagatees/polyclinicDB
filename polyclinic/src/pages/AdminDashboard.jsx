@@ -24,6 +24,7 @@ const AdminDashboard = () => {
   const [patientId, setPatientId] = useState(null);
   const [role_id_fk_ID, setrole_id_fk] = useState(null);
   const [doctorId, setDoctorId] = useState(null);
+  const [userId, setUserId] = useState(null); // Add this line to define userId state
 
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
@@ -91,23 +92,6 @@ const AdminDashboard = () => {
     getuser();
   }, []);
 
-  // if doctor,
-  // {
-  //   "user_info" : {
-  //     "role_id": 1,
-  //     "username": "BOBON",
-  //     "password_hash": "12345",
-  //     "email": "mama123@gmail.com",
-  //     "first_name": "Bobon",
-  //     "last_name": "Dobo"
-  //   }
-  //     ,
-  //   "role_info" : {
-  //       "phone_number": "89482312",
-  //       "specialty": "Woman"
-  //     }
-  // }
-  // '''
 
   const handleCreateUser = async (event) => {
     event.preventDefault();

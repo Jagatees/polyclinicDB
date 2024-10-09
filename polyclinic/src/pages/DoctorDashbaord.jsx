@@ -201,7 +201,7 @@ const DoctorDashboard = () => {
 
   const handleConfirmEdit = () => {
     const formattedData = JSON.stringify(editFormData, null, 2); // "2" adds indentation for better readability
-    alert(`Appointment updated with details:\n${formattedData}`);
+    console.log(formattedData)
 
 
     // save to mysql 
