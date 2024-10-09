@@ -151,12 +151,12 @@ def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
             with connection.cursor() as cursor:
                 update_diagnosis_query = """
                 UPDATE diagnosis
-                SET condition_id_fk= %s, diagnosis_date = %s, severity = %s
+                SET condition_name= %s, diagnosis_date = %s, severity = %s
                 WHERE diagnosis_id = %s
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_diagnosis_query, (diagnosis_info['condition_id_fk'], current_date, diagnosis_info['severity'], diagnosis_id))
+                cursor.execute(update_diagnosis_query, (diagnosis_info['condition_name'], current_date, diagnosis_info['severity'], diagnosis_id))
 
                 connection.commit()
             

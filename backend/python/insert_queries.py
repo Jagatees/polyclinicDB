@@ -185,7 +185,7 @@ def insert_appointment(dbConnection, appointment_info):
 """
 diagnosis_info:
 - patient_id_
-- condition_id_
+- condition_name
 - doctor_id_fk
 - severity
 
@@ -204,12 +204,12 @@ def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
         try:
             with connection.cursor() as cursor:
                 insert_query = """
-                INSERT INTO diagnosis (patient_id_fk, condition_id_fk, doctor_id_fk, diagnosis_date, severity)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO diagnosis (patient_id_fk, condition_name, doctor_id_fk, diagnosis_date, severity)
+                VALUES (%s, %s, %s, %s)
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['condition_id'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity']))
+                cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['condition_name'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity']))
 
                 insert_medication_query = """
                 INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, start_date, end_date)
