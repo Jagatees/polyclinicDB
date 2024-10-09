@@ -41,12 +41,11 @@ def getUserData():
 
 #!=============================================================================
 #* =============================================================================
-"""
+""" [DONE]
 {
 "email":"baba@gmail.com",
 "password":"123"
 }
-
 """
 @app.route('/login', methods=['POST']) 
 def login():
@@ -111,6 +110,7 @@ if doctor,
     }
 }
 '''
+
 
 @app.route('/register', methods=['POST']) 
 def register():

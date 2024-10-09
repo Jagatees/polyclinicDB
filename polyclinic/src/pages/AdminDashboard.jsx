@@ -143,11 +143,33 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteUser = (userId) => {
-    const updatedUsers = users.filter((user) => user.id !== userId);
-    setUsers(updatedUsers);
-    alert(`User with ID ${userId} deleted.`);
+
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      fetch(`/api/user/${userId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Registration failed");
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Deletaion successful:", data.message.status);
+          getuser();
+        
+        })
+        .catch((error) => {
+          console.error("Deletaion failed:", error);
+        });
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
   };
+
 
   const handleAddUser = () => setShowAddUserModal(true);
 
@@ -198,7 +220,8 @@ const AdminDashboard = () => {
               <thead>
                 <tr>
                   <th className="border px-4 py-2 text-left">Username</th>
-                  <th className="border px-4 py-2 text-left">role_id</th>
+                  <th className="border px-4 py-2 text-left">Role ID</th>
+                  <th className="border px-4 py-2">Actions</th> {/* New Column for Actions */}
                 </tr>
               </thead>
               <tbody>
@@ -206,6 +229,14 @@ const AdminDashboard = () => {
                   <tr key={user.user_id}>
                     <td className="border px-4 py-2">{user.username}</td>
                     <td className="border px-4 py-2">{user.role_id}</td>
+                    <td className="border px-4 py-2">
+                      <button
+                        onClick={() => handleDeleteUser(user.user_id)}
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -215,6 +246,7 @@ const AdminDashboard = () => {
       </div>
     );
   };
+  
 
   return (
     <div className="h-screen flex">
