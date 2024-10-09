@@ -4,12 +4,19 @@ import { useNavigate } from "react-router-dom";
 
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState("get_users_by_doctor");
-  const [medications, setMedications] = useState([
-  ]);
+  const [medications, setMedications] = useState([]);
+  const [getMedicalCondition, setMedicalCondition] = useState([]);
+
   const medicationOptions = medications.map((med) => ({
     label: `${med.name} - ${med.description} - $${med.price}`,
     value: med.medication_id, // Use medication_id as the unique value
   }));
+
+  const medicationConditionOptions = getMedicalCondition.map((med) => ({
+    label: `${med.name} - ${med.description} `,
+    value: med.condition_id, // Use medication_id as the unique value
+  }));
+
   const [appointments, setAppointments] = useState([]);
 
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -30,7 +37,6 @@ const DoctorDashboard = () => {
 
   // State for the editable fields in the appointment form
   const [editFormData, setEditFormData] = useState({
-    diagnosisDate: "",
     severity: "",
     medication: [], // For multiple medications
     medicalCondition: [], // For multiple conditions
@@ -112,11 +118,43 @@ const DoctorDashboard = () => {
       });
   };
 
+
+  const handleGetMedicationCondition = () => {
+    const apiUrl = `/api/medical_condition/${3}`;
+
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching medication failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("setMedicalCondition fetched:", data.message);
+
+        const formattedMedications = data.message.map((med) => ({
+          condition_id: med.condition_id,
+          name: med.name,
+          description: med.description,
+        }));
+        setMedicalCondition(formattedMedications)
+      })
+      .catch((error) => {
+        console.error("Fetching medication failed:", error);
+      });
+  };
+
   useEffect(() => {
     console.log("doctor_id_ID:", doctor_id_ID);
     if (doctor_id_ID) {
       handleGetAppointments();
       handleGetMedication();
+      handleGetMedicationCondition();
     }
   }, [doctor_id_ID]); 
 
@@ -162,7 +200,8 @@ const DoctorDashboard = () => {
   };
 
   const handleConfirmEdit = () => {
-    alert(`Appointment updated with details: ${JSON.stringify(editFormData)}`);
+    const formattedData = JSON.stringify(editFormData, null, 2); // "2" adds indentation for better readability
+    alert(`Appointment updated with details:\n${formattedData}`);
     handleCloseModal();
   };
 
@@ -471,7 +510,7 @@ const DoctorDashboard = () => {
                     Medical Condition
                   </label>
                   <MultiSelect
-                    options={medicalConditionsOptions}
+                    options={medicationConditionOptions}
                     value={editFormData.medicalCondition}
                     onChange={(selectedOptions) =>
                       setEditFormData((prevData) => ({
