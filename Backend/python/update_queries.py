@@ -18,10 +18,13 @@ def update_user_info(dbConnection, user_id, user_info):
                 SELECT role_id FROM user WHERE user_id = %s
                 """
                 cursor.execute(role_query, (user_id,))
-                role_id = cursor.fetchone()['role_id']
+                result = cursor.fetchone()
 
-                hashed_password = bcrypt.hashpw(user_info['password_hash'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                if not result: 
+                    return {"status": "error", "message": "User with provided ID does not exist."}
                 
+                role_id = result['role_id']
+
                 # update user infos
                 update_user_query = """
                 UPDATE user
@@ -53,7 +56,7 @@ def update_user_info(dbConnection, user_id, user_info):
             return {"status": "success", "message": "User information updated successfully."}
         
         except KeyError as ke:
-            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
+            return {"status": "error", "message": f"Missing data in user_info: {str(ke)}"}
 
         except ValueError as ve:
             return {"status": "error", "message": f"Invalid data: {str(ve)}"}
@@ -82,12 +85,15 @@ def update_appointment(dbConnection, patient_id, appointment_id, appointment_inf
 
                 cursor.execute(update_query, (appointment_info['date'], appointment_info['time'], appointment_info['type'], appointment_id, patient_id))
                 
+                if cursor.rowcount == 0:
+                    return {"status": "error", "message": "Appointment not found or no changes made."}
+                
                 connection.commit()
             
             return {"status": "success", "message": "Appointment updated successfully."}
 
         except KeyError as ke:
-            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
+            return {"status": "error", "message": f"Missing data in appointment_info: {str(ke)}"}
 
         except ValueError as ve:
             return {"status": "error", "message": f"Invalid data: {str(ve)}"}
@@ -120,12 +126,15 @@ def update_billing_status(dbConnection, billing_id, appointment_id, patient_id, 
                 current_date = datetime.now().strftime('%Y-%m-%d')
                 cursor.execute(update_billing_query, (payment_info['amount_paid'], current_date, 'paid', payment_info['payment_method'], billing_id, appointment_id, patient_id ))
 
+                if cursor.rowcount == 0:
+                    return {"status": "error", "message": "Billing record not found or no changes made."}
+                
                 connection.commit()
             
             return {"status": "success", "message": "Billing status updated successfully."}
 
         except KeyError as ke:
-            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
+            return {"status": "error", "message": f"Missing data in payment_info: {str(ke)}"}
 
         except ValueError as ve:
             return {"status": "error", "message": f"Invalid data: {str(ve)}"}
@@ -159,6 +168,9 @@ def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
                 current_date = datetime.now().strftime('%Y-%m-%d')
                 cursor.execute(update_diagnosis_query, (diagnosis_info['condition_id_fk'], current_date, diagnosis_info['severity'], diagnosis_id))
 
+                if cursor.rowcount == 0:
+                    return {"status": "error", "message": "Diagnosis record not found or no changes made."}
+                
                 connection.commit()
             
             return {"status": "success", "message": "Diagnosis updated successfully."}
