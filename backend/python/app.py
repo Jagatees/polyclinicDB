@@ -112,7 +112,7 @@ if doctor,
 }
 '''
 
-@app.route('/register', methods=['POST', 'GET']) 
+@app.route('/register', methods=['POST']) 
 def register():
     dbConnection = g.dbConnection 
     if request.method == "POST": 
@@ -129,18 +129,34 @@ def register():
   "user_id": 3,
   }
 '''
-
-@app.route('/delete_user', methods=['POST']) 
-def deleteUser():
+@app.route('/user/<user_id>', methods=['DELETE']) 
+def deleteUser(user_id):
     dbConnection = g.dbConnection 
-    if request.method == "POST": 
-        data = request.get_json() 
-        user_id = data['user_id'] 
+    if request.method == "DELETE":
+        user_id = int(user_id)
         res = delete_queries.delete_user(dbConnection, user_id) 
         return jsonify({"message": res}) 
-
-
-
+    
+#!TODO FUNCTION LOOKS WRONG FROM delete_queries update user info
+'''
+{
+  "user_info" : {
+    "role_id": 2,
+    "username": "johndoe",
+    "password_hash": "123",
+    "email": "
+'''
+@app.route('/user/<user_id>', methods=['PUT'])
+def updateUser(user_id):
+    dbConnection = g.dbConnection
+    
+    if request.method == 'PUT':
+        data = request.get_json()
+        userInfo = data['user_info'] 
+        user_id = int(user_id) 
+        res = update_queries.update_user(dbConnection, user_id, userInfo) 
+        print(res)
+        return jsonify({"message": res}) 
 #!===============================================================================
 '''
 POST appointment 
@@ -190,6 +206,7 @@ def getAppointmentsbyDoctor(doctor_id):
         return jsonify({"message": res})
     
 
+#!TODO update an appointment (patientID and appointmentID needed) 
 
 #! delete an appointment you need the patient_id and the appointment_id
 #! not done in backend
@@ -208,14 +225,14 @@ def deleteAppointment(appointment_id, patient_id):
 POST diagnosis 
 {
     "diagnosis_info": {
-                    "patient_id": 1,
+                    "patient_id": 4,
                     "condition_id": 1,
-                    "doctor_id": 1,
+                    "doctor_id": 2,
                     "severity": "moderate"}, 
     "medication_info": {
-                    "patient_id": 1,
+                    "patient_id": 4,
                     "medication_id": 1,
-                    "doctor_id": 1,
+                    "doctor_id": 2,
                     "dosage": 1,
                     "frequency": 1,
                     "start_date": "2021-01-01",
@@ -245,19 +262,43 @@ def Diagnosis():
             res = {"status": "error", "message": "Only doctors can add a diagnosis."}
         return jsonify({"message": res})
 
+#update a diagnosis
+#TODO maybe can change to only allow the doctor foreign key to update that record
+'''
+ {
+   "diagnosis_info": {
+                     "condition_id_fk": 4,
+                     "severity": "Severe"
+                    }
+ }  
+''' 
+
+#TODO  works now but if i update a wrong diagnosis id it will still return success instead of no such diagnosis  
+@app.route('/diagnosis/<diagnosis_id>', methods=['PUT']) 
+def updateDiagnosis(diagnosis_id): 
+    dbConnection = g.dbConnection
+    
+    if request.method == 'PUT':
+        data = request.get_json()
+        diagnosis_info = data['diagnosis_info'] 
+        diagnosis_id = int(diagnosis_id) 
+        res = update_queries.update_diagnosis(dbConnection, diagnosis_id, diagnosis_info) 
+        print(res)
+        return jsonify({"message": res})
+    
+
 
 '''
 {
   "diagnosis_id": 2
 }
 '''
-#delete a diagnosis
-#!DELETE method is not working for some reason
-@app.route('/delete_diagnosis/<diagnosis_id>', methods=['GET'])
+#! use delete method 
+@app.route('/diagnosis/<diagnosis_id>', methods=['DELETE'])
 def deleteDiagnosis(diagnosis_id):
     dbConnection = g.dbConnection
-    if request.method == 'GET':
-        diagnosis_id = int (diagnosis_id) 
+    if request.method == 'DELETE':
+        diagnosis_id = int(diagnosis_id) 
         res = delete_queries.delete_diagnosis(dbConnection, diagnosis_id)
         print(res)
         return jsonify({"message": res})
@@ -348,6 +389,19 @@ def getBilling(user_id):
         print(res)
         return jsonify({"message": res})
 
+
+#TODO update billingID needs patientid and appointmentID 
+@app.route('/billing/<billing_id>', methods=['PUT']) 
+def updateBilling(billing_id): 
+    dbConnection = g.dbConnection
+    
+    if request.method == 'PUT':
+        data = request.get_json()
+        billing_info = data['billing_info'] 
+        billing_id = int(billing_id) 
+        res = update_queries.update_billing(dbConnection, billing_id, billing_info) 
+        print(res)
+        return jsonify({"message": res})
 #!=============================================================================== 
 #admin functions
 # get all users 
@@ -429,26 +483,30 @@ def medication():
         print(res)
         return jsonify({"message": res})
     
-#!===============================================================================
-#update user info
+#update medication
 '''
 {
-  "user_info" : {
-    "role_id": 2,
-    "username": "johndoe",
-    "password_hash": "123",
-    "email": "
-'''
-@app.route('/user', methods=['PUT'])
-def updateUser():
+    "medication_info":{
+        "name":"Ibuprofen",
+        "description":"For pain",
+        "price": 10
+    }
+}
+''' 
+@app.route('/medication/<medication_id>', methods=['PUT'])
+def updateMedication(medication_id):
     dbConnection = g.dbConnection
     
     if request.method == 'PUT':
         data = request.get_json()
-        userInfo = data['user_info'] 
-        res = update_queries.update_user(dbConnection, userInfo) 
+        medication_info = data['medication_info'] 
+        medication_id = int(medication_id) 
+        res = update_queries.update_medication(dbConnection, medication_id, medication_info) 
         print(res)
-        return jsonify({"message": res})
+        return jsonify({"message": res}) 
+    
+#!===============================================================================
+
 
 #!===============================================================================
 if __name__ == '__main__':

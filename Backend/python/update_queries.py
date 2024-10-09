@@ -137,13 +137,12 @@ Update Diagnosis
 
 diagnosis_info:
 - condition_id_fk
-- diagnosis_date
 - severity
 """
 def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
     if dbConnection:
         try:
-            connection = dbConnection['connection']
+            connection = dbConnection
 
             with connection.cursor() as cursor:
                 update_diagnosis_query = """
@@ -153,7 +152,12 @@ def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_diagnosis_query, (diagnosis_id, diagnosis_info['condition_id_fk'],current_date,diagnosis_info['severity'],))
+                cursor.execute(update_diagnosis_query, (
+                    diagnosis_info['condition_id_fk'],  # condition_id_fk
+                    current_date,                      # diagnosis_date
+                    diagnosis_info['severity'],        # severity
+                    diagnosis_id                       # diagnosis_id for WHERE clause
+                ))
 
                 connection.commit()
             
