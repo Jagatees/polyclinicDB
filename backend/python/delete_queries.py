@@ -88,7 +88,7 @@ def delete_diagnosis(dbConnection, diagnosis_id):
     else:
         return {"status": "error", "message": "No database connection established."}
 
-def delete_appointment(dbConnection, appointment_id):
+def delete_appointment(dbConnection, appointment_id, patient_id):
     if dbConnection:
         try:
             connection = dbConnection
@@ -97,9 +97,9 @@ def delete_appointment(dbConnection, appointment_id):
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 # Check if appointment exists
                 check_appointment_query = """
-                SELECT appointment_id FROM appointment WHERE appointment_id = %s
+                SELECT appointment_id FROM appointment WHERE appointment_id = %s AND patient_id_fk = %s
                 """
-                cursor.execute(check_appointment_query, (appointment_id,))
+                cursor.execute(check_appointment_query, (appointment_id,patient_id))
                 existing_appointment = cursor.fetchone()
 
                 if not existing_appointment:
@@ -107,9 +107,9 @@ def delete_appointment(dbConnection, appointment_id):
 
                 # Proceed with the deletion of the appointment
                 delete_appointment_query = """
-                DELETE FROM appointment WHERE appointment_id = %s
+                DELETE FROM appointment WHERE appointment_id = %s AND patient_id_fk = %s
                 """
-                cursor.execute(delete_appointment_query, (appointment_id,))
+                cursor.execute(delete_appointment_query, (appointment_id,patient_id))
 
                 # Commit the changes to the database
                 connection.commit()
