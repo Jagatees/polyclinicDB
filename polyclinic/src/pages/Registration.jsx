@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { z } from 'zod';
-import image from '../assets/images.jpg';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
+import image from "../assets/images.jpg";
 
 // Define the schema for form validation using Zod
 const formSchema = z.object({
@@ -9,11 +9,11 @@ const formSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   username: z.string().min(1, "Username is required"),
   age: z.number().min(18, "You must be at least 18 years old"),
-  gender: z.enum(['Male', 'Female', 'Other'], "Gender selection is required"),
+  gender: z.enum(["M", "F"], "Gender selection is required"),
   phone: z.string().length(8, "Phone number must be exactly 10 digits"),
   address: z.string().min(1, "Address is required"),
   email: z.string().email("Must be a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters long")
+  password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
 const Registration = () => {
@@ -21,15 +21,15 @@ const Registration = () => {
 
   // States to capture user input
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    age: '',
-    gender: 'Male',
-    phone: '',
-    address: '',
-    email: '',
-    password: '',
+    firstName: "",
+    lastName: "",
+    username: "",
+    age: "",
+    gender: "",
+    phone: "",
+    address: "",
+    email: "",
+    password: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -37,65 +37,85 @@ const Registration = () => {
   const handleInputChange = (event) => {
     const { id, value } = event.target;
     let formattedValue = value;
-    
+
     // Check if the input is meant to be a number and convert it
-    if (id === 'age' && value !== '') {
+    if (id === "age" && value !== "") {
       formattedValue = Number(value);
     }
-    
-    setFormData(prev => ({ ...prev, [id]: formattedValue }));
+
+    setFormData((prev) => ({ ...prev, [id]: formattedValue }));
   };
-  
+
   // Handle form submission
   const handleRegistration = async (event) => {
     event.preventDefault();
-    try {  
+    try {
+      // {
+      //   "user_info" : {
+      //     "role_id": 2,
+      //     "username": "johndoe",
+      //     "password_hash": "123",
+      //     "email": "baba@gmail.com",
+      //     "first_name": "John",
+      //     "last_name": "Doe"
+      //   }
+      //     ,
+      //   "role_info" : {
+      //       "age": 23,
+      //       "gender": "m",
+      //       "phone_number": "89482392",
+      //       "address": "123, Ang Mo Kio, Lagos"
+      //     }
+      // }
       const user_info = {
-        role_id: 2, 
+        role_id: 2,
         username: formData.username,
-        password_hash: formData.password, 
+        password_hash: formData.password,
         email: formData.email,
-      };
-  
-      const role_info = {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          age: formData.age,
-          gender: formData.gender,
-          phone_number: formData.phone,
-          address: formData.address
+        first_name: formData.firstName,
+        last_name: formData.lastName,
       };
 
+      const role_info = {
+        age: formData.age,
+        gender: formData.gender,
+        phone_number: formData.phone,
+        address: formData.address,
+      };
+
+      console.log(user_info, role_info);
 
       // Submit the data
-      fetch('/api/register', {
-        method: 'POST',
+      fetch("/api/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ user_info, role_info }),
       })
         .then((response) => {
-          if (!response.ok) throw new Error('Registration failed');
+          if (!response.ok) throw new Error("Registration failed");
           return response.json();
         })
         .then((data) => {
-          console.log('Registration successful:', data.message.status);
-          if (data.message.status === 'success') {
-            handleLogIn(formData.email, formData.password)
-          } else if (data.message.message === 'User already exists with this username or email.') {
-            alert("account already registeration go to login page")
+          console.log("Registration successful:", data.message.status);
+          if (data.message.status === "success") {
+            handleLogIn(formData.email, formData.password);
+          } else if (
+            data.message.message ===
+            "User already exists with this username or email."
+          ) {
+            alert("account already registeration go to login page");
           }
         })
         .catch((error) => {
-          console.error('Registration failed:', error);
+          console.error("Registration failed:", error);
         });
     } catch (error) {
       setErrors(error.flatten().fieldErrors);
-      console.error('Validation failed:', error);
+      console.error("Validation failed:", error);
     }
   };
-
 
   const handleLogIn = (email, password) => {
     fetch("/api/login", {
@@ -105,45 +125,42 @@ const Registration = () => {
       },
       body: JSON.stringify({
         email,
-        password
+        password,
       }),
     })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Login successful:", data);
-      if (data) {
-
-        localStorage.setItem("patient_id", data.message.user.patient_id);
-        localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
-        localStorage.setItem("user_id", data.message.user.user_id);
-      
-        switch (data.message.user.role_id_fk) {
-          case 1:
-            navigate("/doctordashboard");
-            break;
-          case 2:
-            navigate("/userdashboard");
-            break;
-          case 3:
-            navigate("/admindashboard");
-            break;
-          default:
-            navigate("/home");
-            break;
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Login failed");
         }
-      
-      }
-    })
-    .catch((error) => {
-      console.error("Login failed:", error);
-    });
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Login successful:", data);
+        if (data) {
+          localStorage.setItem("patient_id", data.message.user.patient_id);
+          localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
+          localStorage.setItem("user_id", data.message.user.user_id);
+
+          switch (data.message.user.role_id_fk) {
+            case 1:
+              navigate("/doctordashboard");
+              break;
+            case 2:
+              navigate("/userdashboard");
+              break;
+            case 3:
+              navigate("/admindashboard");
+              break;
+            default:
+              navigate("/home");
+              break;
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+      });
   };
-  
 
   return (
     <div className="h-screen w-screen flex">
@@ -170,117 +187,177 @@ const Registration = () => {
           <form onSubmit={handleRegistration} className="space-y-4">
             <div className="flex space-x-4">
               <div className="w-1/2">
-                <label htmlFor="firstName" className="block text-sm mb-1">First Name</label>
+                <label htmlFor="firstName" className="block text-sm mb-1">
+                  First Name
+                </label>
                 <input
                   type="text"
                   id="firstName"
                   placeholder="John"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className={`w-full p-2 bg-gray-700 rounded ${errors.firstName ? 'border border-red-500' : ''}`}
+                  className={`w-full p-2 bg-gray-700 rounded ${
+                    errors.firstName ? "border border-red-500" : ""
+                  }`}
                 />
-                {errors.firstName && <p className="text-red-500 text-xs italic">{errors.firstName}</p>}
+                {errors.firstName && (
+                  <p className="text-red-500 text-xs italic">
+                    {errors.firstName}
+                  </p>
+                )}
               </div>
               <div className="w-1/2">
-                <label htmlFor="lastName" className="block text-sm mb-1">Last Name</label>
+                <label htmlFor="lastName" className="block text-sm mb-1">
+                  Last Name
+                </label>
                 <input
                   type="text"
                   id="lastName"
                   placeholder="Doe"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className={`w-full p-2 bg-gray-700 rounded ${errors.lastName ? 'border border-red-500' : ''}`}
+                  className={`w-full p-2 bg-gray-700 rounded ${
+                    errors.lastName ? "border border-red-500" : ""
+                  }`}
                 />
-                {errors.lastName && <p className="text-red-500 text-xs italic">{errors.lastName}</p>}
+                {errors.lastName && (
+                  <p className="text-red-500 text-xs italic">
+                    {errors.lastName}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex space-x-4">
               <div className="w-1/3">
-                <label htmlFor="username" className="block text-sm mb-1">Username</label>
+                <label htmlFor="username" className="block text-sm mb-1">
+                  Username
+                </label>
                 <input
                   type="text"
                   id="username"
                   placeholder="john_doe"
                   value={formData.username}
                   onChange={handleInputChange}
-                  className={`w-full p-2 bg-gray-700 rounded ${errors.username ? 'border border-red-500' : ''}`}
+                  className={`w-full p-2 bg-gray-700 rounded ${
+                    errors.username ? "border border-red-500" : ""
+                  }`}
                 />
-                {errors.username && <p className="text-red-500 text-xs italic">{errors.username}</p>}
+                {errors.username && (
+                  <p className="text-red-500 text-xs italic">
+                    {errors.username}
+                  </p>
+                )}
               </div>
               <div className="w-1/3">
-                <label htmlFor="age" className="block text-sm mb-1">Age</label>
+                <label htmlFor="age" className="block text-sm mb-1">
+                  Age
+                </label>
                 <input
                   type="number"
                   id="age"
                   placeholder="30"
                   value={formData.age}
                   onChange={handleInputChange}
-                  className={`w-full p-2 bg-gray-700 rounded ${errors.age ? 'border border-red-500' : ''}`}
+                  className={`w-full p-2 bg-gray-700 rounded ${
+                    errors.age ? "border border-red-500" : ""
+                  }`}
                 />
-                {errors.age && <p className="text-red-500 text-xs italic">{errors.age}</p>}
+                {errors.age && (
+                  <p className="text-red-500 text-xs italic">{errors.age}</p>
+                )}
               </div>
               <div className="w-1/3">
-                <label htmlFor="gender" className="block text-sm mb-1">Gender</label>
+                <label htmlFor="gender" className="block text-sm mb-1">
+                  Gender
+                </label>
                 <select
                   id="gender"
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className={`w-full p-2 bg-gray-700 rounded ${errors.gender ? 'border border-red-500' : ''}`}
+                  className={`w-full p-2 bg-gray-700 rounded ${
+                    errors.gender ? "border border-red-500" : ""
+                  }`}
                 >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option value="">Select Gender</option>
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
                 </select>
-                {errors.gender && <p className="text-red-500 text-xs italic">{errors.gender}</p>}
+                {errors.gender && (
+                  <p className="text-red-500 text-xs italic">{errors.gender}</p>
+                )}
               </div>
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm mb-1">Phone Number</label>
+              <label htmlFor="phone" className="block text-sm mb-1">
+                Phone Number
+              </label>
               <input
                 type="text"
                 id="phone"
                 placeholder="123-456-7890"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className={`w-full p-2 bg-gray-700 rounded ${errors.phone ? 'border border-red-500' : ''}`}
+                className={`w-full p-2 bg-gray-700 rounded ${
+                  errors.phone ? "border border-red-500" : ""
+                }`}
               />
-              {errors.phone && <p className="text-red-500 text-xs italic">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="text-red-500 text-xs italic">{errors.phone}</p>
+              )}
             </div>
             <div>
-              <label htmlFor="address" className="block text-sm mb-1">Address</label>
+              <label htmlFor="address" className="block text-sm mb-1">
+                Address
+              </label>
               <input
                 type="text"
                 id="address"
                 placeholder="1234 Main St"
                 value={formData.address}
                 onChange={handleInputChange}
-                className={`w-full p-2 bg-gray-700 rounded ${errors.address ? 'border border-red-500' : ''}`}
+                className={`w-full p-2 bg-gray-700 rounded ${
+                  errors.address ? "border border-red-500" : ""
+                }`}
               />
-              {errors.address && <p className="text-red-500 text-xs italic">{errors.address}</p>}
+              {errors.address && (
+                <p className="text-red-500 text-xs italic">{errors.address}</p>
+              )}
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm mb-1">Email</label>
+              <label htmlFor="email" className="block text-sm mb-1">
+                Email
+              </label>
               <input
                 type="email"
                 id="email"
                 placeholder="john@example.com"
                 value={formData.email}
                 onChange={handleInputChange}
-                className={`w-full p-2 bg-gray-700 rounded ${errors.email ? 'border border-red-500' : ''}`}
+                className={`w-full p-2 bg-gray-700 rounded ${
+                  errors.email ? "border border-red-500" : ""
+                }`}
               />
-              {errors.email && <p className="text-red-500 text-xs italic">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-xs italic">{errors.email}</p>
+              )}
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm mb-1">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  placeholder="Enter a strong password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`w-full p-2 bg-gray-700 rounded ${errors.password ? 'border border-red-500' : ''}`}
-                />
-                {errors.password && <p className="text-red-500 text-xs italic">{errors.password}</p>}
+              <label htmlFor="password" className="block text-sm mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Enter a strong password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`w-full p-2 bg-gray-700 rounded ${
+                  errors.password ? "border border-red-500" : ""
+                }`}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-xs italic">{errors.password}</p>
+              )}
             </div>
             <div className="mt-6">
               <button
@@ -291,7 +368,10 @@ const Registration = () => {
               </button>
             </div>
             <div className="text-center mt-4">
-              Already have an account? <a href="/login" className="text-blue-400 hover:underline">Login</a>
+              Already have an account?{" "}
+              <a href="/login" className="text-blue-400 hover:underline">
+                Login
+              </a>
             </div>
           </form>
         </div>
