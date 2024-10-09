@@ -19,6 +19,8 @@ def update_user_info(dbConnection, user_id, user_info):
                 """
                 cursor.execute(role_query, (user_id,))
                 role_id = cursor.fetchone()['role_id']
+
+                hashed_password = bcrypt.hashpw(user_info['password_hash'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 
                 # update user infos
                 update_user_query = """
