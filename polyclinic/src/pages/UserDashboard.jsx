@@ -10,6 +10,8 @@ const UserDashboard = () => {
   // State to hold localStorage data
   const [userId, setUserId] = useState(null);
   const [patientId, setPatientId] = useState(null);
+  const [doctorId, setDoctorId] = useState(null);
+
   const [role_id_fk_ID, setrole_id_fk] = useState(null);
   const navigate = useNavigate();
 
@@ -18,7 +20,9 @@ const UserDashboard = () => {
     const localUserId = localStorage.getItem("user_id");
     const localPatientId = localStorage.getItem("patient_id");
     const role_id_fk = localStorage.getItem("role_id_fk");
-
+    const doctor_id = localStorage.getItem("doctor_id");
+    
+    setDoctorId(doctor_id);
     setUserId(localUserId);
     setPatientId(localPatientId);
     setrole_id_fk(role_id_fk);

@@ -5,7 +5,6 @@ const AdminDashboard = () => {
   const [activePage, setActivePage] = useState("view_user");
   const [users, setUsers] = useState([]);
   const [usersAll, setUsersAll] = useState([]);
-
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUser, setNewUser] = useState({
     username: "",
@@ -21,6 +20,45 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true); // Track loading state
   const [noData, setNoData] = useState(false); // Track no data state
   const navigate = useNavigate();
+
+  const [patientId, setPatientId] = useState(null);
+  const [role_id_fk_ID, setrole_id_fk] = useState(null);
+  const [doctorId, setDoctorId] = useState(null);
+
+  useEffect(() => {
+    // Retrieve and set user_id and patient_id from local storage
+    const localUserId = localStorage.getItem("user_id");
+    const localPatientId = localStorage.getItem("patient_id");
+    const role_id_fk = localStorage.getItem("role_id_fk");
+    const doctor_id = localStorage.getItem("doctor_id");
+
+    setDoctorId(doctor_id);
+    setUserId(localUserId);
+    setPatientId(localPatientId);
+    setrole_id_fk(role_id_fk);
+  }, []);
+
+  const handleGetAppointments = () => {
+    fetch(`/api/appointment/${patientId}/${role_id_fk_ID}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Booking failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Booking successful:", data.message);
+        setAppointments(data.message);
+      })
+      .catch((error) => {
+        console.error("Booking failed:", error);
+      });
+  };
 
   const getuser = () => {
     const role_id = localStorage.getItem("role_id_fk");
