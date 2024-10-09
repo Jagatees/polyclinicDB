@@ -181,7 +181,7 @@ medication_info:
 def update_medication(dbConnection, medication_id, medication_info):
     if dbConnection:
         try:
-            connection = dbConnection['connection']
+            connection = dbConnection
 
             with connection.cursor() as cursor:
                 update_medication_query = """
@@ -217,7 +217,7 @@ medical_condition_info:
 def update_medical_condition(dbConnection, condition_id, condition_info):
     if dbConnection:
         try:
-            connection = dbConnection['connection']
+            connection = dbConnection
 
             with connection.cursor() as cursor:
                 update_condition_query = """

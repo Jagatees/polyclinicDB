@@ -210,7 +210,7 @@ def getAppointmentsbyDoctor(doctor_id):
 
 #! delete an appointment you need the patient_id and the appointment_id
 #! not done in backend
-@app.route('/delete_appointment/<patient_id>/<appointment_id>', methods=['DELETE'])
+@app.route('/appointment/<patient_id>/<appointment_id>', methods=['DELETE'])
 def deleteAppointment(appointment_id, patient_id):
     dbConnection = g.dbConnection
     if request.method == 'DELETE':
@@ -462,6 +462,28 @@ def getMedicalConditions(role_id):
             res = {"status": "error", "message": "Only admin can view all medical conditions."}
             return jsonify({"message": res})
 
+
+#update medical condition 
+'''
+{
+    "condition_info":{
+        "name":"Flu",
+        "description":"runny nose"
+    }
+}
+'''
+@app.route('/medical_condition/<condition_id>', methods=['PUT'])
+def updateMedicalCondition(condition_id):
+    dbConnection = g.dbConnection
+    
+    if request.method == 'PUT':
+        data = request.get_json()
+        condition_info = data['condition_info'] 
+        condition_id = int(condition_id) 
+        res = update_queries.update_medical_condition(dbConnection, condition_id, condition_info) 
+        print(res)
+        return jsonify({"message": res})
+#!================================================================================
 '''
 {
     "medication_info":{
