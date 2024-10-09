@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Spinner from '../components/Spinner'; // Make sure the import path is correct
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("appointments");
