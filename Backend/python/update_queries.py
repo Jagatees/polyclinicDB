@@ -208,6 +208,9 @@ def update_medication(dbConnection, medication_id, medication_info):
 
                 cursor.execute(update_medication_query, (medication_info['name'],medication_info['description'], medication_info['price'], medication_id))
 
+                if cursor.rowcount == 0:
+                    return {"status": "error", "message": "Medication record not found or no changes made."}
+                
                 connection.commit()
             
             return {"status": "success", "message": "Medication updated successfully."}
@@ -244,6 +247,9 @@ def update_medical_condition(dbConnection, condition_id, condition_info):
 
                 cursor.execute(update_condition_query, (condition_info['name'],condition_info['description'], condition_id))
 
+                if cursor.rowcount == 0:
+                    return {"status": "error", "message": "Medical Condition record not found or no changes made."}
+                
                 connection.commit()
             
             return {"status": "success", "message": "Medical Condition updated successfully."}
