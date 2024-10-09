@@ -137,14 +137,33 @@ def deleteUser(user_id):
         res = delete_queries.delete_user(dbConnection, user_id) 
         return jsonify({"message": res}) 
     
-#!TODO FUNCTION LOOKS WRONG FROM delete_queries update user info
+
 '''
+PATIENT 
 {
   "user_info" : {
-    "role_id": 2,
     "username": "johndoe",
-    "password_hash": "123",
+    "password_hash": "123456",
+    "email": "papajohn@gmail.com",
+    "first_name": "PAPA",
+    "last_name": "JOHN",
+    "age": 23,
+    "phone_number": "89482392",
+    "address": "123, Changi"
+    }
+}
+
+DOCTOR
+{
+  "user_info" : {
+    "username": "johndoe",
+    "password_hash": "123456",
     "email": "
+    "first_name": "PAPA",
+    "last_name": "JOHN"
+    "phone_number": "89482392",
+    "specialty": "General" 
+    }
 '''
 @app.route('/user/<user_id>', methods=['PUT'])
 def updateUser(user_id):
@@ -154,7 +173,7 @@ def updateUser(user_id):
         data = request.get_json()
         userInfo = data['user_info'] 
         user_id = int(user_id) 
-        res = update_queries.update_user(dbConnection, user_id, userInfo) 
+        res = update_queries.update_user_info(dbConnection, user_id, userInfo) 
         print(res)
         return jsonify({"message": res}) 
 #!===============================================================================
@@ -170,7 +189,7 @@ POST appointment
   }
 }
 '''
-@app.route('/appointments', methods=['POST','GET'])
+@app.route('/appointment', methods=['POST','GET'])
 def getAppointment():
     dbConnection = g.dbConnection
 
@@ -183,7 +202,7 @@ def getAppointment():
         return jsonify({"message": res})
 
 
-@app.route('/appointments/<user_id>/<role_id>', methods=['GET'])
+@app.route('/appointment/<user_id>/<role_id>', methods=['GET'])
 def getAppointments(user_id,role_id):
     dbConnection = g.dbConnection
     if request.method == 'GET':
@@ -196,7 +215,7 @@ def getAppointments(user_id,role_id):
 
 
 
-@app.route('/appointments/<doctor_id>/', methods=['GET'])
+@app.route('/appointment/<doctor_id>/', methods=['GET'])
 def getAppointmentsbyDoctor(doctor_id):
     dbConnection = g.dbConnection
     if request.method == 'GET':
@@ -206,10 +225,30 @@ def getAppointmentsbyDoctor(doctor_id):
         return jsonify({"message": res})
     
 
-#!TODO update an appointment (patientID and appointmentID needed) 
+#!TODO appointments update will show success even if no such appointments
+'''
+{
+  "appointment_info": {
+    "date": "2024-09-28",
+    "time": "06:10:05",
+    "type": "Medical Consultation"
+  }
+}
+'''
+@app.route('/appointment/<patient_id>/<appointment_id>', methods=['PUT'])
+def updateAppointment(appointment_id, patient_id):
+    dbConnection = g.dbConnection
+    
+    if request.method == 'PUT':
+        data = request.get_json()
+        appointment_info = data['appointment_info'] 
+        appointment_id = int(appointment_id) 
+        patient_id = int(patient_id) 
+        res = update_queries.update_appointment(dbConnection, patient_id, appointment_id, appointment_info) 
+        print(res)
+        return jsonify({"message": res})
 
-#! delete an appointment you need the patient_id and the appointment_id
-#! not done in backend
+
 @app.route('/appointment/<patient_id>/<appointment_id>', methods=['DELETE'])
 def deleteAppointment(appointment_id, patient_id):
     dbConnection = g.dbConnection
@@ -388,18 +427,25 @@ def getBilling(user_id):
         res = select_queries.get_billing_by_user(dbConnection, user_id)
         print(res)
         return jsonify({"message": res})
+'''
+payment_info:
+- amount_paid
+- payment_method
+'''
 
 
 #TODO update billingID needs patientid and appointmentID 
-@app.route('/billing/<billing_id>', methods=['PUT']) 
-def updateBilling(billing_id): 
+@app.route('/billing/<billing_id>/<appointment_id>/<patient_id>', methods=['PUT']) 
+def updateBilling(billing_id, appointment_id, patient_id):  
     dbConnection = g.dbConnection
     
     if request.method == 'PUT':
         data = request.get_json()
-        billing_info = data['billing_info'] 
+        billing_info = data['payment_info'] 
         billing_id = int(billing_id) 
-        res = update_queries.update_billing(dbConnection, billing_id, billing_info) 
+        appointment_id = int(appointment_id)
+        patient_id = int(patient_id) 
+        res = update_queries.update_billing_status(dbConnection, billing_id,appointment_id, patient_id, billing_info) 
         print(res)
         return jsonify({"message": res})
 #!=============================================================================== 

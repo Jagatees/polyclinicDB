@@ -1,5 +1,6 @@
 from datetime import datetime
 import bcrypt
+import pymysql.cursors
 """
 user_info:
 - username
@@ -13,12 +14,12 @@ def update_user_info(dbConnection, user_id, user_info):
     if dbConnection:
         connection = dbConnection
         try:
-            with connection.cursor() as cursor:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 role_query = """
-                SELECT role_id FROM user WHERE user_id = %s
+                SELECT role_id_fk FROM user WHERE user_id = %s
                 """
                 cursor.execute(role_query, (user_id,))
-                role_id = cursor.fetchone()['role_id']
+                role_id = cursor.fetchone()['role_id_fk']
 
                 hashed_password = bcrypt.hashpw(user_info['password_hash'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 
@@ -28,8 +29,6 @@ def update_user_info(dbConnection, user_id, user_info):
                 SET username = %s, password_hash = %s,email = %s, first_name = %s, last_name = %s
                 WHERE user_id = %s
                 """
-
-                hashed_password = bcrypt.hashpw(user_info['password_hash'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 cursor.execute(update_user_query, (user_info['username'], hashed_password, user_info['email'], user_info['first_name'],user_info['last_name'], user_id))
                 
                 if role_id == 1:  # 1 is for doctor
@@ -43,7 +42,7 @@ def update_user_info(dbConnection, user_id, user_info):
                 elif role_id == 2:  # 2 is for patient
                     update_patient_query = """
                     UPDATE patient
-                    SET age = %s, phone_number = %s, address = %s, 
+                    SET age = %s, phone_number = %s, address = %s
                     WHERE user_id_fk = %s
                     """
                     cursor.execute(update_patient_query, (user_info['age'], user_info['phone_number'], user_info['address'],  user_id))
@@ -113,8 +112,8 @@ def update_billing_status(dbConnection, billing_id, appointment_id, patient_id, 
             with connection.cursor() as cursor:
                 update_billing_query = """
                 UPDATE billing
-                SET amount_paid = %s, payment_date = %s, status = %s,  payment_method = %s, 
-                WHERE billing_id = %s AND appointment_id = %s AND patient_id_fk = %s
+                SET amount_paid = %s, billing_date = %s, payment_status = %s,  payment_method = %s
+                WHERE billing_id = %s AND appointment_id_fk = %s AND patient_id_fk = %s
                 """
                 
                 current_date = datetime.now().strftime('%Y-%m-%d')
