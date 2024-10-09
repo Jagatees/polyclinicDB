@@ -108,7 +108,7 @@ payment_info:
 def update_billing_status(dbConnection, billing_id, appointment_id, patient_id, payment_info):
     if dbConnection:
         try:
-            connection = dbConnection['connection']
+            connection = dbConnection
 
             with connection.cursor() as cursor:
                 update_billing_query = """
@@ -147,7 +147,7 @@ diagnosis_info:
 def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
     if dbConnection:
         try:
-            connection = dbConnection['connection']
+            connection = dbConnection
 
             with connection.cursor() as cursor:
                 update_diagnosis_query = """
