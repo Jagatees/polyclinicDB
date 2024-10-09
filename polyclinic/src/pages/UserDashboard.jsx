@@ -21,7 +21,7 @@ const UserDashboard = () => {
     const localPatientId = localStorage.getItem("patient_id");
     const role_id_fk = localStorage.getItem("role_id_fk");
     const doctor_id = localStorage.getItem("doctor_id");
-    
+
     setDoctorId(doctor_id);
     setUserId(localUserId);
     setPatientId(localPatientId);
@@ -68,8 +68,8 @@ const UserDashboard = () => {
         date: appointmentDate,
         time: appointmentTime,
         type: visitType,
-        patient_id: patientId 
-      }
+        patient_id: patientId,
+      },
     };
 
     fetch(`/api/appointment`, {
@@ -88,11 +88,44 @@ const UserDashboard = () => {
       .then((data) => {
         console.log("Booking successful:", data);
         setShowBookingForm(false); // Close the form on success
+        if (patientId && role_id_fk_ID) {
+          handleGetAppointments();
+        }
       })
       .catch((error) => {
         console.error("Booking failed:", error);
       });
   };
+
+
+  const handleDeleteAppointment = (patient_id, appointment_id) => {
+    try {
+      fetch(`/api/appointment/${patient_id}/${appointment_id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Registration failed");
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Deletaion successful:", data.message.status);
+          if (patientId && role_id_fk_ID) {
+            handleGetAppointments();
+          }
+        })
+        .catch((error) => {
+          console.error("Deletaion failed:", error);
+        });
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
+
+    
+  }
+
 
   const handleGetAppointments = () => {
     fetch(`/api/appointment/${patientId}/${role_id_fk_ID}`, {
@@ -182,6 +215,8 @@ const UserDashboard = () => {
             <table className="min-w-full bg-white shadow-md rounded-lg">
               <thead>
                 <tr>
+                  <th className="border px-4 py-2 text-left">appointment_id</th>
+
                   <th className="border px-4 py-2 text-left">Date</th>
                   <th className="border px-4 py-2 text-left">Time</th>
                   <th className="border px-4 py-2 text-left">doctor_id_fk</th>
@@ -193,6 +228,10 @@ const UserDashboard = () => {
               <tbody>
                 {appointments.map((appointment) => (
                   <tr key={appointment.appointment_id}>
+                    <td className="border px-4 py-2">
+                      {appointment.appointment_id}
+                    </td>
+
                     <td className="border px-4 py-2">{appointment.date}</td>
                     <td className="border px-4 py-2">{appointment.time}</td>
                     <td className="border px-4 py-2">
@@ -205,9 +244,25 @@ const UserDashboard = () => {
                     <td className="border px-4 py-2">{appointment.type}</td>
                     <td className="border px-4 py-2">
                       {appointment.status === "pending" ? (
-                        <span className="text-yellow-600">
-                          Waiting for doctor to confirm
-                        </span>
+                        <>
+                          <span className="text-yellow-600">
+                            Waiting for doctor to confirm
+                          </span>
+                          <button
+                            onClick={() => openUpdateModal(appointment)}
+                            className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 ml-2 rounded"
+                          >
+                            Update
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDeleteAppointment(appointment.patient_id_fk, appointment.appointment_id)
+                            }
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 ml-2 rounded"
+                          >
+                            Delete {appointment.patient_id_fk} {appointment.id}
+                          </button>
+                        </>
                       ) : (
                         <button
                           onClick={() => openModal(appointment)}

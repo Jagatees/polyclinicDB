@@ -251,6 +251,7 @@ def updateAppointment(appointment_id, patient_id):
 
 @app.route('/appointment/<patient_id>/<appointment_id>', methods=['DELETE'])
 def deleteAppointment(appointment_id, patient_id):
+    
     dbConnection = g.dbConnection
     if request.method == 'DELETE':
         appointment_id = int(appointment_id) 
