@@ -1,4 +1,5 @@
 from datetime import datetime
+import bcrypt
 
 """
 user_info:
@@ -19,6 +20,8 @@ def update_user_info(dbConnection, user_id, user_info):
                 """
                 cursor.execute(role_query, (user_id,))
                 role_id = cursor.fetchone()['role_id']
+
+                hashed_password = bcrypt.hashpw(user_info['password_hash'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 
                 # update user infos
                 update_user_query = """
@@ -26,7 +29,7 @@ def update_user_info(dbConnection, user_id, user_info):
                 SET username = %s, password_hash = %s,email = %s, first_name = %s, last_name = %s
                 WHERE user_id = %s
                 """
-                cursor.execute(update_user_query, (user_info['username'], user_info['password_hash'], user_info['email'], user_info['first_name'],user_info['last_name'], user_id))
+                cursor.execute(update_user_query, (user_info['username'], hashed_password, user_info['email'], user_info['first_name'],user_info['last_name'], user_id))
                 
                 if role_id == 1:  # 1 is for doctor
                     update_doctor_query = """
@@ -65,7 +68,7 @@ appointment_info:
 - time
 - type
 """
-def update_appointment(dbConnection, patient_id, appointment_info):
+def update_appointment(dbConnection, patient_id, appointment_id, appointment_info):
     if dbConnection:
         connection = dbConnection
         try:
@@ -73,10 +76,10 @@ def update_appointment(dbConnection, patient_id, appointment_info):
                 update_query = """
                 UPDATE appointment
                 SET date = %s, time = %s, type = %s
-                WHERE patient_id_fk = %s
+                WHERE patient_id_fk = %s AND appointment_id = %s
                 """
 
-                cursor.execute(update_query, (appointment_info['date'], appointment_info['time'], appointment_info['type'], patient_id))
+                cursor.execute(update_query, (appointment_info['date'], appointment_info['time'], appointment_info['type'], patient_id, appointment_id))
                 
                 connection.commit()
             
@@ -101,7 +104,7 @@ payment_info:
 - amount_paid
 - payment_method
 """
-def update_billing_status(dbConnection, billing_id, payment_info):
+def update_billing_status(dbConnection, billing_id, appointment_id,patient_id, payment_info):
     if dbConnection:
         try:
             connection = dbConnection['connection']
@@ -110,11 +113,11 @@ def update_billing_status(dbConnection, billing_id, payment_info):
                 update_billing_query = """
                 UPDATE billing
                 SET amount_paid = %s, payment_date = %s, status = %s,  payment_method = %s, 
-                WHERE billing_id = %s
+                WHERE billing_id = %s AND appointment_id_fk = %s AND patient_id_fk = %s
                 """
                 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_billing_query, (payment_info['amount_paid'],current_date, 'paid', payment_info['payment_method'], billing_id))
+                cursor.execute(update_billing_query, (payment_info['amount_paid'],current_date, 'paid', payment_info['payment_method'], billing_id, appointment_id, patient_id))
 
                 connection.commit()
             
