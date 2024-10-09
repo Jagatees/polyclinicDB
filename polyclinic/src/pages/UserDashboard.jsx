@@ -10,6 +10,8 @@ const UserDashboard = () => {
   // State to hold localStorage data
   const [userId, setUserId] = useState(null);
   const [patientId, setPatientId] = useState(null);
+  const [doctorId, setDoctorId] = useState(null);
+
   const [role_id_fk_ID, setrole_id_fk] = useState(null);
   const navigate = useNavigate();
 
@@ -18,7 +20,9 @@ const UserDashboard = () => {
     const localUserId = localStorage.getItem("user_id");
     const localPatientId = localStorage.getItem("patient_id");
     const role_id_fk = localStorage.getItem("role_id_fk");
-
+    const doctor_id = localStorage.getItem("doctor_id");
+    
+    setDoctorId(doctor_id);
     setUserId(localUserId);
     setPatientId(localPatientId);
     setrole_id_fk(role_id_fk);
@@ -56,32 +60,24 @@ const UserDashboard = () => {
   ]);
 
   const handleBookAppointment = (event) => {
-    event.preventDefault();
+    event.preventDefault(); // Prevent the default form submit action
 
-    // Use the state values from the form
-    console.log(
-      "Booking details:",
-      visitType,
-      appointmentDate,
-      appointmentTime,
-      userId,
-      patientId
-    );
+    // Gathering the data from state
+    const formData = {
+      appointment_info: {
+        date: appointmentDate,
+        time: appointmentTime,
+        type: visitType,
+        patient_id: patientId 
+      }
+    };
 
-    fetch("/api/appointments", {
+    fetch(`/api/appointment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        appointment_info: {
-          date: appointmentDate,
-          time: appointmentTime,
-          type: visitType,
-          user_id: userId, // Use user ID from local storage
-          patient_id: patientId, // Use patient ID from local storage
-        },
-      }),
+      body: JSON.stringify(formData), // Sending the formData as JSON
     })
       .then((response) => {
         if (!response.ok) {
@@ -91,7 +87,7 @@ const UserDashboard = () => {
       })
       .then((data) => {
         console.log("Booking successful:", data);
-        setShowBookingForm(false);
+        setShowBookingForm(false); // Close the form on success
       })
       .catch((error) => {
         console.error("Booking failed:", error);
@@ -99,10 +95,7 @@ const UserDashboard = () => {
   };
 
   const handleGetAppointments = () => {
-    // Define the API endpoint with user_id and role_id
-    const apiUrl = `/api/appointments/${patientId}/${role_id_fk_ID}`;
-
-    fetch(apiUrl, {
+    fetch(`/api/appointment/${patientId}/${role_id_fk_ID}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -110,18 +103,19 @@ const UserDashboard = () => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Fetching appointments failed");
+          throw new Error("Booking failed");
         }
         return response.json();
       })
       .then((data) => {
-        console.log("Appointments fetched:", data.message);
+        console.log("Booking successful:", data.message);
         setAppointments(data.message);
       })
       .catch((error) => {
-        console.error("Fetching appointments failed:", error);
+        console.error("Booking failed:", error);
       });
   };
+
   useEffect(() => {
     console.log("patientId:", patientId, "role_id_fk_ID:", role_id_fk_ID);
     if (patientId && role_id_fk_ID) {

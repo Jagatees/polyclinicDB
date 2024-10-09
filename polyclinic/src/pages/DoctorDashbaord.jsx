@@ -41,30 +41,22 @@ const DoctorDashboard = () => {
     { label: "Asthma", value: "Asthma" },
     { label: "Cholesterol", value: "Cholesterol" },
   ];
-  // State to hold localStorage data
-  const [userId, setUserId] = useState(null);
-  const [patientId, setPatientId] = useState(null);
-  const [role_id_fk_ID, setrole_id_fk] = useState(null);
+ 
   const [doctor_id_ID, setdoctor_id] = useState(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Retrieve and set user_id and patient_id from local storage
-    const localUserId = localStorage.getItem("user_id");
-    const localPatientId = localStorage.getItem("patient_id");
-    const role_id_fk = localStorage.getItem("role_id_fk");
     const doctor_id = localStorage.getItem("doctor_id");
-
-    setUserId(localUserId);
-    setPatientId(localPatientId);
-    setrole_id_fk(role_id_fk);
     setdoctor_id(doctor_id);
   }, []);
 
   const handleGetAppointments = () => {
+
+
+    console.log(doctor_id_ID)
     // Define the API endpoint with user_id and role_id
-    const apiUrl = `/api/appointments/${doctor_id_ID}/`;
+    const apiUrl = `/api/appointment/${doctor_id_ID}/`;
 
     fetch(apiUrl, {
       method: "GET",
@@ -90,7 +82,6 @@ const DoctorDashboard = () => {
   };
 
   const handleGetMedication = () => {
-    // Define the API endpoint with user_id and role_id
     const apiUrl = `/api/medication`;
 
     fetch(apiUrl, {

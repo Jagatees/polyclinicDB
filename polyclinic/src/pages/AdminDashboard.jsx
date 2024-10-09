@@ -1,15 +1,67 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
-  const [activePage, setActivePage] = useState('view_user');
+  const [activePage, setActivePage] = useState("view_user");
   const [users, setUsers] = useState([]);
+  const [usersAll, setUsersAll] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: '' });
+  const [newUser, setNewUser] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: "",
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    specialty: "",
+  });
+
   const [loading, setLoading] = useState(true); // Track loading state
   const [noData, setNoData] = useState(false); // Track no data state
+  const navigate = useNavigate();
+
+  const [patientId, setPatientId] = useState(null);
+  const [role_id_fk_ID, setrole_id_fk] = useState(null);
+  const [doctorId, setDoctorId] = useState(null);
+
+  useEffect(() => {
+    // Retrieve and set user_id and patient_id from local storage
+    const localUserId = localStorage.getItem("user_id");
+    const localPatientId = localStorage.getItem("patient_id");
+    const role_id_fk = localStorage.getItem("role_id_fk");
+    const doctor_id = localStorage.getItem("doctor_id");
+
+    setDoctorId(doctor_id);
+    setUserId(localUserId);
+    setPatientId(localPatientId);
+    setrole_id_fk(role_id_fk);
+  }, []);
+
+  const handleGetAppointments = () => {
+    fetch(`/api/appointment/${patientId}/${role_id_fk_ID}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Booking failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Booking successful:", data.message);
+        setAppointments(data.message);
+      })
+      .catch((error) => {
+        console.error("Booking failed:", error);
+      });
+  };
 
   const getuser = () => {
-    const role_id = localStorage.getItem('role_id_fk'); 
+    const role_id = localStorage.getItem("role_id_fk");
     fetch(`/api/users/${role_id}`, {
       method: "GET",
       headers: {
@@ -24,8 +76,10 @@ const AdminDashboard = () => {
       })
       .then((data) => {
         const usersData = data.message.users;
-        setUsers(usersData);
-        setNoData(usersData.length === 0); // Set no data state
+        console.log("user data ", usersData);
+        setUsersAll(usersData);
+        // setUsers(usersData);
+        // setNoData(usersData.length === 0); // Set no data state
       })
       .catch((error) => {
         console.error("Request failed:", error);
@@ -37,57 +91,76 @@ const AdminDashboard = () => {
     getuser();
   }, []);
 
+  // if doctor,
+  // {
+  //   "user_info" : {
+  //     "role_id": 1,
+  //     "username": "BOBON",
+  //     "password_hash": "12345",
+  //     "email": "mama123@gmail.com",
+  //     "first_name": "Bobon",
+  //     "last_name": "Dobo"
+  //   }
+  //     ,
+  //   "role_info" : {
+  //       "phone_number": "89482312",
+  //       "specialty": "Woman"
+  //     }
+  // }
+  // '''
+
   const handleCreateUser = async (event) => {
     event.preventDefault();
-    try {  
+    try {
       // Prepare user_info using values from newUser
       const user_info = {
-        role_id: Number(newUser.role), 
+        role_id: 1,
         username: newUser.username,
-        password_hash: newUser.password, 
+        password_hash: newUser.password,
         email: newUser.email,
+        first_name: newUser.firstName,
+        last_name: newUser.lastName,
       };
-  
+
       const role_info = {
-          first_name: 'qwe',
-          last_name: 'test',
-          age: 12,
-          gender: 'Male',
-          phone_number: '0101000',
-          address: 'jurgon east'
+        phone_number: newUser.phoneNumber,
+        address: newUser.address,
+        specialty: newUser.specialty,
       };
-      
 
       // Submit the data
-      fetch('/api/register', {
-        method: 'POST',
+      fetch("/api/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ user_info, role_info }),
       })
         .then((response) => {
-          if (!response.ok) throw new Error('Registration failed');
+          if (!response.ok) throw new Error("Registration failed");
           return response.json();
         })
         .then((data) => {
-          console.log('Registration successful:', data.message.status);
-          if (data.message.status === 'success') {
+          console.log("Registration successful:", data.message.status);
+          if (data.message.status === "success") {
             alert("User added to the database");
-          } else if (data.message.message === 'User already exists with this username or email.') {
+          } else if (
+            data.message.message ===
+            "User already exists with this username or email."
+          ) {
             alert("Account already registered. Please go to the login page.");
           }
         })
         .catch((error) => {
-          console.error('Registration failed:', error);
+          console.error("Registration failed:", error);
         });
     } catch (error) {
-      console.error('Validation failed:', error);
+      console.error("Validation failed:", error);
     }
   };
 
   const handleDeleteUser = (userId) => {
-    const updatedUsers = users.filter(user => user.id !== userId);
+    const updatedUsers = users.filter((user) => user.id !== userId);
     setUsers(updatedUsers);
     alert(`User with ID ${userId} deleted.`);
   };
@@ -96,7 +169,7 @@ const AdminDashboard = () => {
 
   const handleAddUserInputChange = (e) => {
     const { name, value } = e.target;
-    setNewUser(prevState => ({ ...prevState, [name]: value }));
+    setNewUser((prevState) => ({ ...prevState, [name]: value }));
   };
 
   const handleCloseModal = () => setShowAddUserModal(false);
@@ -104,14 +177,14 @@ const AdminDashboard = () => {
   // Function to map role_id to role name
   const getRoleName = (role_id) => {
     switch (role_id) {
-      case '1':
-        return 'Doctor';
-      case '2':
-        return 'Patient';
-      case '3':
-        return 'Admin';
+      case "1":
+        return "Doctor";
+      case "2":
+        return "Patient";
+      case "3":
+        return "Admin";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
@@ -133,29 +206,22 @@ const AdminDashboard = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
             </div>
           ) : noData ? (
-            <div className="p-4 text-center text-gray-500">No data available.</div>
+            <div className="p-4 text-center text-gray-500">
+              No data available.
+            </div>
           ) : (
             <table className="min-w-full">
               <thead>
                 <tr>
                   <th className="border px-4 py-2 text-left">Username</th>
-                  <th className="border px-4 py-2 text-left">Role</th>
-                  <th className="border px-4 py-2 text-left">Actions</th>
+                  <th className="border px-4 py-2 text-left">role_id</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map(user => (
-                  <tr key={user.id}>
+                {usersAll.map((user) => (
+                  <tr key={user.user_id}>
                     <td className="border px-4 py-2">{user.username}</td>
-                    <td className="border px-4 py-2">{getRoleName(user.role_id)}</td>
-                    <td className="border px-4 py-2">
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
+                    <td className="border px-4 py-2">{user.role_id}</td>
                   </tr>
                 ))}
               </tbody>
@@ -178,8 +244,10 @@ const AdminDashboard = () => {
         {/* Navigation Menu */}
         <nav className="mt-4 flex flex-col space-y-1">
           <button
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === 'view_user' ? 'bg-gray-800' : ''}`}
-            onClick={() => setActivePage('view_user')}
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${
+              activePage === "view_user" ? "bg-gray-800" : ""
+            }`}
+            onClick={() => setActivePage("view_user")}
           >
             View User
           </button>
@@ -189,7 +257,13 @@ const AdminDashboard = () => {
         <div className="mt-auto p-4">
           <button
             className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-            onClick={() => alert('Logging out...')}
+            onClick={() => {
+              // Perform any logout logic
+              localStorage.clear();
+
+              // Redirect to the login page
+              navigate("/login");
+            }}
           >
             Log Out
           </button>
@@ -197,9 +271,7 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 h-screen p-6">
-        {renderContent()}
-      </main>
+      <main className="flex-1 h-screen p-6">{renderContent()}</main>
 
       {/* Add User Modal */}
       {showAddUserModal && (
@@ -208,6 +280,8 @@ const AdminDashboard = () => {
             <h3 className="text-lg font-semibold mb-4">Add New User</h3>
             <form onSubmit={handleCreateUser}>
               <div className="mb-2">
+                <label className="block text-sm font-medium">Role id : 1</label>
+
                 <label className="block text-sm font-medium">Username</label>
                 <input
                   type="text"
@@ -216,41 +290,67 @@ const AdminDashboard = () => {
                   onChange={handleAddUserInputChange}
                   className="mt-1 p-2 border rounded w-full bg-white text-black"
                 />
-              </div>
-              <div className="mb-2">
-                <label className="block text-sm font-medium">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={newUser.email}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-              </div>
-              <div className="mb-2">
+
                 <label className="block text-sm font-medium">Password</label>
                 <input
-                  type="password"
+                  type="text"
                   name="password"
                   value={newUser.password}
                   onChange={handleAddUserInputChange}
                   className="mt-1 p-2 border rounded w-full bg-white text-black"
                 />
-              </div>
-              <div className="mb-2">
-                <label className="block text-sm font-medium">Role</label>
-                <select
-                  name="role"
-                  value={newUser.role}
+
+                <label className="block text-sm font-medium">Email</label>
+                <input
+                  type="text"
+                  name="email"
+                  value={newUser.email}
                   onChange={handleAddUserInputChange}
                   className="mt-1 p-2 border rounded w-full bg-white text-black"
-                >
-                  <option value="">Select Role</option>
-                  <option value="1">Doctor</option>
-                  <option value="2">Patient</option>
-                  <option value="3">Admin</option>
-                </select>
+                />
+
+                <label className="block text-sm font-medium">First Name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={newUser.firstName}
+                  onChange={handleAddUserInputChange}
+                  className="mt-1 p-2 border rounded w-full bg-white text-black"
+                />
               </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium">Last Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={newUser.lastName}
+                  onChange={handleAddUserInputChange}
+                  className="mt-1 p-2 border rounded w-full bg-white text-black"
+                />
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={newUser.phoneNumber}
+                  onChange={handleAddUserInputChange}
+                  className="mt-1 p-2 border rounded w-full bg-white text-black"
+                />
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium">Specialty</label>
+                <input
+                  type="text"
+                  name="specialty"
+                  value={newUser.specialty}
+                  onChange={handleAddUserInputChange}
+                  className="mt-1 p-2 border rounded w-full bg-white text-black"
+                />
+              </div>
+
               <div className="flex mt-4">
                 <button
                   type="submit"
