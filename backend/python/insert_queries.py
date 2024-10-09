@@ -7,7 +7,6 @@ import uuid
 
 def generate_unique_uuid4(cursor):
     while True:
-      
         new_uuid = str(uuid.uuid4())
 
         check_uuid_query = "SELECT license_number FROM doctor WHERE license_number = %s"
@@ -115,38 +114,61 @@ appointment_info:
 - time
 - type
 """
-def insert_billing(dbConnection=None, billing_info=None):
-    print ('inside insert billing', flush=True)
+def insert_appointment(dbConnection, appointment_info):
+    print(appointment_info)
     if dbConnection:
         try:
             with dbConnection.cursor() as cursor:
-                # Get max billing id for the current patient
-                get_max_billing_id_query = """
-                SELECT MAX(billing_id) 
-                FROM billing 
+                # get max appointment id of current patient
+                get_max_appointment_id_query = """
+                SELECT MAX(appointment_id) 
+                FROM appointment 
                 WHERE patient_id_fk = %s
                 """
-                print ('before retrieving max billing id') 
-                cursor.execute(get_max_billing_id_query, (billing_info['patient_id'],))
-                max_billing_id = cursor.fetchone()[0]
-                print ('after retrieving max billing id')
-                # If no billing id exists for the current patient, reset to 0, else +1 to max billing id
-                if max_billing_id is None:
-                    new_billing_id = 0
+                cursor.execute(get_max_appointment_id_query, (appointment_info['patient_id'],))
+                max_appointment_id = cursor.fetchone()[0]
+                
+                # if no appointment id exist for current patient id, reset to 0, else + 1 to max appointment id
+                if max_appointment_id is None:
+                    new_appointment_id = 0
                 else:
-                    new_billing_id = max_billing_id + 1
+                    new_appointment_id = max_appointment_id + 1
 
-                print (new_billing_id)
-                # Insert the billing information with the new billing ID
-                insert_query = """
-                INSERT INTO billing (billing_id, patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                # check for available doctors on the current date and time
+                available_doctors_query = """
+                SELECT d.doctor_id 
+                FROM doctor d
+                LEFT JOIN appointment a 
+                ON d.doctor_id = a.doctor_id_fk AND a.date = %s AND a.time = %s
+                WHERE a.doctor_id_fk IS NULL;
                 """
-                cursor.execute(insert_query, (new_billing_id, billing_info['patient_id'], billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
+                cursor.execute(available_doctors_query, (appointment_info['date'], appointment_info['time']))
+                available_doctors = cursor.fetchall()
+                
+                # if there are no available doctors, send error
+                if not available_doctors:
+                    return {"status": "error", "message": "No doctors are available at the selected date and time."}
+                
+                # randomly assign the doctor
+                assigned_doctor = random.choice(available_doctors)[0]
+
+                insert_query = """
+                INSERT INTO appointment (appointment_id, patient_id_fk, doctor_id_fk, date, time, status, type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(insert_query, (
+                    new_appointment_id, 
+                    appointment_info['patient_id'], 
+                    assigned_doctor, 
+                    appointment_info['date'], 
+                    appointment_info['time'], 
+                    'pending', 
+                    appointment_info['type']
+                ))
 
                 dbConnection.commit()
 
-            return {"status": "success", "message": f"Billing added successfully with billing ID: {new_billing_id}"}
+            return {"status": "success", "message": f"Appointment added successfully with doctor ID: {assigned_doctor} for appointment ID: {new_appointment_id}"}
         
         # Error Handling
         except KeyError as e:
@@ -156,7 +178,9 @@ def insert_billing(dbConnection=None, billing_info=None):
         except Exception as e:
             if dbConnection:
                 dbConnection.rollback()
-            return {"status": "error", "message": f"Error occurred: {str(e)}"}
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+        
+
 
 
 
@@ -221,32 +245,48 @@ billing_info:
 - billing_date
 - payment_method
 """
-# def insert_billing(dbConnection = None, billing_info = None):
-#     if dbConnection:
-#         try:
-#             with dbConnection.cursor() as cursor:
-            
-#                 insert_query = """
-#                 INSERT INTO billing (patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
-#                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-#                 """
+def insert_billing(dbConnection=None, billing_info=None):
+    print ('inside insert billing', flush=True)
+    if dbConnection:
+        try:
+            with dbConnection.cursor() as cursor:
+                # Get max billing id for the current patient
+                get_max_billing_id_query = """
+                SELECT MAX(billing_id) 
+                FROM billing 
+                WHERE patient_id_fk = %s
+                """
+                print ('before retrieving max billing id') 
+                cursor.execute(get_max_billing_id_query, (billing_info['patient_id'],))
+                max_billing_id = cursor.fetchone()[0]
+                print ('after retrieving max billing id')
+                # If no billing id exists for the current patient, reset to 0, else +1 to max billing id
+                if max_billing_id is None:
+                    new_billing_id = 0
+                else:
+                    new_billing_id = max_billing_id + 1
 
-#                 cursor.execute(insert_query, (billing_info['patient_id'], billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
+                print (new_billing_id)
+                # Insert the billing information with the new billing ID
+                insert_query = """
+                INSERT INTO billing (billing_id, patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(insert_query, (new_billing_id, billing_info['patient_id'], billing_info['appointment_id'], billing_info['amount_due'], billing_info['amount_paid'], billing_info['billing_date'], 'pending', billing_info['payment_method']))
 
-#                 dbConnection.commit()
+                dbConnection.commit()
 
-#             return {"status": "success", "message": "Billing added successfully."}
+            return {"status": "success", "message": f"Billing added successfully with billing ID: {new_billing_id}"}
         
-#         # Error Handling
-#         except KeyError as e:
-#             return {"status": "error", "message": f"Missing key: {str(e)}"}
-#         except ValueError as e:
-#             return {"status": "error", "message": f"Invalid value: {str(e)}"}
-#         except Exception as e:
-#             if dbConnection:
-#                 dbConnection.rollback()
-#             return {"status": "error", "message": f"Error occurred: {str(e)}"}
-        
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            if dbConnection:
+                dbConnection.rollback()
+            return {"status": "error", "message": f"Error occurred: {str(e)}"}
 """
 On Assumption that it is a single insert
 condition_info:
