@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [activePage, setActivePage] = useState("view_user");
   const [users, setUsers] = useState([]);
+  const [usersAll, setUsersAll] = useState([]);
+
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUser, setNewUser] = useState({
     username: "",
@@ -14,8 +17,10 @@ const AdminDashboard = () => {
     phoneNumber: "",
     specialty: "",
   });
+
   const [loading, setLoading] = useState(true); // Track loading state
   const [noData, setNoData] = useState(false); // Track no data state
+  const navigate = useNavigate();
 
   const getuser = () => {
     const role_id = localStorage.getItem("role_id_fk");
@@ -33,8 +38,10 @@ const AdminDashboard = () => {
       })
       .then((data) => {
         const usersData = data.message.users;
-        setUsers(usersData);
-        setNoData(usersData.length === 0); // Set no data state
+        console.log("user data ", usersData);
+        setUsersAll(usersData);
+        // setUsers(usersData);
+        // setNoData(usersData.length === 0); // Set no data state
       })
       .catch((error) => {
         console.error("Request failed:", error);
@@ -46,9 +53,7 @@ const AdminDashboard = () => {
     getuser();
   }, []);
 
-
-
-  // if doctor, 
+  // if doctor,
   // {
   //   "user_info" : {
   //     "role_id": 1,
@@ -82,7 +87,7 @@ const AdminDashboard = () => {
       const role_info = {
         phone_number: newUser.phoneNumber,
         address: newUser.address,
-        specialty: newUser.specialty
+        specialty: newUser.specialty,
       };
 
       // Submit the data
@@ -171,25 +176,14 @@ const AdminDashboard = () => {
               <thead>
                 <tr>
                   <th className="border px-4 py-2 text-left">Username</th>
-                  <th className="border px-4 py-2 text-left">Role</th>
-                  <th className="border px-4 py-2 text-left">Actions</th>
+                  <th className="border px-4 py-2 text-left">role_id</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
+                {usersAll.map((user) => (
+                  <tr key={user.user_id}>
                     <td className="border px-4 py-2">{user.username}</td>
-                    <td className="border px-4 py-2">
-                      {getRoleName(user.role_id)}
-                    </td>
-                    <td className="border px-4 py-2">
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
+                    <td className="border px-4 py-2">{user.role_id}</td>
                   </tr>
                 ))}
               </tbody>
@@ -225,7 +219,13 @@ const AdminDashboard = () => {
         <div className="mt-auto p-4">
           <button
             className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-            onClick={() => alert("Logging out...")}
+            onClick={() => {
+              // Perform any logout logic
+              localStorage.clear();
+
+              // Redirect to the login page
+              navigate("/login");
+            }}
           >
             Log Out
           </button>
