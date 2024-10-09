@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Spinner from '../components/Spinner'; // Make sure the import path is correct
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("appointments");
@@ -42,20 +43,6 @@ const UserDashboard = () => {
       invoice: "0F24002204",
       amount: 22.45,
       status: "current",
-    },
-    {
-      id: 2,
-      institution: "National University Polyclinics",
-      invoice: "0F23306097",
-      amount: 47.85,
-      status: "current",
-    },
-    {
-      id: 3,
-      institution: "National University Polyclinics",
-      invoice: "0F24567023",
-      amount: 0.0,
-      status: "history",
     },
   ]);
 
@@ -260,7 +247,7 @@ const UserDashboard = () => {
                             }
                             className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 ml-2 rounded"
                           >
-                            Delete {appointment.patient_id_fk} {appointment.id}
+                            Delete 
                           </button>
                         </>
                       ) : (
@@ -398,13 +385,6 @@ const UserDashboard = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">
             <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
             <form onSubmit={handleBookAppointment}>
-              <div className="mb-4">
-                {/* <label className="block text-gray-800 text-sm font-bold mb-2">Describe Your Problem</label> */}
-                {/* <textarea
-                  placeholder="Brief description of your issue"
-                  className="w-full px-3 py-2 border rounded shadow bg-white text-black"
-                /> */}
-              </div>
               <div className="mb-4">
                 <label className="block text-gray-800 text-sm font-bold mb-2">
                   Type of Visit
