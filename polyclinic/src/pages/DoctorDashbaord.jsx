@@ -6,6 +6,7 @@ const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState("get_users_by_doctor");
   const [medications, setMedications] = useState([]);
   const [getMedicalCondition, setMedicalCondition] = useState([]);
+  const [medicationDosages, setMedicationDosages] = useState({});
 
   const medicationOptions = medications.map((med) => ({
     label: `${med.name} - ${med.description} - $${med.price}`,
@@ -47,7 +48,7 @@ const DoctorDashboard = () => {
     { label: "Asthma", value: "Asthma" },
     { label: "Cholesterol", value: "Cholesterol" },
   ];
- 
+
   const [doctor_id_ID, setdoctor_id] = useState(null);
 
   const navigate = useNavigate();
@@ -58,8 +59,6 @@ const DoctorDashboard = () => {
   }, []);
 
   const handleGetAppointments = () => {
-
-
     console.log(doctor_id_ID)
     // Define the API endpoint with user_id and role_id
     const apiUrl = `/api/appointment/${doctor_id_ID}/`;
@@ -104,8 +103,8 @@ const DoctorDashboard = () => {
       })
       .then((data) => {
         console.log("medication fetched:", data.message);
-         // Map the fetched data to match the expected format
-         const formattedMedications = data.message.map((med) => ({
+        // Map the fetched data to match the expected format
+        const formattedMedications = data.message.map((med) => ({
           medication_id: med.medication_id,
           name: med.name,
           description: med.description,
@@ -156,7 +155,7 @@ const DoctorDashboard = () => {
       handleGetMedication();
       handleGetMedicationCondition();
     }
-  }, [doctor_id_ID]); 
+  }, [doctor_id_ID]);
 
   const handleRemoveMedication = (medId) => {
     setMedications((meds) => meds.filter((med) => med.id !== medId));
@@ -170,6 +169,15 @@ const DoctorDashboard = () => {
   const handleEditAppointment = (appointment) => {
     setSelectedAppointment(appointment);
     setIsEditing(true);
+
+    // Update form data with patient_id and doctor_id
+    setEditFormData({
+      ...editFormData,
+      patient_id: appointment.patient_id,  // Assuming patient_id is part of the appointment data
+      doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
+      severity: "",  // Reset severity, or set any initial value
+      medication: []  // Reset medication selection, or set it based on the appointment if available
+    });
   };
 
   const handleCloseModal = () => {
@@ -194,34 +202,73 @@ const DoctorDashboard = () => {
     }));
   };
 
+  const handleDosageChange = (medicationId, dosage) => {
+    setMedicationDosages((prevDosages) => ({
+      ...prevDosages,
+      [medicationId]: dosage,
+    }));
+  };
+
+
   const handleConfirmSession = () => {
     alert(`Session confirmed with details: ${JSON.stringify(formData)}`);
     setSelectedAppointment(null);
   };
 
   const handleConfirmEdit = () => {
-    const formattedData = JSON.stringify(editFormData, null, 2); // "2" adds indentation for better readability
-    console.log(formattedData)
+    const diagnosisInfo = {
+      patient_id: selectedAppointment.patient_id,  // Assuming patient_id is available from selectedAppointment
+      diagnosis_description: editFormData.diagnosis_description || "",  // Diagnosis description entered by the user
+      doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
+      severity: editFormData.severity || ""  // Severity selected by the user
+    };
+
+    // Format medication_info
+    const medicationInfo = editFormData.medication.map((med) => ({
+      patient_id: selectedAppointment.patient_id,  // Assuming patient_id is available from selectedAppointment
+      medication_id: med.value,  // medication_id from the selected medication
+      doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
+      dosage: medicationDosages[med.value]?.dosage || "",  // Dosage for this medication
+      frequency: medicationDosages[med.value]?.frequency || "",  // Frequency for this medication
+      duration: medicationDosages[med.value]?.duration || ""  // Duration for this medication
+    }));
+
+    // Combine the data into the final structure
+    const formattedData = {
+      diagnosis_info: diagnosisInfo,
+      medication_info: medicationInfo,
+      role: 1  // Assuming role is always 1, as per your example
+    };
+
+    // Log the formatted data for debugging purposes
+    console.log("Formatted Data:", JSON.stringify(formattedData, null, 2));
+
+    const apiUrl = `/api/diagnosis`;
+
+    fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formattedData),  // Pass the formatted data in the request body
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Submitting diagnosis failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Diagnosis submitted:", data.message);
+        handleCloseModal();
+      })
+      .catch((error) => {
+        console.error("Error submitting diagnosis:", error);
+      });
 
 
-    // save to mysql 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    handleCloseModal();
   };
+
 
   const handleAddMedication = () => {
     setShowAddMedicationForm(true);
@@ -273,19 +320,23 @@ const DoctorDashboard = () => {
                   <th className="border px-4 py-2 text-left">time</th>
                   <th className="border px-4 py-2 text-left">status</th>
                   <th className="border px-4 py-2 text-left">type</th>
+                  <th className="border px-4 py-2 text-left">patient_id</th>
+
                 </tr>
               </thead>
               <tbody>
                 {appointments.map((appointment) => (
                   <tr key={appointment.appointment_id}>
                     <td className="border px-4 py-2">{appointment.appointment_id}</td>
-                    <td className="border px-4 py-2">{appointment.patient_first_name + " " +appointment.patient_last_name}</td>
+                    <td className="border px-4 py-2">{appointment.patient_first_name + " " + appointment.patient_last_name}</td>
 
                     <td className="border px-4 py-2">{appointment.age}</td>
                     <td className="border px-4 py-2">{appointment.date}</td>
                     <td className="border px-4 py-2">{appointment.time}</td>
                     <td className="border px-4 py-2">{appointment.status}</td>
                     <td className="border px-4 py-2">{appointment.type}</td>
+                    <td className="border px-4 py-2">{appointment.patient_id}</td>
+
                     <td className="border px-4 py-2">
                       {/* Conditional button based on status */}
                       {appointment.status === "pending" ? (
@@ -356,9 +407,8 @@ const DoctorDashboard = () => {
         <nav className="mt-4 flex flex-col space-y-1">
           <a
             href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${
-              activePage === "get_appointment" ? "bg-gray-800" : ""
-            }`}
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md ${activePage === "get_appointment" ? "bg-gray-800" : ""
+              }`}
             onClick={() => setActivePage("get_appointment")}
           >
             Appointments
@@ -482,6 +532,10 @@ const DoctorDashboard = () => {
                 <p>
                   <strong>Type:</strong> {selectedAppointment.type}
                 </p>
+
+
+
+
                 <button
                   className="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                   onClick={handleCloseModal}
@@ -492,6 +546,16 @@ const DoctorDashboard = () => {
             ) : (
               <div>
                 <div className="mb-2">
+
+                  <p>
+                    <strong>patient_id :</strong> {editFormData.patient_id}
+                  </p>
+
+                  <p>
+                    <strong>docotr_id :</strong> {editFormData.doctor_id_ID}
+                  </p>
+
+
                   <label className="block text-sm font-medium">Severity</label>
                   <select
                     name="severity"
@@ -506,22 +570,75 @@ const DoctorDashboard = () => {
                   </select>
                 </div>
 
+
                 <div className="mb-2">
-                  <label className="block text-sm font-medium">
-                    Medication
-                  </label>
+                  <label className="block text-sm font-medium">Medication</label>
                   <MultiSelect
                     options={medicationOptions}
                     value={editFormData.medication}
-                    onChange={(selectedOptions) =>
+                    onChange={(selectedOptions) => {
                       setEditFormData((prevData) => ({
                         ...prevData,
                         medication: selectedOptions,
-                      }))
-                    }
+                      }));
+                    }}
                     labelledBy="Select Medication"
                   />
+
+                  {/* Render dosage, frequency, and duration input fields for each selected medication */}
+                  {editFormData.medication.map((med) => (
+                    <div key={med.value} className="mt-2">
+                      <label className="block text-sm font-medium">
+                        Dosage, Frequency, and Duration for {med.label}
+                      </label>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Dosage input */}
+                        <input
+                          type="text"
+                          className="p-2 border rounded w-full bg-white text-black"
+                          value={medicationDosages[med.value]?.dosage || ''}
+                          onChange={(e) =>
+                            handleDosageChange(med.value, {
+                              ...medicationDosages[med.value],
+                              dosage: e.target.value,
+                            })
+                          }
+                          placeholder="Enter dosage"
+                        />
+
+                        {/* Frequency input */}
+                        <input
+                          type="number"
+                          className="p-2 border rounded w-full bg-white text-black"
+                          value={medicationDosages[med.value]?.frequency || ''}
+                          onChange={(e) =>
+                            handleDosageChange(med.value, {
+                              ...medicationDosages[med.value],
+                              frequency: e.target.value,
+                            })
+                          }
+                          placeholder="Frequency"
+                        />
+
+                        {/* Duration input */}
+                        <input
+                          type="number"
+                          className="p-2 border rounded w-full bg-white text-black"
+                          value={medicationDosages[med.value]?.duration || ''}
+                          onChange={(e) =>
+                            handleDosageChange(med.value, {
+                              ...medicationDosages[med.value],
+                              duration: e.target.value,
+                            })
+                          }
+                          placeholder="Duration (days)"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
+
 
                 <div className="mb-2">
                   <label className="block text-sm font-medium">
@@ -539,6 +656,21 @@ const DoctorDashboard = () => {
                     labelledBy="Select Conditions"
                   />
                 </div>
+
+                {/* New input field for Diagnosis Description */}
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">
+                    Diagnosis Description
+                  </label>
+                  <textarea
+                    name="diagnosis_description"
+                    value={editFormData.diagnosis_description || ''}
+                    onChange={handleFormChange}
+                    className="mt-1 p-2 border rounded w-full bg-white text-black"
+                    placeholder="Enter detailed diagnosis description"
+                  />
+                </div>
+
 
                 <div className="flex mt-4">
                   <button
