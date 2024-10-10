@@ -185,31 +185,32 @@ def insert_appointment(dbConnection, appointment_info):
 """
 diagnosis_info:
 - patient_id_
-- condition_name
+- diagnosis_description
 - doctor_id_fk
 - severity
 
-medication_info:
-- patient_id
-- medication_id
-- doctor_id
-- dosage
-- frequency
-- start_date YYYY-MM-DD
-- end_date YYYY-MM-DD
+inside medications_info:
+    medication_info:
+    - patient_id
+    - medication_id
+    - doctor_id
+    - dosage
+    - frequency
+    - start_date YYYY-MM-DD
+    - end_date YYYY-MM-DD
 """
-def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
+def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
     if dbConnection:
         connection = dbConnection
         try:
             with connection.cursor() as cursor:
                 insert_query = """
-                INSERT INTO diagnosis (patient_id_fk, condition_name, doctor_id_fk, diagnosis_date, severity)
+                INSERT INTO diagnosis (patient_id_fk, diagnosis_description, doctor_id_fk, diagnosis_date, severity)
                 VALUES (%s, %s, %s, %s)
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['condition_name'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity']))
+                cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['diagnosis_description'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity']))
 
                 insert_medication_query = """
                 INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, duration)
