@@ -75,11 +75,11 @@ def update_appointment(dbConnection, patient_id, appointment_id, appointment_inf
             with connection.cursor() as cursor:
                 update_query = """
                 UPDATE appointment
-                SET date = %s, time = %s, type = %s
+                SET date = %s, time = %s, status= %s, type = %s
                 WHERE appointment_id = %s AND patient_id_fk = %s
                 """
 
-                cursor.execute(update_query, (appointment_info['date'], appointment_info['time'], appointment_info['type'], appointment_id, patient_id))
+                cursor.execute(update_query, (appointment_info['date'], appointment_info['time'], 'completed', appointment_info['type'], appointment_id, patient_id))
                 
                 connection.commit()
             
