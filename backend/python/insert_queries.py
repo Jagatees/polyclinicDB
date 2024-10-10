@@ -212,11 +212,11 @@ def insert_diagnosis(dbConnection, diagnosis_info, medication_info):
                 cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['condition_name'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity']))
 
                 insert_medication_query = """
-                INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, start_date, end_date)
+                INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, duration)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
 
-                cursor.execute(insert_medication_query, (medication_info['patient_id'], medication_info['medication_id'], medication_info['doctor_id'], medication_info['dosage'], medication_info['frequency'], medication_info['start_date'], medication_info['end_date']))
+                cursor.execute(insert_medication_query, (medication_info['patient_id'], medication_info['medication_id'], medication_info['doctor_id'], medication_info['dosage'], medication_info['frequency'], medication_info['duration']))
                 connection.commit()
             
             return {"status": "success", "message": "Diagnosis added successfully."}
