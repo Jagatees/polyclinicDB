@@ -186,8 +186,7 @@ def get_medication_by_user(dbConnection=None, user_id=None):
                     m.price, 
                     pm.dosage, 
                     pm.frequency, 
-                    pm.start_date, 
-                    pm.end_date
+                    pm.duration
                 FROM patient_medication pm
                 JOIN patient p ON pm.patient_id_fk = p.patient_id
                 JOIN medication m ON pm.medication_id_fk = m.medication_id

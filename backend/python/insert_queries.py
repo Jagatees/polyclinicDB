@@ -206,7 +206,7 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
             with connection.cursor() as cursor:
                 insert_query = """
                 INSERT INTO diagnosis (patient_id_fk, diagnosis_description, doctor_id_fk, diagnosis_date, severity)
-                VALUES (%s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s)
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
@@ -214,10 +214,10 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
 
                 insert_medication_query = """
                 INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, dosage, frequency, duration)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
                 for medication in medications_info:
-                    cursor.execute(insert_medication_query, (medication['patient_id'], medication['medication_id'], medication['doctor_id'], medication['dosage'], medication['frequency'], medication['start_date'], medication['end_date']))
+                    cursor.execute(insert_medication_query, (medication['patient_id'], medication['medication_id'], medication['doctor_id'], medication['dosage'], medication['frequency'], medication['duration']))
                 
                 connection.commit()
             

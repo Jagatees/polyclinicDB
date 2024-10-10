@@ -266,21 +266,39 @@ POST diagnosis
 {
     "diagnosis_info": {
                     "patient_id": 4,
-                    "condition_id": 1,
+                    "diagnosis_description": "autistism detected",
                     "doctor_id": 2,
                     "severity": "moderate"}, 
-    "medication_info": {
+    "medication_info": [{
                     "patient_id": 4,
                     "medication_id": 1,
                     "doctor_id": 2,
                     "dosage": 1,
                     "frequency": 1,
-                    "start_date": "2021-01-01",
-                    "end_date": "2021-02-01"
+                    "duration" : 20
 
-    }, 
+    },
+    {
+                    "patient_id": 4,
+                    "medication_id": 22,
+                    "doctor_id": 2,
+                    "dosage": 1,
+                    "frequency": 1,
+                    "duration" : 2
+
+    },{
+                    "patient_id": 4,
+                    "medication_id": 10,
+                    "doctor_id": 2,
+                    "dosage": 1,
+                    "frequency": 1,
+                    "duration" : 30
+
+    }
+    ], 
     "role": 1}
 '''
+
 # GET all diagnoses for a user
 #Post a diagnosis for a user
 @app.route('/diagnosis', methods=['POST'])
