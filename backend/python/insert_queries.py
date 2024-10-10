@@ -219,6 +219,14 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
                 for medication in medications_info:
                     cursor.execute(insert_medication_query, (medication['patient_id'], medication['medication_id'], medication['doctor_id'], medication['dosage'], medication['frequency'], medication['duration']))
                 
+                update_query = """
+                    UPDATE appointment 
+                    SET status = %s
+                    WHERE appointment_id = %s
+                    """
+    
+                cursor.execute(update_query, ('completed', diagnosis_info['appointment_id']))
+                
                 connection.commit()
             
             return {"status": "success", "message": "Diagnosis added successfully."}
