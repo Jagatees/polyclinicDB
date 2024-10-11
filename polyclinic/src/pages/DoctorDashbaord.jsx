@@ -222,7 +222,7 @@ const DoctorDashboard = () => {
       diagnosis_description: editFormData.diagnosis_description || "",  // Diagnosis description entered by the user
       doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
       severity: editFormData.severity || "",  // Severity selected by the user
-      appointments_id: selectedAppointment.appointment_id,
+      appointment_id: selectedAppointment.appointment_id,
     };
 
     // Format medication_info new version
