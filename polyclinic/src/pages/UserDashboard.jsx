@@ -56,6 +56,41 @@ const UserDashboard = () => {
     setJoinedData(joined);
   };
 
+  const handlePayBill = (
+    billing_id,
+    appointment_id,
+    patient_id,
+    amount_paid,
+    payment_method
+  ) => {
+    const data = {
+      payment_info: {
+        amount_paid: amount_paid,
+        payment_method: payment_method,
+      },
+    };
+
+    fetch(`/api/billing/${billing_id}/${appointment_id}/${patient_id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Payment failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Payment successful:", data);
+      })
+      .catch((error) => {
+        console.error("Payment failed:", error);
+      });
+  };
+
   const handleGetBilling = (user_id) => {
     fetch(`/api/billing/${user_id}`, {
       method: "GET",
@@ -145,7 +180,15 @@ const UserDashboard = () => {
                   {item.billing.payment_status === "pending" ? (
                     <button
                       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      onClick={() => handlePayBill(item)}
+                      onClick={() =>
+                        handlePayBill(
+                          item.billing.billing_id,
+                          item.appointment_id,
+                          item.patient_id_fk,
+                          item.billing.amount_due, // Full amount
+                          item.billing.payment_method // Assuming payment method is available
+                        )
+                      }
                     >
                       Pay Now
                     </button>
@@ -329,12 +372,6 @@ const UserDashboard = () => {
     setSelectedAppointment(appointment);
 
     setShowBookingForm(true); // Show the form modal
-  };
-
-  const handlePayBill = (item) => {
-    // Implement the payment logic here
-    console.log("Initiating payment for:", item);
-    // You can redirect to a payment page or open a payment modal
   };
 
   const renderContent = () => {
@@ -640,6 +677,7 @@ const UserDashboard = () => {
         </div>
       )}
 
+      {/* Diagnosis Modal */}
       {showDiagnosisModal && diagnosisDetails && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">
