@@ -411,12 +411,25 @@ def deleteMedication(medication_id):
         return jsonify({"message": res})  
     
 #! function not implemented  ?
-@app.route('/diagnosis/<user_id>', methods=['GET'])
-def getDiagnosis(user_id):
+# @app.route('/diagnosis/<user_id>', methods=['GET'])
+# def getDiagnosis(user_id):
+#     dbConnection = g.dbConnection
+#     if request.method == 'GET':
+#         # Assuming `get_diagnosis_by_user` takes a db connection and user_id
+#         res = select_queries.get_diagnosis_by_user(dbConnection, user_id)
+#         print(res)
+#         return jsonify({"message": res})
+
+
+#diagnosis with medications 
+@app.route('/diagnosis/<patient_id>/<appointment_id>', methods=['GET'])
+def getDiagnosis(patient_id, appointment_id):
     dbConnection = g.dbConnection
     if request.method == 'GET':
+        patient_id = int(patient_id)
+        appointment_id = int(appointment_id)
         # Assuming `get_diagnosis_by_user` takes a db connection and user_id
-        res = select_queries.get_diagnosis_by_user(dbConnection, user_id)
+        res = select_queries.get_patient_diagnoses_with_medications_by_appointment(dbConnection, patient_id, appointment_id)
         print(res)
         return jsonify({"message": res})
     
