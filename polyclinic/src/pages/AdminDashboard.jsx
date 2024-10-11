@@ -5,7 +5,6 @@ const AdminDashboard = () => {
   const [activePage, setActivePage] = useState("view_user");
   const [users, setUsers] = useState([]);
   const [usersAll, setUsersAll] = useState([]);
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUser, setNewUser] = useState({
     username: "",
     email: "",
@@ -39,28 +38,6 @@ const AdminDashboard = () => {
     setrole_id_fk(role_id_fk);
   }, []);
 
-  const handleGetAppointments = () => {
-    fetch(`/api/appointment/${patientId}/${role_id_fk_ID}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Booking failed");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Booking successful:", data.message);
-        setAppointments(data.message);
-      })
-      .catch((error) => {
-        console.error("Booking failed:", error);
-      });
-  };
-
   const getuser = () => {
     const role_id = localStorage.getItem("role_id_fk");
     fetch(`/api/users/${role_id}`, {
@@ -91,7 +68,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     getuser();
   }, []);
-
 
   const handleCreateUser = async (event) => {
     event.preventDefault();
@@ -128,6 +104,21 @@ const AdminDashboard = () => {
           console.log("Registration successful:", data.message.status);
           if (data.message.status === "success") {
             alert("User added to the database");
+            // Reset form fields
+            setNewUser({
+              username: "",
+              email: "",
+              password: "",
+              role: "",
+              firstName: "",
+              lastName: "",
+              phoneNumber: "",
+              specialty: "",
+            });
+            // Go back to view user page
+            setActivePage("view_user");
+            // Refresh the user list
+            getuser();
           } else if (
             data.message.message ===
             "User already exists with this username or email."
@@ -143,8 +134,6 @@ const AdminDashboard = () => {
     }
   };
 
-
-
   const handleDeleteUser = async (userId) => {
     try {
       fetch(`/api/user/${userId}`, {
@@ -154,99 +143,167 @@ const AdminDashboard = () => {
         },
       })
         .then((response) => {
-          if (!response.ok) throw new Error("Registration failed");
+          if (!response.ok) throw new Error("Deletion failed");
           return response.json();
         })
         .then((data) => {
-          console.log("Deletaion successful:", data.message.status);
+          console.log("Deletion successful:", data.message.status);
           getuser();
-        
         })
         .catch((error) => {
-          console.error("Deletaion failed:", error);
+          console.error("Deletion failed:", error);
         });
     } catch (error) {
       console.error("Validation failed:", error);
     }
   };
 
-
-  const handleAddUser = () => setShowAddUserModal(true);
-
   const handleAddUserInputChange = (e) => {
     const { name, value } = e.target;
     setNewUser((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleCloseModal = () => setShowAddUserModal(false);
+  const renderContent = () => {
+    if (activePage === "view_user") {
+      return (
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold text-gray-800">View Users</h2>
+          </div>
+          <div className="relative min-w-full bg-white shadow-md rounded-lg overflow-hidden min-h-[200px]">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+              </div>
+            ) : noData ? (
+              <div className="p-4 text-center text-gray-500">
+                No data available.
+              </div>
+            ) : (
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    <th className="border px-4 py-2 text-left">Username</th>
+                    <th className="border px-4 py-2 text-left">Role ID</th>
+                    <th className="border px-4 py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usersAll.map((user) => (
+                    <tr key={user.user_id}>
+                      <td className="border px-4 py-2">{user.username}</td>
+                      <td className="border px-4 py-2">{user.role_id}</td>
+                      <td className="border px-4 py-2">
+                        <button
+                          onClick={() => handleDeleteUser(user.user_id)}
+                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      );
+    } else if (activePage === "add_user") {
+      return (
+        <div>
+          <h3 className="text-2xl font-semibold mb-4">Add New Doctor</h3>
+          <form onSubmit={handleCreateUser}>
+            <div className="mb-2">
+              <label className="block text-sm font-medium">Username</label>
+              <input
+                type="text"
+                name="username"
+                value={newUser.username}
+                onChange={handleAddUserInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
 
-  // Function to map role_id to role name
-  const getRoleName = (role_id) => {
-    switch (role_id) {
-      case "1":
-        return "Doctor";
-      case "2":
-        return "Patient";
-      case "3":
-        return "Admin";
-      default:
-        return "Unknown";
+              <label className="block text-sm font-medium">Password</label>
+              <input
+                type="password"
+                name="password"
+                value={newUser.password}
+                onChange={handleAddUserInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
+
+              <label className="block text-sm font-medium">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={newUser.email}
+                onChange={handleAddUserInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
+
+              <label className="block text-sm font-medium">First Name</label>
+              <input
+                type="text"
+                name="firstName"
+                value={newUser.firstName}
+                onChange={handleAddUserInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block text-sm font-medium">Last Name</label>
+              <input
+                type="text"
+                name="lastName"
+                value={newUser.lastName}
+                onChange={handleAddUserInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block text-sm font-medium">
+                Phone Number
+              </label>
+              <input
+                type="text"
+                name="phoneNumber"
+                value={newUser.phoneNumber}
+                onChange={handleAddUserInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block text-sm font-medium">Specialty</label>
+              <input
+                type="text"
+                name="specialty"
+                value={newUser.specialty}
+                onChange={handleAddUserInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
+            </div>
+
+            <div className="flex mt-4">
+              <button
+                type="submit"
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
+              >
+                Submit
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => setActivePage("view_user")}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      );
     }
   };
-
-  const renderContent = () => {
-    return (
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-gray-800">View Users</h2>
-          <button
-            onClick={handleAddUser}
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Add User
-          </button>
-        </div>
-        <div className="relative min-w-full bg-white shadow-md rounded-lg overflow-hidden min-h-[200px]">
-          {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
-            </div>
-          ) : noData ? (
-            <div className="p-4 text-center text-gray-500">
-              No data available.
-            </div>
-          ) : (
-            <table className="min-w-full">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2 text-left">Username</th>
-                  <th className="border px-4 py-2 text-left">Role ID</th>
-                  <th className="border px-4 py-2">Actions</th> {/* New Column for Actions */}
-                </tr>
-              </thead>
-              <tbody>
-                {usersAll.map((user) => (
-                  <tr key={user.user_id}>
-                    <td className="border px-4 py-2">{user.username}</td>
-                    <td className="border px-4 py-2">{user.role_id}</td>
-                    <td className="border px-4 py-2">
-                      <button
-                        onClick={() => handleDeleteUser(user.user_id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    );
-  };
-  
 
   return (
     <div className="h-screen flex">
@@ -266,6 +323,14 @@ const AdminDashboard = () => {
             onClick={() => setActivePage("view_user")}
           >
             View User
+          </button>
+          <button
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${
+              activePage === "add_user" ? "bg-gray-800" : ""
+            }`}
+            onClick={() => setActivePage("add_user")}
+          >
+            Add Doctor
           </button>
         </nav>
 
@@ -288,104 +353,6 @@ const AdminDashboard = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 h-screen p-6">{renderContent()}</main>
-
-      {/* Add User Modal */}
-      {showAddUserModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Add New User</h3>
-            <form onSubmit={handleCreateUser}>
-              <div className="mb-2">
-                <label className="block text-sm font-medium">Role id : 1</label>
-
-                <label className="block text-sm font-medium">Username</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={newUser.username}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-
-                <label className="block text-sm font-medium">Password</label>
-                <input
-                  type="text"
-                  name="password"
-                  value={newUser.password}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-
-                <label className="block text-sm font-medium">Email</label>
-                <input
-                  type="text"
-                  name="email"
-                  value={newUser.email}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-
-                <label className="block text-sm font-medium">First Name</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={newUser.firstName}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-              </div>
-              <div className="mb-2">
-                <label className="block text-sm font-medium">Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={newUser.lastName}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-              </div>
-              <div className="mb-2">
-                <label className="block text-sm font-medium">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  name="phoneNumber"
-                  value={newUser.phoneNumber}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-              </div>
-              <div className="mb-2">
-                <label className="block text-sm font-medium">Specialty</label>
-                <input
-                  type="text"
-                  name="specialty"
-                  value={newUser.specialty}
-                  onChange={handleAddUserInputChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-              </div>
-
-              <div className="flex mt-4">
-                <button
-                  type="submit"
-                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
-                >
-                  Submit
-                </button>
-                <button
-                  type="button"
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                  onClick={handleCloseModal}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

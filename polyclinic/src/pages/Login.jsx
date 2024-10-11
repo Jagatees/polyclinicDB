@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import image from "../assets/images.jpg";
 
@@ -6,9 +6,15 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const handleLogIn = (event) => {
     event.preventDefault();
+    setLoading(true); // Start loading
+    setErrorMessage(""); // Clear any previous error message
+
     fetch("/api/login", {
       method: "POST",
       headers: {
@@ -19,43 +25,48 @@ const Login = () => {
         password: password,
       }),
     })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Login successful:", data);
-      if (data) {
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Login failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Login successful:", data);
+        setLoading(false); // Stop loading
+        setLoginSuccess(true); // Show success indicator
 
+        // Store user information in localStorage
         localStorage.setItem("patient_id", data.message.user.patient_id);
         localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
         localStorage.setItem("user_id", data.message.user.user_id);
         localStorage.setItem("doctor_id", data.message.user.doctor_id);
 
-        switch (data.message.user.role_id_fk) {
-          case 1:
-            navigate("/DoctorDashbaord");
-            break;
-          case 2:
-            navigate("/userdashboard");
-            break;
-          case 3:
-            navigate("/admindashboard");
-            break;
-          default:
-            navigate("/home");
-            break;
-        }
-      
-      }
-    })
-    .catch((error) => {
-      console.error("Login failed:", error);
-    });
+        // Redirect based on user role
+        setTimeout(() => {
+          switch (data.message.user.role_id_fk) {
+            case 1:
+              navigate("/DoctorDashbaord");
+              break;
+            case 2:
+              navigate("/userdashboard");
+              break;
+            case 3:
+              navigate("/admindashboard");
+              break;
+            default:
+              navigate("/home");
+              break;
+          }
+        }, 1500); // Wait 1.5 seconds to show the success checkmark
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+        setLoading(false); // Stop loading
+        setLoginSuccess(false); // Reset login success state
+        setErrorMessage("Invalid login. Please try again or register.");
+      });
   };
-
 
   return (
     <div className="h-screen w-screen flex">
@@ -106,11 +117,29 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="mb-6">
-            <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
-              Sign In
-            </button>
-          </div>
+
+          {loading ? (
+            <div className="mb-4 flex justify-center">
+              <div className="w-10 h-10 border-4 border-indigo-500 border-dashed rounded-full animate-spin"></div>
+            </div>
+          ) : loginSuccess ? (
+            <div className="mb-4 flex justify-center">
+              <div className="text-green-500 text-2xl">✔</div>
+            </div>
+          ) : (
+            <div className="mb-6">
+              <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
+                Sign In
+              </button>
+            </div>
+          )}
+
+          {errorMessage && (
+            <div className="mb-4 text-red-500 text-center">
+              {errorMessage}
+            </div>
+          )}
+
           <div className="mb-6 text-center text-gray-400">OR</div>
 
           {/* Go to Registration Button */}

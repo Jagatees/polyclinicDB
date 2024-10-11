@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const UserDashboard = () => {
-  const [activePage, setActivePage] = useState("appointments");
-  const [billingTab, setBillingTab] = useState("current");
+  const [activePage, setActivePage] = useState("profile"); // Set default active tab to "profile"
   const [showModal, setShowModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -35,15 +34,49 @@ const UserDashboard = () => {
   const [appointmentTime, setAppointmentTime] = useState("");
   const [appointments, setAppointments] = useState([]);
 
-  const [billingData, setBillingData] = useState([
-    {
-      id: 1,
-      institution: "National University Polyclinics",
-      invoice: "0F24002204",
-      amount: 22.45,
-      status: "current",
-    },
-  ]);
+ 
+
+  // PENDING ZF Side for get user profile information
+  const handleGetProfile = () => {
+    fetch(`/api/appointment`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData), // Sending the formData as JSON
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Booking failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Booking successful:", data);
+        setShowBookingForm(false); // Close the form on success
+        if (patientId && role_id_fk_ID) {
+          handleGetAppointments();
+        }
+      })
+      .catch((error) => {
+        console.error("Booking failed:", error);
+      });
+  }
+
+  const renderProfileContent = () => {
+    return (
+      <div>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Profile</h2>
+        <p>User profile information goes here.</p>
+        {/* Example profile detail */}
+        <div>
+          <strong>Email:</strong> user@example.com<br />
+          <strong>User ID:</strong> {userId}<br />
+          <strong>Role ID:</strong> {role_id_fk_ID}
+        </div>
+      </div>
+    );
+  };
 
   const handleBookAppointment = (event) => {
     event.preventDefault(); // Prevent the default form submit action
@@ -143,9 +176,10 @@ const UserDashboard = () => {
   }, [patientId, role_id_fk_ID]); // Add dependencies to ensure re-render
 
   const openModal = (appointment) => {
-    setSelectedAppointment(appointment);
+    setSelectedAppointment(appointment); // This sets the entire appointment object
     setShowModal(true);
   };
+  
 
   const closeModal = () => {
     setShowModal(false);
@@ -160,38 +194,11 @@ const UserDashboard = () => {
     setShowBookingForm(false);
   };
 
-  const renderBillingContent = () => {
-    const filteredBilling = billingData.filter(
-      (item) => item.status === billingTab
-    );
-
-    return (
-      <div>
-        <div className="flex space-x-4 mb-4"></div>
-        {filteredBilling.map((item) => (
-          <div
-            key={item.id}
-            className="border p-4 mb-2 flex justify-between items-center rounded shadow"
-          >
-            <div>
-              <div className="text-lg font-bold">{item.institution}</div>
-              <div className="text-gray-500">Invoice: {item.invoice}</div>
-            </div>
-            <div
-              className={`text-xl font-semibold ${
-                item.amount > 0 ? "text-green-600" : "text-gray-600"
-              }`}
-            >
-              S${item.amount.toFixed(2)}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   const renderContent = () => {
     switch (activePage) {
+      case "profile":
+        return renderProfileContent();
       case "appointments":
         return (
           <div>
@@ -232,7 +239,7 @@ const UserDashboard = () => {
                       {appointment.status === "pending" ? (
                         <>
                           <span className="text-yellow-600">
-                            Waiting for doctor to confirm
+                            Waiting for doctor to complete
                           </span>
                           <button
                             onClick={() => openUpdateModal(appointment)}
@@ -264,9 +271,6 @@ const UserDashboard = () => {
             </table>
           </div>
         );
-
-      case "billing":
-        return renderBillingContent();
       default:
         return null;
     }
@@ -283,6 +287,13 @@ const UserDashboard = () => {
         </div>
         {/* Navigation Menu */}
         <nav className="mt-4 flex flex-col space-y-1">
+        <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${activePage === "profile" ? "bg-gray-800" : ""}`}
+            onClick={() => setActivePage("profile")}
+          >
+            Profile
+          </a>
           <a
             href="#"
             className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${
@@ -292,15 +303,7 @@ const UserDashboard = () => {
           >
             Appointments
           </a>
-          <a
-            href="#"
-            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${
-              activePage === "billing" ? "bg-gray-800" : ""
-            }`}
-            onClick={() => setActivePage("billing")}
-          >
-            Billing
-          </a>
+         
         </nav>
 
         {/* Sidebar Footer */}
@@ -325,9 +328,6 @@ const UserDashboard = () => {
         {/* Page Content */}
         <main className="flex-grow p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-gray-800">
-              {activePage === "appointments" ? "Appointments" : "Billing"}
-            </h2>
             {activePage === "appointments" && (
               <button
                 onClick={openBookingForm}
@@ -343,40 +343,59 @@ const UserDashboard = () => {
 
       {/* Modal for Appointment Details */}
       {showModal && selectedAppointment && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Appointment Details</h2>
-            {/* Medications Table */}
-            <div className="mt-4">
-              <h3 className="text-lg font-bold mb-2">Medications</h3>
-              <table className="min-w-full bg-white border-collapse">
-                <thead>
-                  <tr>
-                    <th className="border px-4 py-2">Name</th>
-                    <th className="border px-4 py-2">Dosage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {appointments.map((appointment) => (
-                    <tr key={appointment.appointment_id}>
-                      <td className="border px-4 py-2">{appointment.date}</td>
-                      <td className="border px-4 py-2">{appointment.time}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={closeModal}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+    <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+      <h2 className="text-xl font-bold mb-4">Appointment Details</h2>
+      <table className="min-w-full bg-white border-collapse">
+        <thead>
+          <tr>
+            <th className="border px-4 py-2">Field</th>
+            <th className="border px-4 py-2">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="border px-4 py-2">Appointment ID</td>
+            <td className="border px-4 py-2">{selectedAppointment.appointment_id}</td>
+          </tr>
+          <tr>
+            <td className="border px-4 py-2">Date</td>
+            <td className="border px-4 py-2">{selectedAppointment.date}</td>
+          </tr>
+          <tr>
+            <td className="border px-4 py-2">Time</td>
+            <td className="border px-4 py-2">{selectedAppointment.time}</td>
+          </tr>
+          <tr>
+            <td className="border px-4 py-2">Doctor ID</td>
+            <td className="border px-4 py-2">{selectedAppointment.doctor_id_fk}</td>
+          </tr>
+          <tr>
+            <td className="border px-4 py-2">Patient ID</td>
+            <td className="border px-4 py-2">{selectedAppointment.patient_id_fk}</td>
+          </tr>
+          <tr>
+            <td className="border px-4 py-2">Status</td>
+            <td className="border px-4 py-2">{selectedAppointment.status}</td>
+          </tr>
+          <tr>
+            <td className="border px-4 py-2">Type</td>
+            <td className="border px-4 py-2">{selectedAppointment.type}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="mt-6 flex justify-end">
+        <button
+          onClick={closeModal}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Booking Form Modal */}
       {showBookingForm && (
