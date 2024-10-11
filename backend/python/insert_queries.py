@@ -31,11 +31,8 @@ def generate_unique_uuid4(cursor):
 """
 def insert_user(dbConnection, user_info, role_info):
     if dbConnection: 
-        
         try:
-            connection = dbConnection
-
-            with connection.cursor() as cursor:
+            with dbConnection.cursor() as cursor:
                 check_user_query = """
                 SELECT user_id FROM user WHERE username = %s OR email = %s
                 """
@@ -83,7 +80,7 @@ def insert_user(dbConnection, user_info, role_info):
 
                     cursor.execute(pat_insert_query, (user_id, role_info['age'], role_info['gender'], role_info['phone_number'], role_info['address']))
 
-                connection.commit()
+                dbConnection.commit()
             
             return {"status": "success", "message": "User and related record inserted successfully."}
         
@@ -94,13 +91,10 @@ def insert_user(dbConnection, user_info, role_info):
             return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
             # rollback any changes made to database if any error occurs
-            connection.rollback()
+            if dbConnection:
+                dbConnection.rollback()
             #print(f"Status: error, Message: Error has occurred: {str(e)}")
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
-
-        # finally:
-        #     if connection:
-        #         close_db_connection(connection, tunnel)
 
 """
 appointment_id, patient_id_fk (composite key)
@@ -201,9 +195,8 @@ inside medications_info:
 """
 def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
     if dbConnection:
-        connection = dbConnection
         try:
-            with connection.cursor() as cursor:
+            with dbConnection.cursor() as cursor:
                 insert_query = """
                 INSERT INTO diagnosis (patient_id_fk, diagnosis_description, doctor_id_fk, diagnosis_date, severity)
                 VALUES (%s, %s, %s, %s, %s)
@@ -214,6 +207,9 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
 
                 diagnosis_id = cursor.lastrowid
 
+                # commit diagnosis table
+                dbConnection.commit()
+
                 insert_medication_query = """
                 INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, diagnosis_id_fk_pd, dosage, frequency, duration)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -221,6 +217,9 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
                 for medication in medications_info:
                     cursor.execute(insert_medication_query, (medication['patient_id'], medication['medication_id'], medication['doctor_id'], diagnosis_id, medication['dosage'], medication['frequency'], medication['duration']))
                 
+                # commit patient_medication table
+                dbConnection.commit()
+
                 update_query = """
                     UPDATE appointment 
                     SET status = %s
@@ -229,7 +228,8 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
     
                 cursor.execute(update_query, ('completed', diagnosis_info['appointment_id']))
                 
-                connection.commit()
+                # commit appointment table
+                dbConnection.commit()
             
             return {"status": "success", "message": "Diagnosis added successfully."}
         
@@ -239,8 +239,8 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
         except ValueError as e:
             return {"status": "error", "message": f"Invalid value: {str(e)}"}
         except Exception as e:
-            if connection:
-                connection.rollback()
+            if dbConnection:
+                dbConnection.rollback()
             #print(f"Status: error, Message: Error occurred: {str(e)}")
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
@@ -317,7 +317,6 @@ def insert_medical_conditions(dbConnection=None, condition_info=None):
                 name = VALUES(name), 
                 description = VALUES(description);
                 """
-           
                 cursor.execute(insert_query, (condition_info['name'], condition_info['description']))
 
                 dbConnection.commit()  
@@ -357,7 +356,6 @@ def insert_medication(dbConnection=None, medication_info=None):
                 description = VALUES(description),
                 price = VALUES(price);
                 """
-           
                 cursor.execute(insert_query, (medication_info['name'], medication_info['description'], medication_info['price']))
 
                 dbConnection.commit()  
