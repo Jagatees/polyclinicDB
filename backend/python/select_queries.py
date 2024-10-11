@@ -396,7 +396,7 @@ def get_all_users_with_details(dbConnection=None):
 def get_user_profile(dbConnection, user_id):
     if dbConnection:
         try:
-            with dbConnection.cursor() as cursor:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
                 user_query = """
                 SELECT u.user_id, u.role_id_fk, u.username, u.email, u.first_name, u.last_name, u.created_at
                 FROM user u
@@ -466,6 +466,53 @@ def get_user_profile(dbConnection, user_id):
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     else:
         return {"status": "error", "message": "No database connection provided"}
+    
+def get_patient_diagnoses_with_medications(dbConnection, patient_id):
+    if dbConnection:
+        try:
+            with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                diagnosis_query = """
+                SELECT diagnosis_id, diagnosis_description, doctor_id_fk, diagnosis_date, severity
+                FROM diagnosis
+                WHERE patient_id_fk = %s
+                """
+                cursor.execute(diagnosis_query, (patient_id,))
+                diagnoses = cursor.fetchall()
+
+                diagnosis_with_medications = []
+                for diagnosis in diagnoses:
+                    diagnosis_id = diagnosis['diagnosis_id']
+                    
+                    medication_query = """
+                    SELECT medication_id_fk, dosage, frequency, duration
+                    FROM patient_medication
+                    WHERE diagnosis_id_fk_pd = %s
+                    """
+                    cursor.execute(medication_query, (diagnosis_id,))
+                    medications = cursor.fetchall()
+                    
+                    diagnosis_with_medications.append({
+                        'diagnosis_id': diagnosis_id,
+                        'diagnosis_description': diagnosis['diagnosis_description'],
+                        'doctor_id': diagnosis['doctor_id_fk'],
+                        'diagnosis_date': diagnosis['diagnosis_date'],
+                        'severity': diagnosis['severity'],
+                        'medications': medications
+                    })
+
+            return {"status": "success", "data": diagnosis_with_medications}
+
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
+
+
 
 
 
