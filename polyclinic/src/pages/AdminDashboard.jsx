@@ -25,6 +25,12 @@ const AdminDashboard = () => {
   const [doctorId, setDoctorId] = useState(null);
   const [userId, setUserId] = useState(null); // Add this line to define userId state
 
+  // State for the new medical condition form
+  const [newCondition, setNewCondition] = useState({
+    name: "",
+    description: "",
+  });
+
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
     const localUserId = localStorage.getItem("user_id");
@@ -158,10 +164,50 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleAddConditionInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewCondition((prevState) => ({ ...prevState, [name]: value }));
+  };
+  
+
   const handleAddUserInputChange = (e) => {
     const { name, value } = e.target;
     setNewUser((prevState) => ({ ...prevState, [name]: value }));
   };
+
+    // Function to handle adding a new medical condition
+    const handleAddMedicalCondition = (event) => {
+      event.preventDefault();
+      const data = {
+        condition_info: {
+          name: newCondition.name,
+          description: newCondition.description,
+        },
+      };
+      fetch("/api/medical_condition", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Failed to add medical condition");
+          return response.json();
+        })
+        .then((data) => {
+          alert("Medical condition added successfully");
+          setNewCondition({
+            name: "",
+            description: "",
+          });
+          setActivePage("view_user");
+        })
+        .catch((error) => {
+          console.error("Error adding medical condition:", error);
+          alert("Error adding medical condition");
+        });
+    };
 
   const renderContent = () => {
     if (activePage === "view_user") {
@@ -210,6 +256,7 @@ const AdminDashboard = () => {
         </div>
       );
     } else if (activePage === "add_user") {
+      
       return (
         <div>
           <h3 className="text-2xl font-semibold mb-4">Add New Doctor</h3>
@@ -302,6 +349,49 @@ const AdminDashboard = () => {
           </form>
         </div>
       );
+    } else if (activePage === "add_medical_condition") {
+      return (
+        <div>
+          <h3 className="text-2xl font-semibold mb-4">Add New Medical Condition</h3>
+          <form onSubmit={handleAddMedicalCondition}>
+            <div className="mb-2">
+              <label className="block text-sm font-medium">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={newCondition.name}
+                onChange={handleAddConditionInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block text-sm font-medium">Description</label>
+              <textarea
+                name="description"
+                value={newCondition.description}
+                onChange={handleAddConditionInputChange}
+                className="mt-1 p-2 border rounded w-full bg-white text-black"
+              ></textarea>
+            </div>
+  
+            <div className="flex mt-4">
+              <button
+                type="submit"
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
+              >
+                Submit
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => setActivePage("view_user")}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      );
     }
   };
 
@@ -332,6 +422,15 @@ const AdminDashboard = () => {
           >
             Add Doctor
           </button>
+          <button
+  className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${
+    activePage === "add_medical_condition" ? "bg-gray-800" : ""
+  }`}
+  onClick={() => setActivePage("add_medical_condition")}
+>
+  Add Medical Condition
+</button>
+
         </nav>
 
         {/* Sidebar Footer */}
