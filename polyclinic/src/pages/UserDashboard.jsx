@@ -20,7 +20,7 @@ const UserDashboard = () => {
   const [editingAppointment, setEditingAppointment] = useState(null); // Store the appointment being edited
   const [diagnosisDetails, setDiagnosisDetails] = useState(null);
   const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
-  
+
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
     const localUserId = localStorage.getItem("user_id");
@@ -52,36 +52,13 @@ const UserDashboard = () => {
         billing: matchingBilling || {}, // If no matching billing record, return empty object
       };
     });
-
-    console.log("Joined Appointments and Billing Data:", joinedData);
+  
+    // Remove this line:
+    // console.log("Joined Appointments and Billing Data:", joinedData);
+  
     return joinedData;
   };
 
-  const handleGetProfile = () => {
-    fetch(`/api/appointment`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData), // Sending the formData as JSON
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Booking failed");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Booking successful:", data);
-        setShowBookingForm(false); // Close the form on success
-        if (patientId && role_id_fk_ID) {
-          handleGetAppointments();
-        }
-      })
-      .catch((error) => {
-        console.error("Booking failed:", error);
-      });
-  };
 
   const handleGetBilling = (user_id) => {
     fetch(`/api/billing/${user_id}`, {
@@ -99,12 +76,14 @@ const UserDashboard = () => {
       .then((data) => {
         console.log("Billing successful:", data.message.current);
         setBilling(data.message.current);
-        joinAppointmentsAndBilling();
+        // Remove this line:
+        // joinAppointmentsAndBilling();
       })
       .catch((error) => {
         console.error("Billing failed:", error);
       });
   };
+  
 
   const handleViewDetals = (patient_id_fk, appointment_id) => {
     fetch(`/api/diagnosis/${patient_id_fk}/${appointment_id}`, {
@@ -128,7 +107,6 @@ const UserDashboard = () => {
         console.error("Diagnosis failed:", error);
       });
   };
-  
 
   const renderProfileContent = () => {
     return (
@@ -251,16 +229,36 @@ const UserDashboard = () => {
       });
   };
 
-  // useEffect(() => {
-  //   handleViewDetals(5, 15);
+  useEffect(() => {
+    if (userId && Appointments) {
+      handleGetBilling(userId);
+      joinAppointmentsAndBilling();
 
-  //   // if (userId ) {
-  //   //   // handleGetBilling(userId);
-  //   // }
-  // }, [userId]);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (appointments.length > 0 && billing.length > 0) {
+      const joinedData = joinAppointmentsAndBilling();
+      console.log("Joined Appointments and Billing Data:", joinedData);
+    }
+  }, [appointments, billing]);
 
   useEffect(() => {
     console.log("patientId:", patientId, "role_id_fk_ID:", role_id_fk_ID);
+    if (patientId && role_id_fk_ID) {
+      handleGetAppointments();
+    }
+  }, [patientId, role_id_fk_ID]);
+
+
+  useEffect(() => {
+    if (userId) {
+      handleGetBilling(userId);
+    }
+  }, [userId]);
+  
+  useEffect(() => {
     if (patientId && role_id_fk_ID) {
       handleGetAppointments();
     }
@@ -385,17 +383,16 @@ const UserDashboard = () => {
                           </>
                         ) : (
                           <button
-                          onClick={() =>
-                            handleViewDetals(
-                              appointment.patient_id_fk,
-                              appointment.appointment_id
-                            )
-                          }
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                          View Details
-                        </button>
-                        
+                            onClick={() =>
+                              handleViewDetals(
+                                appointment.patient_id_fk,
+                                appointment.appointment_id
+                              )
+                            }
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                          >
+                            View Details
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -618,7 +615,7 @@ const UserDashboard = () => {
         </div>
       )}
 
-{showDiagnosisModal && diagnosisDetails && (
+      {showDiagnosisModal && diagnosisDetails && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">
             <h2 className="text-xl font-bold mb-4">Diagnosis Details</h2>
@@ -628,7 +625,8 @@ const UserDashboard = () => {
                   <strong>Diagnosis Date:</strong> {diagnosis.diagnosis_date}
                 </p>
                 <p>
-                  <strong>Description:</strong> {diagnosis.diagnosis_description}
+                  <strong>Description:</strong>{" "}
+                  {diagnosis.diagnosis_description}
                 </p>
                 <p>
                   <strong>Severity:</strong> {diagnosis.severity}
