@@ -467,16 +467,17 @@ def get_user_profile(dbConnection, user_id):
     else:
         return {"status": "error", "message": "No database connection provided"}
     
-def get_patient_diagnoses_with_medications(dbConnection, patient_id):
+
+def get_patient_diagnoses_with_medications_by_appointment(dbConnection, patient_id, appointment_id):
     if dbConnection:
         try:
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
                 diagnosis_query = """
                 SELECT diagnosis_id, diagnosis_description, doctor_id_fk, diagnosis_date, severity
                 FROM diagnosis
-                WHERE patient_id_fk = %s
+                WHERE patient_id_fk = %s AND appointment_id_fk = %s
                 """
-                cursor.execute(diagnosis_query, (patient_id,))
+                cursor.execute(diagnosis_query, (patient_id, appointment_id))
                 diagnoses = cursor.fetchall()
 
                 diagnosis_with_medications = []
@@ -511,6 +512,7 @@ def get_patient_diagnoses_with_medications(dbConnection, patient_id):
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     else:
         return {"status": "error", "message": "No database connection provided"}
+
 
 
 
