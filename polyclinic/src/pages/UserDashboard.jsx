@@ -38,7 +38,6 @@ const UserDashboard = () => {
   const [appointmentTime, setAppointmentTime] = useState("");
   const [appointments, setAppointments] = useState([]);
 
-  // PENDING ZF Side for get user profile information
   const handleGetProfile = () => {
     fetch(`/api/appointment`, {
       method: "PUT",
@@ -82,6 +81,17 @@ const UserDashboard = () => {
     );
   };
 
+
+  
+  const renderBillingContent = () => {
+    return (
+      <div>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Billing</h2>
+        <p>Billing information goes here.</p>
+    
+      </div>
+    );
+  };
   const handleBookAppointment = (event) => {
     event.preventDefault(); // Prevent default form submit action
 
@@ -237,6 +247,8 @@ const UserDashboard = () => {
     switch (activePage) {
       case "profile":
         return renderProfileContent();
+        case "billing":
+          return renderBillingContent();
       case "appointments":
         return (
           <div>
@@ -349,6 +361,15 @@ const UserDashboard = () => {
             onClick={() => setActivePage("appointments")}
           >
             Appointments
+          </a>
+          <a
+            href="#"
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${
+              activePage === "billing" ? "bg-gray-800" : ""
+            }`}
+            onClick={() => setActivePage("billing")}
+          >
+            Billing
           </a>
         </nav>
 
