@@ -1,25 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { z } from "zod";
 import image from "../assets/images.jpg";
-
-// Define the schema for form validation using Zod
-const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  username: z.string().min(1, "Username is required"),
-  age: z.number().min(18, "You must be at least 18 years old"),
-  gender: z.enum(["M", "F"], "Gender selection is required"),
-  phone: z.string().length(8, "Phone number must be exactly 10 digits"),
-  address: z.string().min(1, "Address is required"),
-  email: z.string().email("Must be a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
-});
 
 const Registration = () => {
   const navigate = useNavigate();
 
-  // States to capture user input
+  // States to capture user input and control loading, success, and error states
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -32,13 +18,15 @@ const Registration = () => {
     password: "",
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Update input changes
   const handleInputChange = (event) => {
     const { id, value } = event.target;
     let formattedValue = value;
 
-    // Check if the input is meant to be a number and convert it
     if (id === "age" && value !== "") {
       formattedValue = Number(value);
     }
@@ -46,27 +34,41 @@ const Registration = () => {
     setFormData((prev) => ({ ...prev, [id]: formattedValue }));
   };
 
+  // Validation function
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.username.trim()) newErrors.username = "Username is required";
+    if (!formData.age || formData.age < 18 || formData.age > 100) {
+      newErrors.age = "Age should be between 18 and 100";
+    }
+    if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.phone.match(/^\d{8}$/)) {
+      newErrors.phone = "Phone number should be 8 digits";
+    }
+    if (!formData.address.trim()) newErrors.address = "Address is required";
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      newErrors.email = "Enter a valid email address";
+    }
+    if (formData.password.length < 6) {
+      newErrors.password = "Password should be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   // Handle form submission
   const handleRegistration = async (event) => {
     event.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true); // Start loading
+    setErrorMessage(""); // Clear any previous errors
+    setSuccessMessage(false); // Reset success message
+
     try {
-      // {
-      //   "user_info" : {
-      //     "role_id": 2,
-      //     "username": "johndoe",
-      //     "password_hash": "123",
-      //     "email": "baba@gmail.com",
-      //     "first_name": "John",
-      //     "last_name": "Doe"
-      //   }
-      //     ,
-      //   "role_info" : {
-      //       "age": 23,
-      //       "gender": "m",
-      //       "phone_number": "89482392",
-      //       "address": "123, Ang Mo Kio, Lagos"
-      //     }
-      // }
       const user_info = {
         role_id: 2,
         username: formData.username,
@@ -83,37 +85,35 @@ const Registration = () => {
         address: formData.address,
       };
 
-      console.log(user_info, role_info);
-
       // Submit the data
-      fetch("/api/register", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ user_info, role_info }),
-      })
-        .then((response) => {
-          if (!response.ok) throw new Error("Registration failed");
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Registration successful:", data.message.status);
-          if (data.message.status === "success") {
-            handleLogIn(formData.email, formData.password);
-          } else if (
-            data.message.message ===
-            "User already exists with this username or email."
-          ) {
-            alert("account already registeration go to login page");
-          }
-        })
-        .catch((error) => {
-          console.error("Registration failed:", error);
-        });
+      });
+
+      if (!response.ok) {
+        throw new Error("Registration failed");
+      }
+
+      const data = await response.json();
+
+      if (data.message.status === "success") {
+        setSuccessMessage(true); // Show success message
+        handleLogIn(formData.email, formData.password); // Auto log in
+      } else if (
+        data.message.message ===
+        "User already exists with this username or email."
+      ) {
+        setErrorMessage("Account already registered. Please go to the login page.");
+      }
     } catch (error) {
-      setErrors(error.flatten().fieldErrors);
-      console.error("Validation failed:", error);
+      console.error("Registration failed:", error);
+      setErrorMessage("Registration failed. Please try again.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -123,10 +123,7 @@ const Registration = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      body: JSON.stringify({ email, password }),
     })
       .then((response) => {
         if (!response.ok) {
@@ -135,30 +132,29 @@ const Registration = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Login successful:", data);
-        if (data) {
-          localStorage.setItem("patient_id", data.message.user.patient_id);
-          localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
-          localStorage.setItem("user_id", data.message.user.user_id);
+        localStorage.setItem("patient_id", data.message.user.patient_id);
+        localStorage.setItem("role_id_fk", data.message.user.role_id_fk);
+        localStorage.setItem("user_id", data.message.user.user_id);
 
-          switch (data.message.user.role_id_fk) {
-            case 1:
-              navigate("/doctordashboard");
-              break;
-            case 2:
-              navigate("/userdashboard");
-              break;
-            case 3:
-              navigate("/admindashboard");
-              break;
-            default:
-              navigate("/home");
-              break;
-          }
+        // Redirect based on role
+        switch (data.message.user.role_id_fk) {
+          case 1:
+            navigate("/doctordashboard");
+            break;
+          case 2:
+            navigate("/userdashboard");
+            break;
+          case 3:
+            navigate("/admindashboard");
+            break;
+          default:
+            navigate("/home");
+            break;
         }
       })
       .catch((error) => {
         console.error("Login failed:", error);
+        setErrorMessage("Login failed. Please try again.");
       });
   };
 
@@ -185,6 +181,7 @@ const Registration = () => {
         <div className="w-full max-w-2xl mx-auto bg-gray-800 p-8 text-white rounded-lg">
           <h2 className="text-3xl font-semibold mb-6">Create an account</h2>
           <form onSubmit={handleRegistration} className="space-y-4">
+            {/* Input fields */}
             <div className="flex space-x-4">
               <div className="w-1/2">
                 <label htmlFor="firstName" className="block text-sm mb-1">
@@ -201,9 +198,7 @@ const Registration = () => {
                   }`}
                 />
                 {errors.firstName && (
-                  <p className="text-red-500 text-xs italic">
-                    {errors.firstName}
-                  </p>
+                  <p className="text-red-500 text-xs italic">{errors.firstName}</p>
                 )}
               </div>
               <div className="w-1/2">
@@ -221,12 +216,11 @@ const Registration = () => {
                   }`}
                 />
                 {errors.lastName && (
-                  <p className="text-red-500 text-xs italic">
-                    {errors.lastName}
-                  </p>
+                  <p className="text-red-500 text-xs italic">{errors.lastName}</p>
                 )}
               </div>
             </div>
+
             <div className="flex space-x-4">
               <div className="w-1/3">
                 <label htmlFor="username" className="block text-sm mb-1">
@@ -243,9 +237,7 @@ const Registration = () => {
                   }`}
                 />
                 {errors.username && (
-                  <p className="text-red-500 text-xs italic">
-                    {errors.username}
-                  </p>
+                  <p className="text-red-500 text-xs italic">{errors.username}</p>
                 )}
               </div>
               <div className="w-1/3">
@@ -287,6 +279,7 @@ const Registration = () => {
                 )}
               </div>
             </div>
+
             <div>
               <label htmlFor="phone" className="block text-sm mb-1">
                 Phone Number
@@ -294,7 +287,7 @@ const Registration = () => {
               <input
                 type="text"
                 id="phone"
-                placeholder="123-456-7890"
+                placeholder="12345678"
                 value={formData.phone}
                 onChange={handleInputChange}
                 className={`w-full p-2 bg-gray-700 rounded ${
@@ -305,6 +298,7 @@ const Registration = () => {
                 <p className="text-red-500 text-xs italic">{errors.phone}</p>
               )}
             </div>
+
             <div>
               <label htmlFor="address" className="block text-sm mb-1">
                 Address
@@ -323,6 +317,7 @@ const Registration = () => {
                 <p className="text-red-500 text-xs italic">{errors.address}</p>
               )}
             </div>
+
             <div>
               <label htmlFor="email" className="block text-sm mb-1">
                 Email
@@ -341,6 +336,7 @@ const Registration = () => {
                 <p className="text-red-500 text-xs italic">{errors.email}</p>
               )}
             </div>
+
             <div>
               <label htmlFor="password" className="block text-sm mb-1">
                 Password
@@ -359,19 +355,33 @@ const Registration = () => {
                 <p className="text-red-500 text-xs italic">{errors.password}</p>
               )}
             </div>
-            <div className="mt-6">
-              <button
-                type="submit"
-                className="w-full p-3 bg-blue-600 hover:bg-blue-700 rounded"
-              >
+
+            {/* Loading, Success, Error messages */}
+            {loading ? (
+              <div className="mb-4 flex justify-center">
+                <div className="w-10 h-10 border-4 border-indigo-500 border-dashed rounded-full animate-spin"></div>
+              </div>
+            ) : successMessage ? (
+              <div className="mb-4 flex justify-center">
+                <div className="text-green-500 text-2xl">✔ Registration successful!</div>
+              </div>
+            ) : (
+              <button className="w-full p-3 bg-blue-600 hover:bg-blue-700 rounded">
                 Sign Up
               </button>
-            </div>
+            )}
+
+            {errorMessage && (
+              <div className="mb-4 text-red-500 text-center">
+                {errorMessage}
+              </div>
+            )}
+
             <div className="text-center mt-4">
               Already have an account?{" "}
-              <a href="/login" className="text-blue-400 hover:underline">
+              <Link to="/login" className="text-blue-400 hover:underline">
                 Login
-              </a>
+              </Link>
             </div>
           </form>
         </div>
