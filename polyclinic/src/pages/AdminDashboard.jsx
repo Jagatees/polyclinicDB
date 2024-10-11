@@ -212,7 +212,7 @@ const AdminDashboard = () => {
     } else if (activePage === "add_user") {
       return (
         <div>
-          <h3 className="text-2xl font-semibold mb-4">Add New User</h3>
+          <h3 className="text-2xl font-semibold mb-4">Add New Doctor</h3>
           <form onSubmit={handleCreateUser}>
             <div className="mb-2">
               <label className="block text-sm font-medium">Username</label>
@@ -330,7 +330,7 @@ const AdminDashboard = () => {
             }`}
             onClick={() => setActivePage("add_user")}
           >
-            Add User
+            Add Doctor
           </button>
         </nav>
 
