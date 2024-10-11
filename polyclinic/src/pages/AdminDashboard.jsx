@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [activePage, setActivePage] = useState("view_user");
-  const [users, setUsers] = useState([]);
   const [usersAll, setUsersAll] = useState([]);
   const [newUser, setNewUser] = useState({
     username: "",
@@ -23,13 +22,19 @@ const AdminDashboard = () => {
   const [patientId, setPatientId] = useState(null);
   const [role_id_fk_ID, setrole_id_fk] = useState(null);
   const [doctorId, setDoctorId] = useState(null);
-  const [userId, setUserId] = useState(null); // Add this line to define userId state
+  const [userId, setUserId] = useState(null);
 
   // State for the new medical condition form
   const [newCondition, setNewCondition] = useState({
     name: "",
     description: "",
   });
+
+  // New state variable for medical conditions
+  const [medicalConditions, setMedicalConditions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); // For pagination
+  const itemsPerPage = 10; // Items per page
+
 
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
@@ -62,8 +67,7 @@ const AdminDashboard = () => {
         const usersData = data.message.users;
         console.log("user data ", usersData);
         setUsersAll(usersData);
-        // setUsers(usersData);
-        // setNoData(usersData.length === 0); // Set no data state
+        setNoData(usersData.length === 0);
       })
       .catch((error) => {
         console.error("Request failed:", error);
@@ -71,9 +75,46 @@ const AdminDashboard = () => {
       .finally(() => setLoading(false)); // Stop loading when request completes
   };
 
+  // Function to fetch medical conditions
+  const getMedicalConditions = () => {
+    fetch(`/api/medical_condition/3`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch medical conditions");
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Medical conditions data:", data);
+        setMedicalConditions(data.message); // Adjust based on actual response format
+      })
+      .catch((error) => {
+        console.error("Error fetching medical conditions:", error);
+      });
+  };
+
+
+    // Fetch medical conditions when the active page changes to 'view_medical_condition'
+    useEffect(() => {
+      if (activePage === "view_medical_condition") {
+        getMedicalConditions();
+      }
+    }, [activePage]);
+  
+
   useEffect(() => {
     getuser();
   }, []);
+
+  // Fetch medical conditions when the active page is 'view_medical_condition'
+  useEffect(() => {
+    if (activePage === "view_medical_condition") {
+      getMedicalConditions();
+    }
+  }, [activePage]);
 
   const handleCreateUser = async (event) => {
     event.preventDefault();
@@ -390,6 +431,77 @@ const AdminDashboard = () => {
           </form>
         </div>
       );
+    } else if (activePage === "view_medical_condition") {
+      // View Medical Conditions with Pagination
+      const totalPages = Math.ceil(medicalConditions.length / itemsPerPage);
+      const currentData = medicalConditions.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      );
+
+      return (
+        <div>
+          <h3 className="text-2xl font-semibold mb-4">Medical Conditions</h3>
+          {currentData.length === 0 ? (
+            <p>No medical conditions available.</p>
+          ) : (
+            <div>
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    <th className="border px-4 py-2 text-left">Name</th>
+                    <th className="border px-4 py-2 text-left">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((condition) => (
+                    <tr key={condition.id}>
+                      <td className="border px-4 py-2">{condition.name}</td>
+                      <td className="border px-4 py-2">
+                        {condition.description}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {/* Pagination Controls */}
+              <div className="flex justify-center mt-4">
+                <button
+                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  First
+                </button>
+                <button
+                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1 mx-1">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+                <button
+                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
     }
   };
 
@@ -427,6 +539,15 @@ const AdminDashboard = () => {
             onClick={() => setActivePage("add_medical_condition")}
           >
             Add Medical Condition
+          </button>
+          {/* New button for viewing medical conditions */}
+          <button
+            className={`px-4 py-2 hover:bg-gray-800 rounded-md text-white ${
+              activePage === "view_medical_condition" ? "bg-gray-800" : ""
+            }`}
+            onClick={() => setActivePage("view_medical_condition")}
+          >
+            View Medical Condition
           </button>
         </nav>
 
