@@ -366,9 +366,21 @@ const Registration = () => {
                 <div className="text-green-500 text-2xl">✔ Registration successful!</div>
               </div>
             ) : (
-              <button className="w-full p-3 bg-blue-600 hover:bg-blue-700 rounded">
-                Sign Up
-              </button>
+              <>
+  <button type="submit" className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
+    Sign Up
+  </button>
+
+<div className="flex justify-center items-center my-4">
+  <span className="text-gray-400">OR</span>
+</div>
+
+<Link to="/login" className="w-full">
+  <button className="w-full px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">
+    Go to Login
+  </button>
+</Link>
+              </>
             )}
 
             {errorMessage && (
