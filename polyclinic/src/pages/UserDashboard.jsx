@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Appointments from "./Appointments";
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("profile"); // Set default active tab to "profile"
@@ -37,6 +38,23 @@ const UserDashboard = () => {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [appointmentTime, setAppointmentTime] = useState("");
   const [appointments, setAppointments] = useState([]);
+  const [billing, setBilling] = useState([]);
+
+  const joinAppointmentsAndBilling = () => {
+    const joinedData = appointments.map((appointment) => {
+      const matchingBilling = billing.find(
+        (bill) => bill.appointment_id_fk === appointment.appointment_id
+      );
+      return {
+        ...appointment,
+        billing: matchingBilling || {}, // If no matching billing record, return empty object
+      };
+    });
+  
+    console.log("Joined Appointments and Billing Data:", joinedData);
+    return joinedData;
+  };
+  
 
   const handleGetProfile = () => {
     fetch(`/api/appointment`, {
@@ -79,11 +97,18 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Billing successful:", data);
+        console.log("Billing successful:", data.message.current);
+        setBilling(data.message.current);
+        joinAppointmentsAndBilling();
+
       })
       .catch((error) => {
         console.error("Billing failed:", error);
       });
+
+
+
+      
   }
 
   const renderProfileContent = () => {
@@ -212,9 +237,10 @@ const UserDashboard = () => {
 
 
   useEffect(() => {
-    if (userId) {
+    if (userId && Appointments) {
       handleGetBilling(userId);
     }
+
   }, [userId]); 
 
 
