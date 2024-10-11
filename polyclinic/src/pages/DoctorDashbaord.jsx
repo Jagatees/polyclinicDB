@@ -3,7 +3,7 @@ import { MultiSelect } from "react-multi-select-component";
 import { useNavigate } from "react-router-dom";
 
 const DoctorDashboard = () => {
-  const [activePage, setActivePage] = useState("get_users_by_doctor");
+  const [activePage, setActivePage] = useState("get_appointment");
   const [medications, setMedications] = useState([]);
   const [getMedicalCondition, setMedicalCondition] = useState([]);
   const [medicationDosages, setMedicationDosages] = useState({});
@@ -528,17 +528,9 @@ const DoctorDashboard = () => {
             </h3>
             {!isEditing ? (
               <>
-                <p>
-                  <strong>Appointment ID:</strong>{" "}
-                  {selectedAppointment.appointmentId}
-                </p>
-                <p>
-                  <strong>Patient Name:</strong>{" "}
-                  {selectedAppointment.patientName}
-                </p>
-                <p>
-                  <strong>Doctor Name:</strong> {selectedAppointment.doctorName}
-                </p>
+               
+              
+               
                 <p>
                   <strong>Date:</strong> {selectedAppointment.date}
                 </p>
@@ -566,14 +558,7 @@ const DoctorDashboard = () => {
               <div>
                 <div className="mb-2">
 
-                  <p>
-                    <strong>patient_id :</strong> {editFormData.patient_id}
-                  </p>
-
-                  <p>
-                    <strong>docotr_id :</strong> {editFormData.doctor_id_ID}
-                  </p>
-
+                 
 
                   <label className="block text-sm font-medium">Severity</label>
                   <select
