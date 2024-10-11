@@ -64,6 +64,28 @@ const UserDashboard = () => {
       });
   };
 
+
+  const handleGetBilling = (user_id) => {
+    fetch(`/api/billing/${user_id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Billing failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Billing successful:", data);
+      })
+      .catch((error) => {
+        console.error("Billing failed:", error);
+      });
+  }
+
   const renderProfileContent = () => {
     return (
       <div>
@@ -188,12 +210,20 @@ const UserDashboard = () => {
       });
   };
 
+
+  useEffect(() => {
+    if (userId) {
+      handleGetBilling(userId);
+    }
+  }, [userId]); 
+
+
   useEffect(() => {
     console.log("patientId:", patientId, "role_id_fk_ID:", role_id_fk_ID);
     if (patientId && role_id_fk_ID) {
       handleGetAppointments();
     }
-  }, [patientId, role_id_fk_ID]); // Add dependencies to ensure re-render
+  }, [patientId, role_id_fk_ID]); 
 
   const openModal = (appointment) => {
     setSelectedAppointment(appointment); // This sets the entire appointment object
