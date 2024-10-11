@@ -215,52 +215,48 @@ const DoctorDashboard = () => {
   };
 
   const handleConfirmEdit = () => {
-    const diagnosisInfo = {
-      patient_id: selectedAppointment.patient_id, // Assuming patient_id is available from selectedAppointment
-      diagnosis_description: editFormData.diagnosis_description || "", // Diagnosis description entered by the user
-      doctor_id: doctor_id_ID, // Assuming doctor_id is available in state
-      severity: editFormData.severity || "", // Severity selected by the user
-      appointment_id: selectedAppointment.appointment_id,
-    };
+    // Create the diagnosis description by appending selected medical conditions (name + description)
+  const medicalConditionsText = (editFormData.medicalCondition || [])
+  .map((condition) => `${condition.label || "Unnamed Condition"}`) // Safely access the 'label' of selected conditions
+  .join(", "); // Join all selected conditions with a comma and space
 
-    // Format medication_info new version
-    const medicationInfo = editFormData.medication.map((med) => {
-      const selectedMedication = medications.find(
-        (m) => m.medication_id === med.value
-      ); // Find medication by id
-      return {
-        patient_id: selectedAppointment.patient_id, // Assuming patient_id is available from selectedAppointment
-        medication_id: med.value, // medication_id from the selected medication
-        doctor_id: doctor_id_ID, // Assuming doctor_id is available in state
-        dosage: medicationDosages[med.value]?.dosage || "", // Dosage for this medication
-        frequency: medicationDosages[med.value]?.frequency || "", // Frequency for this medication
-        duration: medicationDosages[med.value]?.duration || "", // Duration for this medication
-        price: selectedMedication?.price || "", // Add the price from the selected medication
-      };
-    });
+const diagnosisInfo = {
+  patient_id: selectedAppointment.patient_id,
+  diagnosis_description:
+    (editFormData.diagnosis_description || "") + "," + medicalConditionsText, // Append selected medical conditions to description
+  doctor_id: doctor_id_ID,
+  severity: editFormData.severity || "",
+  appointment_id: selectedAppointment.appointment_id,
+};
 
-    // old version
-    // const medicationInfo = editFormData.medication.map((med) => ({
-    //   patient_id: selectedAppointment.patient_id,  // Assuming patient_id is available from selectedAppointment
-    //   medication_id: med.value,  // medication_id from the selected medication
-    //   doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
-    //   dosage: medicationDosages[med.value]?.dosage || "",  // Dosage for this medication
-    //   frequency: medicationDosages[med.value]?.frequency || "",  // Frequency for this medication
-    //   duration: medicationDosages[med.value]?.duration || ""  // Duration for this medication
-    // }));
-
-    // Combine the data into the final structure
+// Format medication_info for submission
+const medicationInfo = editFormData.medication.map((med) => {
+  const selectedMedication = medications.find(
+    (m) => m.medication_id === med.value
+  ); // Find medication by id
+  return {
+    patient_id: selectedAppointment.patient_id,
+    medication_id: med.value, // medication_id from the selected medication
+    doctor_id: doctor_id_ID,
+    dosage: medicationDosages[med.value]?.dosage || "", // Dosage for this medication
+    frequency: medicationDosages[med.value]?.frequency || "", // Frequency for this medication
+    duration: medicationDosages[med.value]?.duration || "", // Duration for this medication
+    price: selectedMedication?.price || "", // Add the price from the selected medication
+  };
+});
+  
     const formattedData = {
       diagnosis_info: diagnosisInfo,
       medication_info: medicationInfo,
-      role: 1, // Assuming role is always 1, as per your example
+      role: 1, // Assuming role is always 1
     };
-
+  
     // Log the formatted data for debugging purposes
     console.log("Formatted Data:", JSON.stringify(formattedData, null, 2));
-
+  
+    // Submit the formatted data to the API (uncomment to use)
     const apiUrl = `/api/diagnosis`;
-
+  
     fetch(apiUrl, {
       method: "POST",
       headers: {
@@ -282,6 +278,7 @@ const DoctorDashboard = () => {
         console.error("Error submitting diagnosis:", error);
       });
   };
+  
 
   const handleAddMedication = () => {
     setShowAddMedicationForm(true);

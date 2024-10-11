@@ -18,7 +18,9 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(false); // Loading state for logout
   const [isEditing, setIsEditing] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null); // Store the appointment being edited
-
+  const [diagnosisDetails, setDiagnosisDetails] = useState(null);
+  const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
+  
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
     const localUserId = localStorage.getItem("user_id");
@@ -50,11 +52,10 @@ const UserDashboard = () => {
         billing: matchingBilling || {}, // If no matching billing record, return empty object
       };
     });
-  
+
     console.log("Joined Appointments and Billing Data:", joinedData);
     return joinedData;
   };
-  
 
   const handleGetProfile = () => {
     fetch(`/api/appointment`, {
@@ -82,7 +83,6 @@ const UserDashboard = () => {
       });
   };
 
-
   const handleGetBilling = (user_id) => {
     fetch(`/api/billing/${user_id}`, {
       method: "GET",
@@ -100,16 +100,35 @@ const UserDashboard = () => {
         console.log("Billing successful:", data.message.current);
         setBilling(data.message.current);
         joinAppointmentsAndBilling();
-
       })
       .catch((error) => {
         console.error("Billing failed:", error);
       });
+  };
 
-
-
-      
-  }
+  const handleViewDetals = (patient_id_fk, appointment_id) => {
+    fetch(`/api/diagnosis/${patient_id_fk}/${appointment_id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Diagnosis failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Diagnosis successful:", data.message.data);
+        setDiagnosisDetails(data.message.data); // Store the diagnosis data
+        setShowDiagnosisModal(true); // Show the diagnosis modal
+      })
+      .catch((error) => {
+        console.error("Diagnosis failed:", error);
+      });
+  };
+  
 
   const renderProfileContent = () => {
     return (
@@ -128,14 +147,11 @@ const UserDashboard = () => {
     );
   };
 
-
-  
   const renderBillingContent = () => {
     return (
       <div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Billing</h2>
         <p>Billing information goes here.</p>
-    
       </div>
     );
   };
@@ -235,21 +251,20 @@ const UserDashboard = () => {
       });
   };
 
+  // useEffect(() => {
+  //   handleViewDetals(5, 15);
 
-  useEffect(() => {
-    if (userId && Appointments) {
-      handleGetBilling(userId);
-    }
-
-  }, [userId]); 
-
+  //   // if (userId ) {
+  //   //   // handleGetBilling(userId);
+  //   // }
+  // }, [userId]);
 
   useEffect(() => {
     console.log("patientId:", patientId, "role_id_fk_ID:", role_id_fk_ID);
     if (patientId && role_id_fk_ID) {
       handleGetAppointments();
     }
-  }, [patientId, role_id_fk_ID]); 
+  }, [patientId, role_id_fk_ID]);
 
   const openModal = (appointment) => {
     setSelectedAppointment(appointment); // This sets the entire appointment object
@@ -303,8 +318,8 @@ const UserDashboard = () => {
     switch (activePage) {
       case "profile":
         return renderProfileContent();
-        case "billing":
-          return renderBillingContent();
+      case "billing":
+        return renderBillingContent();
       case "appointments":
         return (
           <div>
@@ -370,11 +385,17 @@ const UserDashboard = () => {
                           </>
                         ) : (
                           <button
-                            onClick={() => openModal(appointment)}
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                          >
-                            View Details
-                          </button>
+                          onClick={() =>
+                            handleViewDetals(
+                              appointment.patient_id_fk,
+                              appointment.appointment_id
+                            )
+                          }
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                          View Details
+                        </button>
+                        
                         )}
                       </td>
                     </tr>
@@ -593,6 +614,56 @@ const UserDashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+{showDiagnosisModal && diagnosisDetails && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Diagnosis Details</h2>
+            {diagnosisDetails.map((diagnosis, index) => (
+              <div key={index}>
+                <p>
+                  <strong>Diagnosis Date:</strong> {diagnosis.diagnosis_date}
+                </p>
+                <p>
+                  <strong>Description:</strong> {diagnosis.diagnosis_description}
+                </p>
+                <p>
+                  <strong>Severity:</strong> {diagnosis.severity}
+                </p>
+                <p>
+                  <strong>Medications:</strong>
+                </p>
+                <ul className="list-disc pl-5">
+                  {diagnosis.medications.map((medication, idx) => (
+                    <li key={idx} className="mb-2">
+                      <p>
+                        <strong>Name:</strong> {medication.name}
+                      </p>
+                      <p>
+                        <strong>Dosage:</strong> {medication.dosage}
+                      </p>
+                      <p>
+                        <strong>Frequency:</strong> {medication.frequency}
+                      </p>
+                      <p>
+                        <strong>Duration:</strong> {medication.duration}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowDiagnosisModal(false)}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
