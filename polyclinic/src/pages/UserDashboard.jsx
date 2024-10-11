@@ -41,9 +41,10 @@ const UserDashboard = () => {
   const [appointmentTime, setAppointmentTime] = useState("");
   const [appointments, setAppointments] = useState([]);
   const [billing, setBilling] = useState([]);
+  const [joinedData, setJoinedData] = useState([]); // New state for joined data
 
   const joinAppointmentsAndBilling = () => {
-    const joinedData = appointments.map((appointment) => {
+    const joined = appointments.map((appointment) => {
       const matchingBilling = billing.find(
         (bill) => bill.appointment_id_fk === appointment.appointment_id
       );
@@ -52,13 +53,8 @@ const UserDashboard = () => {
         billing: matchingBilling || {}, // If no matching billing record, return empty object
       };
     });
-  
-    // Remove this line:
-    // console.log("Joined Appointments and Billing Data:", joinedData);
-  
-    return joinedData;
+    setJoinedData(joined);
   };
-
 
   const handleGetBilling = (user_id) => {
     fetch(`/api/billing/${user_id}`, {
@@ -76,14 +72,11 @@ const UserDashboard = () => {
       .then((data) => {
         console.log("Billing successful:", data.message.current);
         setBilling(data.message.current);
-        // Remove this line:
-        // joinAppointmentsAndBilling();
       })
       .catch((error) => {
         console.error("Billing failed:", error);
       });
   };
-  
 
   const handleViewDetals = (patient_id_fk, appointment_id) => {
     fetch(`/api/diagnosis/${patient_id_fk}/${appointment_id}`, {
@@ -129,10 +122,45 @@ const UserDashboard = () => {
     return (
       <div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Billing</h2>
-        <p>Billing information goes here.</p>
+        {joinedData.length === 0 ? (
+          <p>No billing information available.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {joinedData.map((item, index) => (
+              <div
+                key={index}
+                className="bg-white shadow-md rounded-lg p-4 flex flex-col"
+              >
+                <div className="mb-2">
+                  <strong>Date:</strong> {item.date}
+                </div>
+                <div className="mb-2">
+                  <strong>Amount Due:</strong> ${item.billing.amount_due}
+                </div>
+                <div className="mb-2">
+                  <strong>Payment Status:</strong>{" "}
+                  {item.billing.payment_status}
+                </div>
+                <div className="mt-auto">
+                  {item.billing.payment_status === "pending" ? (
+                    <button
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      onClick={() => handlePayBill(item)}
+                    >
+                      Pay Now
+                    </button>
+                  ) : (
+                    <span className="text-green-600 font-bold">Paid</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
+
   const handleBookAppointment = (event) => {
     event.preventDefault(); // Prevent default form submit action
 
@@ -190,17 +218,17 @@ const UserDashboard = () => {
         },
       })
         .then((response) => {
-          if (!response.ok) throw new Error("Registration failed");
+          if (!response.ok) throw new Error("Deletion failed");
           return response.json();
         })
         .then((data) => {
-          console.log("Deletaion successful:", data.message.status);
+          console.log("Deletion successful:", data.message.status);
           if (patientId && role_id_fk_ID) {
             handleGetAppointments();
           }
         })
         .catch((error) => {
-          console.error("Deletaion failed:", error);
+          console.error("Deletion failed:", error);
         });
     } catch (error) {
       console.error("Validation failed:", error);
@@ -216,30 +244,28 @@ const UserDashboard = () => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Booking failed");
+          throw new Error("Fetching appointments failed");
         }
         return response.json();
       })
       .then((data) => {
-        console.log("Booking successful:", data.message);
+        console.log("Appointments fetched successfully:", data.message);
         setAppointments(data.message);
       })
       .catch((error) => {
-        console.error("Booking failed:", error);
+        console.error("Fetching appointments failed:", error);
       });
   };
 
   useEffect(() => {
     if (userId && Appointments) {
       handleGetBilling(userId);
-      joinAppointmentsAndBilling();
-
     }
   }, [userId]);
 
   useEffect(() => {
     if (appointments.length > 0 && billing.length > 0) {
-      const joinedData = joinAppointmentsAndBilling();
+      joinAppointmentsAndBilling();
       console.log("Joined Appointments and Billing Data:", joinedData);
     }
   }, [appointments, billing]);
@@ -251,18 +277,11 @@ const UserDashboard = () => {
     }
   }, [patientId, role_id_fk_ID]);
 
-
   useEffect(() => {
     if (userId) {
       handleGetBilling(userId);
     }
   }, [userId]);
-  
-  useEffect(() => {
-    if (patientId && role_id_fk_ID) {
-      handleGetAppointments();
-    }
-  }, [patientId, role_id_fk_ID]);
 
   const openModal = (appointment) => {
     setSelectedAppointment(appointment); // This sets the entire appointment object
@@ -310,6 +329,12 @@ const UserDashboard = () => {
     setSelectedAppointment(appointment);
 
     setShowBookingForm(true); // Show the form modal
+  };
+
+  const handlePayBill = (item) => {
+    // Implement the payment logic here
+    console.log("Initiating payment for:", item);
+    // You can redirect to a payment page or open a payment modal
   };
 
   const renderContent = () => {
