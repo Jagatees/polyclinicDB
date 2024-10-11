@@ -4,7 +4,7 @@ import insert_queries
 import db_connection
 import delete_queries
 import update_queries 
-
+import datetime 
 
 app = Flask(__name__)
 
@@ -269,6 +269,7 @@ POST diagnosis
                     "diagnosis_description": "autistism detected",
                     "doctor_id": 2,
                     "severity": "moderate"}, 
+                    "appointment_id": 1,
     "medication_info": [{
                     "patient_id": 4,
                     "medication_id": 1,
@@ -316,6 +317,24 @@ def Diagnosis():
         if role == 1: 
             res = insert_queries.insert_diagnosis(dbConnection, diagnosis_info, medication_info)
             print(res)
+
+            # insert billing as well 
+            total = 0 
+            
+            for med in medication_info:
+                price = float(med['price'])
+                total += price
+
+            billing_info = {
+                "patient_id": diagnosis_info['patient_id'],
+                "appointment_id":diagnosis_info['appointment_id'], 
+                "amount_due": total,
+                "amount_paid": 0,
+                "billing_date": datetime.datetime.now().strftime("%Y-%m-%d"),
+                "payment_method":"cash"
+            }            
+            billingRes = insert_queries.insert_billing(dbConnection, billing_info)
+            res = {"diagnosis": res, "billing": billingRes}
         else:
             res = {"status": "error", "message": "Only doctors can add a diagnosis."}
         return jsonify({"message": res})
