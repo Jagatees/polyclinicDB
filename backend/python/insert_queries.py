@@ -199,7 +199,7 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
             with dbConnection.cursor() as cursor:
                 insert_query = """
                 INSERT INTO diagnosis (patient_id_fk, diagnosis_description, doctor_id_fk, diagnosis_date, severity, appointment_id_fk)
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
