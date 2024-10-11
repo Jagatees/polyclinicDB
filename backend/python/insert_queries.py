@@ -216,7 +216,7 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
 
                 insert_medication_query = """
                 INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, diagnosis_id_fk_pd, dosage, frequency, duration)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
                 for medication in medications_info:
                     cursor.execute(insert_medication_query, (medication['patient_id'], medication['medication_id'], medication['doctor_id'], diagnosis_id, medication['dosage'], medication['frequency'], medication['duration']))
