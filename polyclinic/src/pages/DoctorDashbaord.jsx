@@ -175,6 +175,7 @@ const DoctorDashboard = () => {
       ...editFormData,
       patient_id: appointment.patient_id,  // Assuming patient_id is part of the appointment data
       doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
+      appointment_id: appointment.appointmentId,
       severity: "",  // Reset severity, or set any initial value
       medication: []  // Reset medication selection, or set it based on the appointment if available
     });
@@ -220,7 +221,8 @@ const DoctorDashboard = () => {
       patient_id: selectedAppointment.patient_id,  // Assuming patient_id is available from selectedAppointment
       diagnosis_description: editFormData.diagnosis_description || "",  // Diagnosis description entered by the user
       doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
-      severity: editFormData.severity || ""  // Severity selected by the user
+      severity: editFormData.severity || "",  // Severity selected by the user
+      appointments_id: selectedAppointment.appointment_id,
     };
 
     // Format medication_info
