@@ -198,12 +198,12 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
         try:
             with dbConnection.cursor() as cursor:
                 insert_query = """
-                INSERT INTO diagnosis (patient_id_fk, diagnosis_description, doctor_id_fk, diagnosis_date, severity)
+                INSERT INTO diagnosis (patient_id_fk, diagnosis_description, doctor_id_fk, diagnosis_date, severity, appointment_id_fk)
                 VALUES (%s, %s, %s, %s, %s)
                 """
 
                 current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['diagnosis_description'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity']))
+                cursor.execute(insert_query, (diagnosis_info['patient_id'], diagnosis_info['diagnosis_description'], diagnosis_info['doctor_id'], current_date, diagnosis_info['severity'], diagnosis_info['appointment_id']))
 
                 diagnosis_id = cursor.lastrowid
 
