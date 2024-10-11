@@ -225,15 +225,32 @@ const DoctorDashboard = () => {
       appointments_id: selectedAppointment.appointment_id,
     };
 
-    // Format medication_info
-    const medicationInfo = editFormData.medication.map((med) => ({
-      patient_id: selectedAppointment.patient_id,  // Assuming patient_id is available from selectedAppointment
-      medication_id: med.value,  // medication_id from the selected medication
-      doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
-      dosage: medicationDosages[med.value]?.dosage || "",  // Dosage for this medication
-      frequency: medicationDosages[med.value]?.frequency || "",  // Frequency for this medication
-      duration: medicationDosages[med.value]?.duration || ""  // Duration for this medication
-    }));
+    // Format medication_info new version
+    const medicationInfo = editFormData.medication.map((med) => {
+      const selectedMedication = medications.find(m => m.medication_id === med.value); // Find medication by id
+      return {
+        patient_id: selectedAppointment.patient_id,  // Assuming patient_id is available from selectedAppointment
+        medication_id: med.value,  // medication_id from the selected medication
+        doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
+        dosage: medicationDosages[med.value]?.dosage || "",  // Dosage for this medication
+        frequency: medicationDosages[med.value]?.frequency || "",  // Frequency for this medication
+        duration: medicationDosages[med.value]?.duration || "",  // Duration for this medication
+        price: selectedMedication?.price || "",  // Add the price from the selected medication
+      };
+    });
+
+
+    // old version
+    // const medicationInfo = editFormData.medication.map((med) => ({
+    //   patient_id: selectedAppointment.patient_id,  // Assuming patient_id is available from selectedAppointment
+    //   medication_id: med.value,  // medication_id from the selected medication
+    //   doctor_id: doctor_id_ID,  // Assuming doctor_id is available in state
+    //   dosage: medicationDosages[med.value]?.dosage || "",  // Dosage for this medication
+    //   frequency: medicationDosages[med.value]?.frequency || "",  // Frequency for this medication
+    //   duration: medicationDosages[med.value]?.duration || ""  // Duration for this medication
+    // }));
+    
+    
 
     // Combine the data into the final structure
     const formattedData = {
