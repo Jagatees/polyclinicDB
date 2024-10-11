@@ -392,4 +392,80 @@ def get_all_users_with_details(dbConnection=None):
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     else:
         return {"status": "error", "message": "No database connection provided"}
+    
+def get_user_profile(dbConnection, user_id):
+    if dbConnection:
+        try:
+            with dbConnection.cursor() as cursor:
+                user_query = """
+                SELECT u.user_id, u.role_id_fk, u.username, u.email, u.first_name, u.last_name, u.created_at
+                FROM user u
+                WHERE u.user_id = %s
+                """
+                cursor.execute(user_query, (user_id,))
+                user_info = cursor.fetchone()
+
+                if not user_info:
+                    return {"status": "error", "message": "User not found."}
+
+                user_profile = {
+                    "user_id": user_info['user_id'],
+                    "username": user_info['username'],
+                    "email": user_info['email'],
+                    "first_name": user_info['first_name'],
+                    "last_name": user_info['last_name'],
+                    "created_at": user_info['created_at'],
+                    "role": None
+                }
+
+                role_id = user_info['role_id_fk']
+
+                if role_id == 1:  # doctor role
+                    doctor_query = """
+                    SELECT d.phone_number, d.specialty, d.license_number
+                    FROM doctor d
+                    WHERE d.user_id_fk = %s
+                    """
+                    cursor.execute(doctor_query, (user_id,))
+                    doctor_info = cursor.fetchone()
+
+                    if doctor_info:
+                        user_profile["role"] = {
+                            "role_name": "Doctor",
+                            "phone_number": doctor_info['phone_number'],
+                            "specialty": doctor_info['specialty'],
+                            "license_number": doctor_info['license_number']
+                        }
+
+                elif role_id == 2:  # patient role
+                    patient_query = """
+                    SELECT p.age, p.gender, p.phone_number, p.address
+                    FROM patient p
+                    WHERE p.user_id_fk = %s
+                    """
+                    cursor.execute(patient_query, (user_id,))
+                    patient_info = cursor.fetchone()
+
+                    if patient_info:
+                        user_profile["role"] = {
+                            "role_name": "Patient",
+                            "age": patient_info['age'],
+                            "gender": patient_info['gender'],
+                            "phone_number": patient_info['phone_number'],
+                            "address": patient_info['address']
+                        }
+
+                return {"status": "success", "data": user_profile}
+
+        # Error Handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
+    else:
+        return {"status": "error", "message": "No database connection provided"}
+
+
 
