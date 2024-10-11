@@ -485,7 +485,7 @@ def get_patient_diagnoses_with_medications_by_appointment(dbConnection, patient_
                     diagnosis_id = diagnosis['diagnosis_id']
                     
                     medication_query = """
-                    SELECT pm.medication_id_fk, m.medication_name, pm.dosage, pm.frequency, pm.duration
+                    SELECT pm.medication_id_fk, m.name, pm.dosage, pm.frequency, pm.duration
                     FROM patient_medication pm
                     JOIN medication m ON pm.medication_id_fk = m.medication_id
                     WHERE pm.diagnosis_id_fk_pd = %s
