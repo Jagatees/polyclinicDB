@@ -485,9 +485,10 @@ def get_patient_diagnoses_with_medications_by_appointment(dbConnection, patient_
                     diagnosis_id = diagnosis['diagnosis_id']
                     
                     medication_query = """
-                    SELECT medication_id_fk, dosage, frequency, duration
-                    FROM patient_medication
-                    WHERE diagnosis_id_fk_pd = %s
+                    SELECT pm.medication_id_fk, m.medication_name, pm.dosage, pm.frequency, pm.duration
+                    FROM patient_medication pm
+                    JOIN medication m ON pm.medication_id_fk = m.medication_id
+                    WHERE pm.diagnosis_id_fk_pd = %s
                     """
                     cursor.execute(medication_query, (diagnosis_id,))
                     medications = cursor.fetchall()
@@ -512,6 +513,7 @@ def get_patient_diagnoses_with_medications_by_appointment(dbConnection, patient_
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
     else:
         return {"status": "error", "message": "No database connection provided"}
+
 
 
 
