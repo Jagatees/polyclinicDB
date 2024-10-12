@@ -1,5 +1,6 @@
 from db_connection import get_db_connection, close_db_connection
 import pymysql.cursors 
+import random
 
 def delete_user(dbConnection, user_id):
     if dbConnection: 
@@ -37,10 +38,7 @@ def delete_user(dbConnection, user_id):
             # Rollback any changes if an error occurs
             connection.rollback()
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
-
-        finally:
-            # Ensure the database connection is always closed
-            close_db_connection(connection)
+        
     else:
         return {"status": "error", "message": "No database connection established."}
 
@@ -81,10 +79,6 @@ def delete_diagnosis(dbConnection, diagnosis_id):
             # Rollback any changes if an error occurs
             connection.rollback()
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
-
-        finally:
-            # Ensure the database connection is always closed
-            close_db_connection(connection)
     else:
         return {"status": "error", "message": "No database connection established."}
 
@@ -125,10 +119,6 @@ def delete_appointment(dbConnection, appointment_id, patient_id):
             # Rollback any changes if an error occurs
             connection.rollback()
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
-
-        finally:
-            # Ensure the database connection is always closed
-            close_db_connection(connection)
     else:
         return {"status": "error", "message": "No database connection established."}
     
@@ -170,9 +160,6 @@ def delete_billing(dbConnection, billing_id):
             connection.rollback()
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-        finally:
-            # Ensure the database connection is always closed
-            close_db_connection(connection)
     else:
         return {"status": "error", "message": "No database connection established."}
     
@@ -214,9 +201,6 @@ def delete_medication(dbConnection, medication_id):
             connection.rollback()
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-        finally:
-            # Ensure the database connection is always closed
-            close_db_connection(connection)
     else:
         return {"status": "error", "message": "No database connection established."}
 
@@ -258,8 +242,5 @@ def delete_medical_condition(dbConnection, condition_id):
             connection.rollback()
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
-        finally:
-            # Ensure the database connection is always closed
-            close_db_connection(connection)
     else:
         return {"status": "error", "message": "No database connection established."}
