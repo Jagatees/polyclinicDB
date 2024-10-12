@@ -983,12 +983,10 @@ const UserDashboard = () => {
                   <strong>Description:</strong>{" "}
                   {diagnosis.diagnosis_description}
                 </p>
-                <p>
-                  <strong>Severity:</strong> {diagnosis.severity}
-                </p>
-                <p>
-                  <strong>Medications:</strong>
-                </p>
+                
+                {/* <p>
+                  <strong>Medications:</strong> {diagnosis.medications}
+                </p> */}
                 <ul className="list-disc pl-5">
                   {diagnosis.medications.map((medication, idx) => (
                     <li key={idx} className="mb-2">
