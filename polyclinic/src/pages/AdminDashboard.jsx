@@ -317,6 +317,18 @@ const AdminDashboard = () => {
       });
   };
 
+  const handleLogout = () => {
+    setLoading(true); // Start loading spinner
+
+    // Simulate a delay (e.g., API call)
+    setTimeout(() => {
+      localStorage.clear(); // Clear user data from local storage
+      setLoading(false); // Stop loading spinner
+      navigate("/login"); // Redirect to the login page
+    }, 2000); // Simulate a 2-second delay for demonstration purposes
+  };
+
+
   const renderContent = () => {
     if (activePage === "view_user") {
       return (
@@ -655,20 +667,17 @@ const AdminDashboard = () => {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="mt-auto p-4">
-          <button
-            className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-            onClick={() => {
-              // Perform any logout logic
-              localStorage.clear();
-
-              // Redirect to the login page
-              navigate("/login");
-            }}
-          >
-            Log Out
-          </button>
-        </div>
+         <button
+          className="w-full px-4 py-2 mt-auto bg-red-600 hover:bg-red-700 text-white rounded-md"
+          onClick={handleLogout}
+          disabled={loading}
+        >
+          {loading ? (
+            <div className="w-6 h-6 border-4 border-white border-dashed rounded-full animate-spin mx-auto"></div>
+          ) : (
+            "Log Out"
+          )}
+        </button>
       </aside>
 
       {/* Main Content Area */}

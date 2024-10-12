@@ -84,13 +84,16 @@ const UserDashboard = () => {
     amount_paid,
     payment_method
   ) => {
+    // Set loading to true to indicate the payment process has started
+    setLoading(true);
+    
     const data = {
       payment_info: {
         amount_paid: amount_paid,
         payment_method: payment_method,
       },
     };
-
+  
     fetch(`/api/billing/${billing_id}/${appointment_id}/${patient_id}`, {
       method: "PUT",
       headers: {
@@ -106,11 +109,23 @@ const UserDashboard = () => {
       })
       .then((data) => {
         console.log("Payment successful:", data);
+        // After successful payment, call handleGetBilling to refresh the billing data
+        handleGetBilling();
+      })
+      .then(() => {
+        // Reload the page after fetching the updated billing data
+        window.location.reload();
       })
       .catch((error) => {
         console.error("Payment failed:", error);
+      })
+      .finally(() => {
+        // Stop loading after the payment and billing refresh is complete
+        setLoading(false);
       });
   };
+  
+  
 
   const handleGetBilling = () => {
     fetch(`/api/billing/${patientId}`, {
@@ -372,47 +387,50 @@ const UserDashboard = () => {
         </div>
   
         {billingTabActive === 'current' ? (
-          /* Render current billing */
+          /* Render current billing filtered by pending status */
           joinedData.length === 0 ? (
             <p>No billing information available.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {joinedData.map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-white shadow-md rounded-lg p-4 flex flex-col"
-                >
-                  <div className="mb-2">
-                    <strong>Date:</strong> {item.date}
+              {joinedData
+                .filter(item => item.billing.payment_status === "pending") // Only show pending bills
+                .map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-white shadow-md rounded-lg p-4 flex flex-col"
+                  >
+                    <div className="mb-2">
+                      <strong>Date:</strong> {item.date}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Amount Due:</strong> ${item.billing.amount_due}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Payment Status:</strong> {item.billing.payment_status}
+                    </div>
+                    <div className="mt-auto">
+                      {item.billing.payment_status === "pending" ? (
+                        <button
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                          onClick={() =>
+                            handlePayBill(
+                              item.billing.billing_id,
+                              item.appointment_id,
+                              item.patient_id_fk,
+                              item.billing.amount_due,
+                              item.billing.payment_method
+                            )
+                          }
+                        >
+                          Pay Now
+                        </button>
+                      ) : (
+                        <span className="text-green-600 font-bold">Paid</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="mb-2">
-                    <strong>Amount Due:</strong> ${item.billing.amount_due}
-                  </div>
-                  <div className="mb-2">
-                    <strong>Payment Status:</strong> {item.billing.payment_status}
-                  </div>
-                  <div className="mt-auto">
-                    {item.billing.payment_status === "pending" ? (
-                      <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={() =>
-                          handlePayBill(
-                            item.billing.billing_id,
-                            item.appointment_id,
-                            item.patient_id_fk,
-                            item.billing.amount_due,
-                            item.billing.payment_method
-                          )
-                        }
-                      >
-                        Pay Now
-                      </button>
-                    ) : (
-                      <span className="text-green-600 font-bold">Paid</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))
+              }
             </div>
           )
         ) : (
@@ -444,7 +462,7 @@ const UserDashboard = () => {
       </div>
     );
   };
-  
+
   
   const handleBookAppointment = (event) => {
     event.preventDefault(); // Prevent default form submit action

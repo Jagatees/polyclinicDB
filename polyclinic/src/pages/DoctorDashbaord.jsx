@@ -426,6 +426,7 @@ const DoctorDashboard = () => {
       })
       .then((data) => {
         console.log("Diagnosis submitted:", data.message);
+        handleGetAppointments();
         handleCloseModal();
       })
       .catch((error) => {
@@ -822,7 +823,6 @@ const DoctorDashboard = () => {
                     onChange={handleFormChange}
                     className="mt-1 p-2 border rounded w-full bg-white text-black"
                   >
-                    <option value="">Select Severity</option>
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
                     <option value="Low">Low</option>
@@ -843,6 +843,8 @@ const DoctorDashboard = () => {
                       }));
                     }}
                     labelledBy="Select Medication"
+                    hasSelectAll={false}  // Disable "Select All"
+
                   />
 
                   {/* Render dosage, frequency, and duration input fields for each selected medication */}
@@ -913,6 +915,8 @@ const DoctorDashboard = () => {
                       }))
                     }
                     labelledBy="Select Conditions"
+                    hasSelectAll={false}  // Disable "Select All"
+
                   />
                 </div>
 
