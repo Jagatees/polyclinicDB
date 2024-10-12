@@ -231,7 +231,19 @@ def getAppointmentsbyDoctor(doctor_id):
         res = select_queries.get_appointments_by_doctor(dbConnection, doctor_id)
         print(res)
         return jsonify({"message": res})
+
+
+#update appointment/ reassing appointment to another doctor 
+@app.route('/appointment/<appointment_id>/<doctor_id>', methods=['PUT'])
+def reassignAppointment(appointment_id, doctor_id):
+    dbConnection = g.dbConnection
     
+    if request.method == 'PUT':
+        appointment_id = int(appointment_id) 
+        doctor_id = int(doctor_id) 
+        res = update_queries.reassign_appointment(dbConnection, appointment_id, doctor_id) 
+        print(res)
+        return jsonify({"message": res})
 
 #!TODO appointments update will show success even if no such appointments
 '''
