@@ -8,6 +8,18 @@ const DoctorDashboard = () => {
   const [getMedicalCondition, setMedicalCondition] = useState([]);
   const [medicationDosages, setMedicationDosages] = useState({});
 
+  // Update your initial state for profileData
+const [profileData, setProfileData] = useState({
+  username: "",
+  password_hash: "",
+  email: "",
+  first_name: "",
+  last_name: "",
+  phone_number: "",
+  specialty: "",
+});
+
+
   const medicationOptions = medications.map((med) => ({
     label: `${med.name} - ${med.description} - $${med.price}`,
     value: med.medication_id, // Use medication_id as the unique value
@@ -50,13 +62,106 @@ const DoctorDashboard = () => {
   ];
 
   const [doctor_id_ID, setdoctor_id] = useState(null);
+  const [user_id, setuser_id] = useState(null);
+
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const doctor_id = localStorage.getItem("doctor_id");
+    const user_id = localStorage.getItem("user_id");
+
+    setuser_id(user_id)
     setdoctor_id(doctor_id);
   }, []);
+
+
+  // Add this function inside your component
+  const handleGetProfile = () => {
+    const apiUrl = `/api/user/${user_id}`;
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching profile failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Profile fetched:", data.message.data);
+        const userData = data.message.data;
+  
+        // Flatten the data structure
+        setProfileData({
+          username: userData.username || "",
+          password_hash: userData.password_hash || "",
+          email: userData.email || "",
+          first_name: userData.first_name || "",
+          last_name: userData.last_name || "",
+          phone_number: userData.role.phone_number || "",
+          specialty: userData.role.specialty || "",
+        });
+      })
+      .catch((error) => {
+        console.error("Fetching profile failed:", error);
+      });
+  };
+  
+
+
+// Add this function inside your component
+const handleProfileChange = (e) => {
+  const { name, value } = e.target;
+  setProfileData((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
+
+
+const handleUpdateProfile = () => {
+  const apiUrl = `/api/user/${user_id}`;
+  const updatedProfile = {
+    user_info: {
+      username: profileData.username,
+      password_hash: profileData.password_hash,
+      email: profileData.email,
+      first_name: profileData.first_name,
+      last_name: profileData.last_name,
+      phone_number: profileData.phone_number,
+      specialty: profileData.specialty,
+    },
+  };
+
+  console.log("Passing data:", updatedProfile);
+
+  fetch(apiUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedProfile),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Updating profile failed");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Profile updated:", data.message);
+      alert("Profile updated successfully!");
+    })
+    .catch((error) => {
+      console.error("Updating profile failed:", error);
+      alert("Failed to update profile.");
+    });
+};
+
 
   const handleGetAppointments = () => {
     console.log(doctor_id_ID);
@@ -153,6 +258,8 @@ const DoctorDashboard = () => {
       handleGetAppointments();
       handleGetMedication();
       handleGetMedicationCondition();
+      handleGetProfile(); // Add this line to fetch profile data
+
     }
   }, [doctor_id_ID]);
 
@@ -378,6 +485,93 @@ const medicationInfo = editFormData.medication.map((med) => {
             </table>
           </div>
         );
+        case "profile":
+          return (
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800">Your Profile</h2>
+              <form className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium">First Name</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={profileData.first_name}
+                    onChange={handleProfileChange}
+                    className="mt-1 p-2 border rounded w-full bg-white text-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Last Name</label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={profileData.last_name}
+                    onChange={handleProfileChange}
+                    className="mt-1 p-2 border rounded w-full bg-white text-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={profileData.email}
+                    onChange={handleProfileChange}
+                    className="mt-1 p-2 border rounded w-full bg-white text-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Phone Number</label>
+                  <input
+  type="text"
+  name="phone_number"
+  value={profileData.phone_number}
+  onChange={handleProfileChange}
+  className="mt-1 p-2 border rounded w-full bg-white text-black"
+/>
+
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Specialty</label>
+                  <input
+  type="text"
+  name="specialty"
+  value={profileData.specialty}
+  onChange={handleProfileChange}
+  className="mt-1 p-2 border rounded w-full bg-white text-black"
+/>
+                </div>
+                <div>
+          <label className="block text-sm font-medium">Phone Number</label>
+          <input
+            type="text"
+            name="phone_number"
+            value={profileData.phone_number}
+            onChange={handleProfileChange}
+            className="mt-1 p-2 border rounded w-full bg-white text-black"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Specialty</label>
+          <input
+            type="text"
+            name="specialty"
+            value={profileData.specialty}
+            onChange={handleProfileChange}
+            className="mt-1 p-2 border rounded w-full bg-white text-black"
+          />
+        </div>
+                {/* Add more fields if necessary */}
+                <button
+                  type="button"
+                  onClick={handleUpdateProfile}
+                  className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Update Profile
+                </button>
+              </form>
+            </div>
+          );
       case "view_medication":
         return (
           <div>
@@ -431,6 +625,16 @@ const medicationInfo = editFormData.medication.map((med) => {
           >
             Appointments
           </a>
+<a
+  href="#"
+  className={`px-4 py-2 hover:bg-gray-800 rounded-md ${
+    activePage === "profile" ? "bg-gray-800" : ""
+  }`}
+  onClick={() => setActivePage("profile")}
+>
+  Profile
+</a>
+
           {/* <a
             href="#"
             className={`px-4 py-2 hover:bg-gray-800 rounded-md ${
