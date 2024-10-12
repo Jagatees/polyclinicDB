@@ -21,16 +21,25 @@ def update_user_info(dbConnection, user_id, user_info):
                 cursor.execute(role_query, (user_id,))
                 role_id = cursor.fetchone()['role_id_fk']
 
-                hashed_password = bcrypt.hashpw(user_info['password_hash'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-                
-                # update user infos
-                update_user_query = """
+                update_fields = ['username = %s', 'email = %s', 'first_name = %s', 'last_name = %s']
+                values = [user_info['username'], user_info['email'], user_info['first_name'], user_info['last_name']]
+
+                if user_info.get('password_hash'):
+                    hashed_password = bcrypt.hashpw(user_info['password_hash'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                    update_fields.append('password_hash = %s')
+                    values.append(hashed_password)
+
+                values.append(user_id)
+
+                # UPDATE user SET username = %s, password_hash = %s,email = %s, first_name = %s, last_name = %s WHERE user_id = %s
+                # query below is essentially the above query, just that the columns are dynamic
+                update_user_query = f"""
                 UPDATE user
-                SET username = %s, password_hash = %s,email = %s, first_name = %s, last_name = %s
+                SET {', '.join(update_fields)}
                 WHERE user_id = %s
                 """
-                cursor.execute(update_user_query, (user_info['username'], hashed_password, user_info['email'], user_info['first_name'],user_info['last_name'], user_id))
-                
+                cursor.execute(update_user_query, tuple(values))
+
                 if role_id == 1:  # 1 is for doctor
                     update_doctor_query = """
                     UPDATE doctor
