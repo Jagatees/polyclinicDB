@@ -20,6 +20,18 @@ const UserDashboard = () => {
   const [editingAppointment, setEditingAppointment] = useState(null); // Store the appointment being edited
   const [diagnosisDetails, setDiagnosisDetails] = useState(null);
   const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
+  const [userData, setUserData] = useState({}); // State to hold user profile data
+
+  // New state variables for profile fields
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [address, setAddress] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [specialty, setSpecialty] = useState("");
+  const [age, setAge] = useState(""); // Added age state
+  const [billingTabActive, setBillingTabActive] = useState('current');
 
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
@@ -41,6 +53,8 @@ const UserDashboard = () => {
   const [appointmentTime, setAppointmentTime] = useState("");
   const [appointments, setAppointments] = useState([]);
   const [billing, setBilling] = useState([]);
+  const [HistoryBilling, setHistoryBilling] = useState([]);
+
   const [joinedData, setJoinedData] = useState([]); // New state for joined data
 
   const joinAppointmentsAndBilling = () => {
@@ -91,8 +105,8 @@ const UserDashboard = () => {
       });
   };
 
-  const handleGetBilling = (user_id) => {
-    fetch(`/api/billing/${user_id}`, {
+  const handleGetBilling = () => {
+    fetch(`/api/billing/${patientId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -105,11 +119,47 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Billing successful:", data.message.current);
+        console.log("Billing successful:", data);
+  
+        setHistoryBilling(data.message.history);
         setBilling(data.message.current);
       })
       .catch((error) => {
         console.error("Billing failed:", error);
+      });
+  };
+  
+
+  const handleGetUser = (user_id) => {
+    fetch(`/api/user/${user_id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Get Profile failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Get Profile successful:", data.message.data);
+        setUserData(data.message.data);
+
+        // Set state variables for profile fields
+        const user = data.message.data;
+        setFirstName(user.first_name || "");
+        setLastName(user.last_name || "");
+        setEmail(user.email || "");
+        setUsername(user.username || "");
+        setAddress(user.role.address || "");
+        setPhoneNumber(user.role.phone_number || "");
+        setSpecialty(user.role.specialty || "");
+        setAge(user.role.age || ""); // Added age from user.role.age
+      })
+      .catch((error) => {
+        console.error("Get Profile failed:", error);
       });
   };
 
@@ -136,74 +186,262 @@ const UserDashboard = () => {
       });
   };
 
+  const handleUpdateProfile = (event) => {
+    event.preventDefault();
+
+    const data = {
+      user_info: {
+        username: username,
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        address: address,
+        phone_number: phoneNumber,
+        age: age,
+        ...(userData.role.role_name === "Doctor" && { specialty: specialty }),
+      },
+    };
+
+    fetch(`/api/user/${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Profile update failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Profile update successful:", data);
+        // Refresh the user data
+        handleGetUser(userId);
+      })
+      .catch((error) => {
+        console.error("Profile update failed:", error);
+      });
+  };
+
   const renderProfileContent = () => {
+    if (!userData || Object.keys(userData).length === 0) {
+      return <p>Loading profile...</p>; // Display a loading text until data is fetched
+    }
+
     return (
       <div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Profile</h2>
-        <p>User profile information goes here.</p>
-        {/* Example profile detail */}
-        <div>
-          <strong>Email:</strong> user@example.com
-          <br />
-          <strong>User ID:</strong> {userId}
-          <br />
-          <strong>Role ID:</strong> {role_id_fk_ID}
-        </div>
+        <form onSubmit={handleUpdateProfile}>
+          <div className="mb-4">
+            <label className="block text-gray-800 text-sm font-bold mb-2">
+              First Name
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-800 text-sm font-bold mb-2">
+              Age
+            </label>
+            <input
+              type="number"
+              className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-800 text-sm font-bold mb-2">
+              Last Name
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-800 text-sm font-bold mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-800 text-sm font-bold mb-2">
+              Username
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-800 text-sm font-bold mb-2">
+              Address
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-800 text-sm font-bold mb-2">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+          </div>
+          {userData.role.role_name === "Doctor" && (
+            <div className="mb-4">
+              <label className="block text-gray-800 text-sm font-bold mb-2">
+                Specialty
+              </label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded shadow bg-white text-black"
+                value={specialty}
+                onChange={(e) => setSpecialty(e.target.value)}
+              />
+            </div>
+          )}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Update Profile
+            </button>
+          </div>
+        </form>
       </div>
     );
   };
 
+ 
   const renderBillingContent = () => {
     return (
       <div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Billing</h2>
-        {joinedData.length === 0 ? (
-          <p>No billing information available.</p>
+        {/* Tabs */}
+        <div className="flex mb-4">
+          <button
+            className={`px-4 py-2 mr-2 rounded ${
+              billingTabActive === 'current' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+            }`}
+            onClick={() => setBillingTabActive('current')}
+          >
+            Current
+          </button>
+          <button
+            className={`px-4 py-2 rounded ${
+              billingTabActive === 'history' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+            }`}
+            onClick={() => setBillingTabActive('history')}
+          >
+            History
+          </button>
+        </div>
+  
+        {billingTabActive === 'current' ? (
+          /* Render current billing */
+          joinedData.length === 0 ? (
+            <p>No billing information available.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {joinedData.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white shadow-md rounded-lg p-4 flex flex-col"
+                >
+                  <div className="mb-2">
+                    <strong>Date:</strong> {item.date}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Amount Due:</strong> ${item.billing.amount_due}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Payment Status:</strong> {item.billing.payment_status}
+                  </div>
+                  <div className="mt-auto">
+                    {item.billing.payment_status === "pending" ? (
+                      <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={() =>
+                          handlePayBill(
+                            item.billing.billing_id,
+                            item.appointment_id,
+                            item.patient_id_fk,
+                            item.billing.amount_due,
+                            item.billing.payment_method
+                          )
+                        }
+                      >
+                        Pay Now
+                      </button>
+                    ) : (
+                      <span className="text-green-600 font-bold">Paid</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {joinedData.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white shadow-md rounded-lg p-4 flex flex-col"
-              >
-                <div className="mb-2">
-                  <strong>Date:</strong> {item.date}
+          /* Render history billing */
+          HistoryBilling.length === 0 ? (
+            <p>No billing history available.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {HistoryBilling.map((bill, index) => (
+                <div
+                  key={index}
+                  className="bg-white shadow-md rounded-lg p-4 flex flex-col"
+                >
+                  <div className="mb-2">
+                    <strong>Date:</strong> {bill.date}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Amount Paid:</strong> ${bill.amount_paid}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Payment Method:</strong> {bill.payment_method}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Payment Status:</strong> {bill.payment_status}
+                  </div>
+                  {/* Add any other relevant fields */}
                 </div>
-                <div className="mb-2">
-                  <strong>Amount Due:</strong> ${item.billing.amount_due}
-                </div>
-                <div className="mb-2">
-                  <strong>Payment Status:</strong>{" "}
-                  {item.billing.payment_status}
-                </div>
-                <div className="mt-auto">
-                  {item.billing.payment_status === "pending" ? (
-                    <button
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      onClick={() =>
-                        handlePayBill(
-                          item.billing.billing_id,
-                          item.appointment_id,
-                          item.patient_id_fk,
-                          item.billing.amount_due, // Full amount
-                          item.billing.payment_method // Assuming payment method is available
-                        )
-                      }
-                    >
-                      Pay Now
-                    </button>
-                  ) : (
-                    <span className="text-green-600 font-bold">Paid</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
         )}
       </div>
     );
   };
-
+  
+  
   const handleBookAppointment = (event) => {
     event.preventDefault(); // Prevent default form submit action
 
@@ -301,8 +539,14 @@ const UserDashboard = () => {
   };
 
   useEffect(() => {
-    if (userId && Appointments) {
-      handleGetBilling(userId);
+    if (userId) {
+      handleGetBilling();
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      handleGetUser(userId);
     }
   }, [userId]);
 
@@ -319,12 +563,6 @@ const UserDashboard = () => {
       handleGetAppointments();
     }
   }, [patientId, role_id_fk_ID]);
-
-  useEffect(() => {
-    if (userId) {
-      handleGetBilling(userId);
-    }
-  }, [userId]);
 
   const openModal = (appointment) => {
     setSelectedAppointment(appointment); // This sets the entire appointment object
