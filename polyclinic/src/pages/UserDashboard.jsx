@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Appointments from "./Appointments";
+import { isUserLoggedIn } from '../lib/utils'; // Adjust the path based on your structure
 
 const UserDashboard = () => {
   const [activePage, setActivePage] = useState("profile"); // Set default active tab to "profile"
@@ -69,6 +69,13 @@ const UserDashboard = () => {
     });
     setJoinedData(joined);
   };
+
+  useEffect(() => {
+    if (!isUserLoggedIn()) {
+      alert('Please log in first');
+      navigate('/login'); // Redirect to login page
+    }
+  }, []);
 
   const handlePayBill = (
     billing_id,
@@ -710,9 +717,15 @@ const UserDashboard = () => {
       <aside className="w-64 bg-gray-900 text-gray-300 flex flex-col h-screen">
         {/* Sidebar Header */}
         <div className="p-4 text-lg font-semibold text-white">
-          Welcome, User Dashboard
-          <p className="text-sm text-gray-400">Have a great day!</p>
-        </div>
+  {userData.first_name && userData.username ? (
+    <>
+      Welcome back, {userData.first_name} {userData.username}
+    </>
+  ) : (
+    "Welcome back"
+  )}
+  <p className="text-sm text-gray-400">Have a great day!</p>
+</div>
         {/* Navigation Menu */}
         <nav className="mt-4 flex flex-col space-y-1">
           <a

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { MultiSelect } from "react-multi-select-component";
 import { useNavigate } from "react-router-dom";
+import { isUserLoggedIn } from '../lib/utils'; // Adjust the path based on your structure
 
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState("get_appointment");
   const [medications, setMedications] = useState([]);
   const [getMedicalCondition, setMedicalCondition] = useState([]);
   const [medicationDosages, setMedicationDosages] = useState({});
+  const [loading, setLoading] = useState(false); // Add loading state for logout
 
   // Update your initial state for profileData
   const [profileData, setProfileData] = useState({
@@ -47,6 +49,7 @@ const DoctorDashboard = () => {
     price: 20,
   });
 
+
   // State for the editable fields in the appointment form
   const [editFormData, setEditFormData] = useState({
     severity: "",
@@ -71,6 +74,25 @@ const DoctorDashboard = () => {
 
     setuser_id(user_id);
     setdoctor_id(doctor_id);
+  }, []);
+
+  const handleLogout = () => {
+    setLoading(true); // Start loading spinner
+
+    // Simulate a delay (e.g., API call)
+    setTimeout(() => {
+      localStorage.clear(); // Clear user data from local storage
+      setLoading(false); // Stop loading spinner
+      navigate("/login"); // Redirect to the login page
+    }, 2000); // Simulate a 2-second delay for demonstration purposes
+  };
+
+  
+  useEffect(() => {
+    if (!isUserLoggedIn()) {
+      alert('Please log in first');
+      navigate('/login'); // Redirect to login page
+    }
   }, []);
 
   // Add this function inside your component
@@ -124,14 +146,14 @@ const DoctorDashboard = () => {
       alert("Phone number must be exactly 8 digits.");
       return;
     }
-  
+
     // Validate email (must contain @)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(profileData.email)) {
       alert("Please enter a valid email address.");
       return;
     }
-  
+
     const apiUrl = `/api/user/${user_id}`;
     const updatedProfile = {
       user_info: {
@@ -144,9 +166,9 @@ const DoctorDashboard = () => {
         specialty: profileData.specialty,
       },
     };
-  
+
     console.log("Passing data:", updatedProfile);
-  
+
     fetch(apiUrl, {
       method: "PUT",
       headers: {
@@ -169,14 +191,13 @@ const DoctorDashboard = () => {
         alert("Failed to update profile.");
       });
   };
-  
 
   const formatTime = (timeString) => {
     let [hours, minutes] = timeString.split(":"); // Split time into hours and minutes
     let period = "AM";
-  
+
     hours = parseInt(hours, 10);
-  
+
     // Convert 24-hour time to 12-hour format
     if (hours >= 12) {
       period = "PM";
@@ -184,10 +205,9 @@ const DoctorDashboard = () => {
     } else if (hours === 0) {
       hours = 12;
     }
-  
+
     return `${hours}:${minutes} ${period}`;
   };
-  
 
   const handleGetAppointments = () => {
     console.log(doctor_id_ID);
@@ -484,15 +504,19 @@ const DoctorDashboard = () => {
                       </td>
                       {/* <td className="border px-4 py-2">{appointment.age}</td> */}
                       <td className="border px-4 py-2">
-  {new Date(appointment.date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })}
-</td>
-<td className="border px-4 py-2">
-  {formatTime(appointment.time)}
-</td>                      <td className="border px-4 py-2">{appointment.status}</td>
+                        {new Date(appointment.date).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {formatTime(appointment.time)}
+                      </td>{" "}
+                      <td className="border px-4 py-2">{appointment.status}</td>
                       <td className="border px-4 py-2">{appointment.type}</td>
                       {/* <td className="border px-4 py-2">
                         {appointment.patient_id}
@@ -559,7 +583,7 @@ const DoctorDashboard = () => {
                   className="mt-1 p-2 border rounded w-full bg-white text-black"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium">Specialty</label>
                 <input
@@ -641,8 +665,15 @@ const DoctorDashboard = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 text-gray-300 flex flex-col h-screen">
         {/* Sidebar Header */}
+
         <div className="p-4 text-lg font-semibold text-white">
-          Welcome, Doctor Dashboard
+          {profileData.first_name && profileData.last_name ? (
+            <>
+              Welcome back, Dr. {profileData.first_name} {profileData.last_name}
+            </>
+          ) : (
+            "Welcome back, Doctor"
+          )}
           <p className="text-sm text-gray-400">Have a great day!</p>
         </div>
         {/* Navigation Menu */}
@@ -680,15 +711,14 @@ const DoctorDashboard = () => {
         <div className="mt-auto p-4">
           <button
             className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-            onClick={() => {
-              // Perform any logout logic
-              localStorage.clear();
-
-              // Redirect to the login page
-              navigate("/login");
-            }}
+            onClick={handleLogout}
+            disabled={loading} // Disable the button when loading
           >
-            Log Out
+            {loading ? (
+              <div className="w-6 h-6 border-4 border-white border-dashed rounded-full animate-spin mx-auto"></div>
+            ) : (
+              "Log Out"
+            )}
           </button>
         </div>
       </aside>

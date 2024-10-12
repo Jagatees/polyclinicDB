@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isUserLoggedIn } from '../lib/utils'; // Adjust the path based on your structure
 
 const AdminDashboard = () => {
   const [activePage, setActivePage] = useState("view_user");
@@ -37,6 +38,14 @@ const AdminDashboard = () => {
   const [medicalConditions, setMedicalConditions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // For pagination
   const itemsPerPage = 10; // Items per page
+
+
+  useEffect(() => {
+    if (!isUserLoggedIn()) {
+      alert('Please log in first');
+      navigate('/login'); // Redirect to login page
+    }
+  }, []);
 
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
