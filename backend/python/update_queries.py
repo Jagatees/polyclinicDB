@@ -144,45 +144,6 @@ def update_billing_status(dbConnection, billing_id, appointment_id, patient_id, 
                 connection.rollback()
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
-
-"""
-Update Diagnosis
-
-diagnosis_info:
-- condition_id_fk
-- diagnosis_date
-- severity
-"""
-def update_diagnosis(dbConnection, diagnosis_id, diagnosis_info):
-    if dbConnection:
-        try:
-            connection = dbConnection
-
-            with connection.cursor() as cursor:
-                update_diagnosis_query = """
-                UPDATE diagnosis
-                SET diagnosis_description= %s, diagnosis_date = %s, severity = %s
-                WHERE diagnosis_id = %s
-                """
-
-                current_date = datetime.now().strftime('%Y-%m-%d')
-                cursor.execute(update_diagnosis_query, (diagnosis_info['diagnosis_description'], current_date, diagnosis_info['severity'], diagnosis_id))
-
-                connection.commit()
-            
-            return {"status": "success", "message": "Diagnosis updated successfully."}
-
-        except KeyError as ke:
-            return {"status": "error", "message": f"Missing data in diagnosis_info: {str(ke)}"}
-
-        except ValueError as ve:
-            return {"status": "error", "message": f"Invalid data: {str(ve)}"}
-        
-        except Exception as e:
-            if connection:
-                connection.rollback()
-            return {"status": "error", "message": f"Error occurred: {str(e)}"}
-
 """
 Update Medication
 
