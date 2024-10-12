@@ -150,8 +150,7 @@ def get_billing_by_user(dbConnection=None, user_id=None):
                             ELSE 'unknown'
                         END AS billing_category
                     FROM billing b
-                    JOIN appointment a ON b.appointment_id_fk = a.appointment_id
-                    JOIN patient p ON a.patient_id_fk = p.patient_id
+                    JOIN patient p ON b.patient_id_fk = p.patient_id
                     WHERE p.patient_id = %s
                     ORDER BY billing_category;
                     """
