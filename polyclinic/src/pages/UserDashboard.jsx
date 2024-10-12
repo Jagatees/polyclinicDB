@@ -676,6 +676,8 @@ const UserDashboard = () => {
                     {/* <th className="border px-4 py-2 text-left">Patient ID</th> */}
                     <th className="border px-4 py-2 text-left">Status</th>
                     <th className="border px-4 py-2 text-left">Type</th>
+                    <th className="border px-4 py-2 text-left">Action</th>
+
                   </tr>
                 </thead>
                 <tbody>
@@ -892,6 +894,7 @@ const UserDashboard = () => {
                 </tr>
               </tbody>
             </table>
+            
             <div className="mt-6 flex justify-end">
               <button
                 onClick={closeModal}

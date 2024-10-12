@@ -56,12 +56,6 @@ const DoctorDashboard = () => {
     medication: [], // For multiple medications
     medicalCondition: [], // For multiple conditions
   });
-  const medicalConditionsOptions = [
-    { label: "Diabetes", value: "Diabetes" },
-    { label: "Hypertension", value: "Hypertension" },
-    { label: "Asthma", value: "Asthma" },
-    { label: "Cholesterol", value: "Cholesterol" },
-  ];
 
   const [doctor_id_ID, setdoctor_id] = useState(null);
   const [user_id, setuser_id] = useState(null);
@@ -189,6 +183,42 @@ const DoctorDashboard = () => {
       .catch((error) => {
         console.error("Updating profile failed:", error);
         alert("Failed to update profile.");
+      });
+  };
+
+  const handleReassignAppointment = (appointment) => {
+    console.log("Reassigning appointment:", appointment.appointment_id);
+    const apiUrl = `/api/appointment/${appointment.appointment_id}/${doctor_id_ID}`;
+    fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching appointments failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("ReassignAppointment fetched:", data);
+        console.log("ReassignAppointment fetched:", data.message.status);
+
+        if (data.message.status === "error") {
+          alert("Unable to Reasign. Please contact admin")
+        } else if (data.message.status === "success") {
+          alert("Has been reassign")
+          window.location.reload();
+
+        }
+
+
+        // Update appointments state with fetched data
+        // setAppointments(data.message.appointments);
+      })
+      .catch((error) => {
+        console.error("Fetching ReassignAppointment failed:", error);
       });
   };
 
@@ -525,12 +555,23 @@ const DoctorDashboard = () => {
                       <td className="border px-4 py-2">
                         {/* Conditional button based on status */}
                         {appointment.status === "pending" ? (
+                          <>
+                          
                           <button
                             onClick={() => handleEditAppointment(appointment)}
                             className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
                           >
                             Edit
                           </button>
+                          <button
+                        onClick={() => handleReassignAppointment(appointment)}
+                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                      >
+                        Reassign
+                      </button>
+                          </>
+                         
+                          
                         ) : (
                           <button
                             onClick={() => handleViewAppointment(appointment)}
