@@ -210,10 +210,7 @@ const DoctorDashboard = () => {
         } else if (data.message.status === "success") {
           alert("Has been reassign")
           window.location.reload();
-
         }
-
-
         // Update appointments state with fetched data
         // setAppointments(data.message.appointments);
       })
