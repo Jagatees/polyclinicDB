@@ -1,6 +1,7 @@
 from datetime import datetime
 import bcrypt
 import pymysql.cursors
+import random
 """
 user_info:
 - username
@@ -254,3 +255,67 @@ def update_medical_condition(dbConnection, condition_id, condition_info):
             if connection:
                 connection.rollback()
             return {"status": "error", "message": f"Error occurred: {str(e)}"}  
+        
+def reassign_appointment(dbConnection, appointment_id, doctor_id):
+    if dbConnection:
+        try:
+            connection = dbConnection
+
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                # Check if the appointment exists for the given doctor
+                check_appointment_query = """
+                SELECT appointment_id, patient_id_fk, date, time
+                FROM appointment 
+                WHERE appointment_id = %s AND doctor_id_fk = %s
+                """
+                cursor.execute(check_appointment_query, (appointment_id, doctor_id))
+                existing_appointment = cursor.fetchone()
+
+                if not existing_appointment:
+                    return {"status": "error", "message": "Appointment does not exist for the given doctor."}
+
+                # Fetch available doctors to reassign
+                available_doctors_query = """
+                SELECT d.doctor_id 
+                FROM doctor d
+                LEFT JOIN appointment a 
+                ON d.doctor_id = a.doctor_id_fk AND a.date = %s AND a.time = %s
+                WHERE a.doctor_id_fk IS NULL;
+                """
+                
+                cursor.execute(available_doctors_query, (existing_appointment['date'], existing_appointment['time']))
+                available_doctors = cursor.fetchall()
+
+                if not available_doctors:
+                    return {"status": "error", "message": "No available doctors to reassign the appointment."}
+
+                # Randomly assign a new doctor
+                new_doctor_id = random.choice(available_doctors)['doctor_id']
+
+                # Update the appointment with the new doctor ID
+                update_appointment_query = """
+                UPDATE appointment 
+                SET doctor_id_fk = %s, status = %s, type = %s
+                WHERE appointment_id = %s
+                """
+                cursor.execute(update_appointment_query, (
+                    new_doctor_id, 
+                    'pending',  # Set new status
+                    'reassigned',  # Set new type
+                    appointment_id
+                ))
+
+                # Commit the changes to the database
+                connection.commit()
+
+            return {"status": "success", "message": f"Appointment reassigned from doctor ID {doctor_id} to doctor ID {new_doctor_id}."}
+
+        # Error handling
+        except KeyError as e:
+            return {"status": "error", "message": f"Missing key: {str(e)}"}
+        except ValueError as e:
+            return {"status": "error", "message": f"Invalid value: {str(e)}"}
+        except Exception as e:
+            # Rollback any changes if an error occurs
+            connection.rollback()
+            return {"status": "error", "message": f"Error has occurred: {str(e)}"}
