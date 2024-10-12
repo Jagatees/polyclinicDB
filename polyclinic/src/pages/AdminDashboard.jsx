@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isUserLoggedIn } from '../lib/utils'; // Adjust the path based on your structure
 
 const AdminDashboard = () => {
   const [activePage, setActivePage] = useState("view_user");
@@ -23,6 +24,9 @@ const AdminDashboard = () => {
   const [role_id_fk_ID, setrole_id_fk] = useState(null);
   const [doctorId, setDoctorId] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [loadingAddUser, setLoadingAddUser] = useState(false);
+  const [loadingAddCondition, setLoadingAddCondition] = useState(false);
 
   // State for the new medical condition form
   const [newCondition, setNewCondition] = useState({
@@ -35,6 +39,13 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1); // For pagination
   const itemsPerPage = 10; // Items per page
 
+
+  useEffect(() => {
+    if (!isUserLoggedIn()) {
+      alert('Please log in first');
+      navigate('/login'); // Redirect to login page
+    }
+  }, []);
 
   useEffect(() => {
     // Retrieve and set user_id and patient_id from local storage
@@ -96,14 +107,12 @@ const AdminDashboard = () => {
       });
   };
 
-
-    // Fetch medical conditions when the active page changes to 'view_medical_condition'
-    useEffect(() => {
-      if (activePage === "view_medical_condition") {
-        getMedicalConditions();
-      }
-    }, [activePage]);
-  
+  // Fetch medical conditions when the active page changes to 'view_medical_condition'
+  useEffect(() => {
+    if (activePage === "view_medical_condition") {
+      getMedicalConditions();
+    }
+  }, [activePage]);
 
   useEffect(() => {
     getuser();
@@ -118,8 +127,23 @@ const AdminDashboard = () => {
 
   const handleCreateUser = async (event) => {
     event.preventDefault();
+
+    // Validate if any field is empty
+    if (
+      !newUser.username ||
+      !newUser.password ||
+      !newUser.email ||
+      !newUser.firstName ||
+      !newUser.lastName ||
+      !newUser.phoneNumber ||
+      !newUser.specialty
+    ) {
+      alert("Please fill in all the required fields.");
+      return; // Exit if validation fails
+    }
+
+    setLoadingAddUser(true); // Start loading
     try {
-      // Prepare user_info using values from newUser
       const user_info = {
         role_id: 1,
         username: newUser.username,
@@ -135,7 +159,6 @@ const AdminDashboard = () => {
         specialty: newUser.specialty,
       };
 
-      // Submit the data
       fetch("/api/register", {
         method: "POST",
         headers: {
@@ -148,10 +171,8 @@ const AdminDashboard = () => {
           return response.json();
         })
         .then((data) => {
-          console.log("Registration successful:", data.message.status);
           if (data.message.status === "success") {
             alert("User added to the database");
-            // Reset form fields
             setNewUser({
               username: "",
               email: "",
@@ -162,9 +183,7 @@ const AdminDashboard = () => {
               phoneNumber: "",
               specialty: "",
             });
-            // Go back to view user page
             setActivePage("view_user");
-            // Refresh the user list
             getuser();
           } else if (
             data.message.message ===
@@ -175,13 +194,18 @@ const AdminDashboard = () => {
         })
         .catch((error) => {
           console.error("Registration failed:", error);
+        })
+        .finally(() => {
+          setLoadingAddUser(false); // Stop loading
         });
     } catch (error) {
       console.error("Validation failed:", error);
+      setLoadingAddUser(false); // Stop loading in case of an error
     }
   };
 
   const handleDeleteUser = async (userId) => {
+    setLoadingDelete(true); // Start loading
     try {
       fetch(`/api/user/${userId}`, {
         method: "DELETE",
@@ -199,9 +223,13 @@ const AdminDashboard = () => {
         })
         .catch((error) => {
           console.error("Deletion failed:", error);
+        })
+        .finally(() => {
+          setLoadingDelete(false); // Stop loading
         });
     } catch (error) {
       console.error("Validation failed:", error);
+      setLoadingDelete(false); // Stop loading in case of an error
     }
   };
 
@@ -218,6 +246,13 @@ const AdminDashboard = () => {
   // Function to handle adding a new medical condition
   const handleAddMedicalCondition = (event) => {
     event.preventDefault();
+
+    // Validate if any field is empty
+    if (!newCondition.name || !newCondition.description) {
+      alert("Please fill in all the required fields.");
+      return; // Exit if validation fails
+    }
+    setLoadingAddCondition(true); // Start loading
     const data = {
       condition_info: {
         name: newCondition.name,
@@ -241,13 +276,58 @@ const AdminDashboard = () => {
           name: "",
           description: "",
         });
-        setActivePage("view_user");
       })
       .catch((error) => {
         console.error("Error adding medical condition:", error);
         alert("Error adding medical condition");
+      })
+      .finally(() => {
+        setLoadingAddCondition(false); // Stop loading
       });
   };
+
+  const handleDeleteCondition = (conditionId) => {
+    console.log("Condition id", conditionId);
+
+    setLoadingDelete(true); // Start loading
+
+    // Send DELETE request to the API to delete the medical condition
+    fetch(`/api/medical_condition/${conditionId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete medical condition");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        alert("Medical condition deleted successfully");
+        getMedicalConditions(); // Refresh medical conditions list after deletion
+      })
+      .catch((error) => {
+        console.error("Error deleting medical condition:", error);
+        alert("Error deleting medical condition");
+      })
+      .finally(() => {
+        setLoadingDelete(false); // Stop loading after the process is complete
+      });
+  };
+
+  const handleLogout = () => {
+    setLoading(true); // Start loading spinner
+
+    // Simulate a delay (e.g., API call)
+    setTimeout(() => {
+      localStorage.clear(); // Clear user data from local storage
+      setLoading(false); // Stop loading spinner
+      navigate("/login"); // Redirect to the login page
+    }, 2000); // Simulate a 2-second delay for demonstration purposes
+  };
+
 
   const renderContent = () => {
     if (activePage === "view_user") {
@@ -280,12 +360,16 @@ const AdminDashboard = () => {
                       <td className="border px-4 py-2">{user.username}</td>
                       <td className="border px-4 py-2">{user.role_id}</td>
                       <td className="border px-4 py-2">
-                        <button
-                          onClick={() => handleDeleteUser(user.user_id)}
-                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                        >
-                          Delete
-                        </button>
+                        {loadingDelete ? (
+                          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+                        ) : (
+                          <button
+                            onClick={() => handleDeleteUser(user.user_id)}
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -372,9 +456,15 @@ const AdminDashboard = () => {
               <button
                 type="submit"
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
+                disabled={loadingAddUser} // Disable button while loading
               >
-                Submit
+                {loadingAddUser ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
+                ) : (
+                  "Submit"
+                )}
               </button>
+
               <button
                 type="button"
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
@@ -417,9 +507,15 @@ const AdminDashboard = () => {
               <button
                 type="submit"
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
+                disabled={loadingAddCondition} // Disable button while loading
               >
-                Submit
+                {loadingAddCondition ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
+                ) : (
+                  "Submit"
+                )}
               </button>
+
               <button
                 type="button"
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
@@ -449,16 +545,35 @@ const AdminDashboard = () => {
               <table className="min-w-full">
                 <thead>
                   <tr>
+                    <th className="border px-4 py-2 text-left">ID</th>
                     <th className="border px-4 py-2 text-left">Name</th>
                     <th className="border px-4 py-2 text-left">Description</th>
+                    <th className="border px-4 py-2 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentData.map((condition) => (
                     <tr key={condition.id}>
+                      <td className="border px-4 py-2">
+                        {condition.condition_id}
+                      </td>
                       <td className="border px-4 py-2">{condition.name}</td>
                       <td className="border px-4 py-2">
                         {condition.description}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {loadingDelete ? (
+                          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              handleDeleteCondition(condition.condition_id)
+                            }
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -552,20 +667,17 @@ const AdminDashboard = () => {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="mt-auto p-4">
-          <button
-            className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
-            onClick={() => {
-              // Perform any logout logic
-              localStorage.clear();
-
-              // Redirect to the login page
-              navigate("/login");
-            }}
-          >
-            Log Out
-          </button>
-        </div>
+         <button
+          className="w-full px-4 py-2 mt-auto bg-red-600 hover:bg-red-700 text-white rounded-md"
+          onClick={handleLogout}
+          disabled={loading}
+        >
+          {loading ? (
+            <div className="w-6 h-6 border-4 border-white border-dashed rounded-full animate-spin mx-auto"></div>
+          ) : (
+            "Log Out"
+          )}
+        </button>
       </aside>
 
       {/* Main Content Area */}
