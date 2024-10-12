@@ -165,7 +165,7 @@ DOCTOR
     "specialty": "General" 
     }
 '''
-@app.route('/user/<user_id>', methods=['PUT'])
+@app.route('/user/<user_id>', methods=['GET','PUT'])
 def updateUser(user_id):
     dbConnection = g.dbConnection
     
@@ -176,6 +176,14 @@ def updateUser(user_id):
         res = update_queries.update_user_info(dbConnection, user_id, userInfo) 
         print(res)
         return jsonify({"message": res}) 
+    elif request.method == 'GET':
+        user_id = int(user_id)
+        res = select_queries.get_user_profile(dbConnection, user_id)
+        print(res)
+        return jsonify({"message": res})
+    
+
+
 #!===============================================================================
 '''
 POST appointment 
