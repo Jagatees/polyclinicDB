@@ -118,6 +118,20 @@ const DoctorDashboard = () => {
   };
 
   const handleUpdateProfile = () => {
+    // Validate phone number (must be exactly 8 digits)
+    const phoneRegex = /^[0-9]{8}$/;
+    if (!phoneRegex.test(profileData.phone_number)) {
+      alert("Phone number must be exactly 8 digits.");
+      return;
+    }
+  
+    // Validate email (must contain @)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(profileData.email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+  
     const apiUrl = `/api/user/${user_id}`;
     const updatedProfile = {
       user_info: {
@@ -130,9 +144,9 @@ const DoctorDashboard = () => {
         specialty: profileData.specialty,
       },
     };
-
+  
     console.log("Passing data:", updatedProfile);
-
+  
     fetch(apiUrl, {
       method: "PUT",
       headers: {
@@ -155,6 +169,25 @@ const DoctorDashboard = () => {
         alert("Failed to update profile.");
       });
   };
+  
+
+  const formatTime = (timeString) => {
+    let [hours, minutes] = timeString.split(":"); // Split time into hours and minutes
+    let period = "AM";
+  
+    hours = parseInt(hours, 10);
+  
+    // Convert 24-hour time to 12-hour format
+    if (hours >= 12) {
+      period = "PM";
+      if (hours > 12) hours -= 12;
+    } else if (hours === 0) {
+      hours = 12;
+    }
+  
+    return `${hours}:${minutes} ${period}`;
+  };
+  
 
   const handleGetAppointments = () => {
     console.log(doctor_id_ID);
@@ -420,62 +453,73 @@ const DoctorDashboard = () => {
             <h2 className="text-2xl font-semibold text-gray-800">
               Appointments
             </h2>
-            <table className="mt-4 min-w-full bg-white shadow-md rounded-lg p-4">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2 text-left">ID</th>
-                  <th className="border px-4 py-2 text-left">Patient Name</th>
-                  <th className="border px-4 py-2 text-left">age</th>
-                  <th className="border px-4 py-2 text-left">date</th>
-                  <th className="border px-4 py-2 text-left">time</th>
-                  <th className="border px-4 py-2 text-left">status</th>
-                  <th className="border px-4 py-2 text-left">type</th>
-                  <th className="border px-4 py-2 text-left">patient_id</th>
-                </tr>
-              </thead>
-              <tbody>
-                {appointments.map((appointment) => (
-                  <tr key={appointment.appointment_id}>
-                    <td className="border px-4 py-2">
-                      {appointment.appointment_id}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {appointment.patient_first_name +
-                        " " +
-                        appointment.patient_last_name}
-                    </td>
+            {appointments.length === 0 ? (
+              <p className="mt-4 text-gray-600">No appointments.</p>
+            ) : (
+              <table className="mt-4 min-w-full bg-white shadow-md rounded-lg p-4">
+                <thead>
+                  <tr>
+                    {/* <th className="border px-4 py-2 text-left">ID</th> */}
+                    <th className="border px-4 py-2 text-left">Patient Name</th>
+                    {/* <th className="border px-4 py-2 text-left">Age</th> */}
+                    <th className="border px-4 py-2 text-left">Date</th>
+                    <th className="border px-4 py-2 text-left">Time</th>
+                    <th className="border px-4 py-2 text-left">Status</th>
+                    <th className="border px-4 py-2 text-left">Type</th>
+                    <th className="border px-4 py-2 text-left">Action</th>
 
-                    <td className="border px-4 py-2">{appointment.age}</td>
-                    <td className="border px-4 py-2">{appointment.date}</td>
-                    <td className="border px-4 py-2">{appointment.time}</td>
-                    <td className="border px-4 py-2">{appointment.status}</td>
-                    <td className="border px-4 py-2">{appointment.type}</td>
-                    <td className="border px-4 py-2">
-                      {appointment.patient_id}
-                    </td>
-
-                    <td className="border px-4 py-2">
-                      {/* Conditional button based on status */}
-                      {appointment.status === "pending" ? (
-                        <button
-                          onClick={() => handleEditAppointment(appointment)}
-                          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                          Edit
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleViewAppointment(appointment)}
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                          View
-                        </button>
-                      )}
-                    </td>
+                    {/* <th className="border px-4 py-2 text-left">Patient ID</th> */}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {appointments.map((appointment) => (
+                    <tr key={appointment.appointment_id}>
+                      {/* <td className="border px-4 py-2">
+                        {appointment.appointment_id}
+                      </td> */}
+                      <td className="border px-4 py-2">
+                        {appointment.patient_first_name +
+                          " " +
+                          appointment.patient_last_name}
+                      </td>
+                      {/* <td className="border px-4 py-2">{appointment.age}</td> */}
+                      <td className="border px-4 py-2">
+  {new Date(appointment.date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })}
+</td>
+<td className="border px-4 py-2">
+  {formatTime(appointment.time)}
+</td>                      <td className="border px-4 py-2">{appointment.status}</td>
+                      <td className="border px-4 py-2">{appointment.type}</td>
+                      {/* <td className="border px-4 py-2">
+                        {appointment.patient_id}
+                      </td> */}
+                      <td className="border px-4 py-2">
+                        {/* Conditional button based on status */}
+                        {appointment.status === "pending" ? (
+                          <button
+                            onClick={() => handleEditAppointment(appointment)}
+                            className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+                          >
+                            Edit
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleViewAppointment(appointment)}
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                          >
+                            View
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         );
       case "profile":
@@ -515,18 +559,7 @@ const DoctorDashboard = () => {
                   className="mt-1 p-2 border rounded w-full bg-white text-black"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  name="phone_number"
-                  value={profileData.phone_number}
-                  onChange={handleProfileChange}
-                  className="mt-1 p-2 border rounded w-full bg-white text-black"
-                />
-              </div>
+              
               <div>
                 <label className="block text-sm font-medium">Specialty</label>
                 <input

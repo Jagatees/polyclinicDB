@@ -420,9 +420,6 @@ const UserDashboard = () => {
                   className="bg-white shadow-md rounded-lg p-4 flex flex-col"
                 >
                   <div className="mb-2">
-                    <strong>Date:</strong> {bill.date}
-                  </div>
-                  <div className="mb-2">
                     <strong>Amount Paid:</strong> ${bill.amount_paid}
                   </div>
                   <div className="mb-2">
