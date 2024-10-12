@@ -262,7 +262,6 @@ def reassign_appointment(dbConnection, appointment_id, doctor_id):
             connection = dbConnection
 
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                # Check if the appointment exists for the given doctor
                 check_appointment_query = """
                 SELECT appointment_id, patient_id_fk, date, time
                 FROM appointment 
@@ -274,7 +273,6 @@ def reassign_appointment(dbConnection, appointment_id, doctor_id):
                 if not existing_appointment:
                     return {"status": "error", "message": "Appointment does not exist for the given doctor."}
 
-                # Fetch available doctors to reassign
                 available_doctors_query = """
                 SELECT d.doctor_id 
                 FROM doctor d
@@ -289,23 +287,19 @@ def reassign_appointment(dbConnection, appointment_id, doctor_id):
                 if not available_doctors:
                     return {"status": "error", "message": "No available doctors to reassign the appointment."}
 
-                # Randomly assign a new doctor
                 new_doctor_id = random.choice(available_doctors)['doctor_id']
 
-                # Update the appointment with the new doctor ID
                 update_appointment_query = """
                 UPDATE appointment 
-                SET doctor_id_fk = %s, status = %s, type = %s
+                SET doctor_id_fk = %s, status = %s
                 WHERE appointment_id = %s
                 """
                 cursor.execute(update_appointment_query, (
                     new_doctor_id, 
-                    'pending',  # Set new status
-                    'reassigned',  # Set new type
+                    'pending',  
                     appointment_id
                 ))
 
-                # Commit the changes to the database
                 connection.commit()
 
             return {"status": "success", "message": f"Appointment reassigned from doctor ID {doctor_id} to doctor ID {new_doctor_id}."}
