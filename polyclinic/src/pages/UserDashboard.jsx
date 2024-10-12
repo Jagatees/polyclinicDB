@@ -125,7 +125,23 @@ const UserDashboard = () => {
       });
   };
   
-  
+  const formatTime = (timeString) => {
+    let [hours, minutes] = timeString.split(":"); // Split time into hours and minutes
+    let period = "AM";
+
+    hours = parseInt(hours, 10);
+
+    // Convert 24-hour time to 12-hour format
+    if (hours >= 12) {
+      period = "PM";
+      if (hours > 12) hours -= 12;
+    } else if (hours === 0) {
+      hours = 12;
+    }
+
+    return `${hours}:${minutes} ${period}`;
+  };
+
 
   const handleGetBilling = () => {
     fetch(`/api/billing/${patientId}`, {
@@ -453,7 +469,6 @@ const UserDashboard = () => {
                   <div className="mb-2">
                     <strong>Payment Status:</strong> {bill.payment_status}
                   </div>
-                  {/* Add any other relevant fields */}
                 </div>
               ))}
             </div>
@@ -652,13 +667,13 @@ const UserDashboard = () => {
               <table className="min-w-full bg-white shadow-md rounded-lg">
                 <thead>
                   <tr>
-                    <th className="border px-4 py-2 text-left">
+                    {/* <th className="border px-4 py-2 text-left">
                       Appointment ID
-                    </th>
+                    </th> */}
                     <th className="border px-4 py-2 text-left">Date</th>
                     <th className="border px-4 py-2 text-left">Time</th>
-                    <th className="border px-4 py-2 text-left">Doctor ID</th>
-                    <th className="border px-4 py-2 text-left">Patient ID</th>
+                    {/* <th className="border px-4 py-2 text-left">Doctor ID</th> */}
+                    {/* <th className="border px-4 py-2 text-left">Patient ID</th> */}
                     <th className="border px-4 py-2 text-left">Status</th>
                     <th className="border px-4 py-2 text-left">Type</th>
                   </tr>
@@ -666,17 +681,28 @@ const UserDashboard = () => {
                 <tbody>
                   {appointments.map((appointment) => (
                     <tr key={appointment.appointment_id}>
-                      <td className="border px-4 py-2">
+                      {/* <td className="border px-4 py-2">
                         {appointment.appointment_id}
-                      </td>
-                      <td className="border px-4 py-2">{appointment.date}</td>
-                      <td className="border px-4 py-2">{appointment.time}</td>
+                      </td> */}
                       <td className="border px-4 py-2">
+                        {new Date(appointment.date).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {formatTime(appointment.time)}
+                      </td>{" "}
+                      {/* <td className="border px-4 py-2">
                         {appointment.doctor_id_fk}
                       </td>
                       <td className="border px-4 py-2">
                         {appointment.patient_id_fk}
-                      </td>
+                      </td> */}
                       <td className="border px-4 py-2">{appointment.status}</td>
                       <td className="border px-4 py-2">{appointment.type}</td>
                       <td className="border px-4 py-2">
