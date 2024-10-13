@@ -255,7 +255,7 @@ def reassignAppointment(appointment_id, doctor_id):
   }
 }
 '''
-@app.route('/appointment/<patient_id>/<appointment_id>', methods=['PUT'])
+@app.route('/userappointment/<patient_id>/<appointment_id>', methods=['PUT'])
 def updateAppointment(appointment_id, patient_id):
     dbConnection = g.dbConnection
     
