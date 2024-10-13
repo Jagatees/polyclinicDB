@@ -335,6 +335,7 @@ def get_all_users_with_details(dbConnection, start, limit):
 
                 # Process user details
                 all_users_details = []
+                all_users_details.append({"total_users": total_users})
 
                 for user in users:
                     user_details = dict(user) 
@@ -371,8 +372,6 @@ def get_all_users_with_details(dbConnection, start, limit):
                     
                     else:
                         user_details.update({"role": "Role not recognized"})
-
-                    all_users_details.append({"total_users": total_users})
 
                     all_users_details.append(user_details)
 
