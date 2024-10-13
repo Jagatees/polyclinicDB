@@ -75,28 +75,28 @@ CREATE TABLE patient_medication(
 );
 
 CREATE TABLE appointment(
-    appointment_id INT NOT NULL,
+    appointment_id INT NOT NULL AUTO_INCREMENT,
     patient_id_fk INT NOT NULL,
-    doctor_id_fk INT NOT NULL,
+    doctor_id_fk INT,
     date DATE NOT NULL,
     time TIME NOT NULL,
     status VARCHAR(20) NOT NULL,
     type VARCHAR(20) NOT NULL,
-    PRIMARY KEY(appointment_id, patient_id_fk),
+    PRIMARY KEY(appointment_id),
     FOREIGN KEY(patient_id_fk) REFERENCES patient(patient_id) ON DELETE CASCADE,
-    FOREIGN KEY(doctor_id_fk) REFERENCES doctor(doctor_id) ON DELETE CASCADE
+    FOREIGN KEY(doctor_id_fk) REFERENCES doctor(doctor_id) ON DELETE SET NULL
 );
 
 CREATE TABLE billing(
-    billing_id INT NOT NULL,
-    patient_id_fk INT	NOT NULL,
+    billing_id INT NOT NULL AUTO_INCREMENT,
+    patient_id_fk INT NOT NULL,
     appointment_id_fk INT NOT NULL,
     amount_due DECIMAL(10,2) NOT NULL,
     amount_paid DECIMAL(10,2) NOT NULL,
     billing_date DATE NOT NULL,
     payment_status VARCHAR(255) NOT NULL,
     payment_method VARCHAR(255) NOT NULL,
-    PRIMARY KEY(billing_id, appointment_id_fk),
+    PRIMARY KEY(billing_id),
     FOREIGN KEY(appointment_id_fk) REFERENCES appointment(appointment_id) ON DELETE CASCADE,
 	FOREIGN KEY(patient_id_fk) REFERENCES appointment(patient_id_fk) ON DELETE CASCADE
 );
@@ -110,6 +110,74 @@ CREATE TABLE diagnosis(
     severity VARCHAR(500) NOT NULL,
     PRIMARY KEY(diagnosis_id),
     FOREIGN KEY(patient_id_fk) REFERENCES patient(patient_id) ON DELETE CASCADE,
-    FOREIGN KEY(condition_id_fk) REFERENCES medical_condition(condition_id) ON DELETE CASCADE,
     FOREIGN KEY(doctor_id_fk) REFERENCES doctor(doctor_id) ON DELETE CASCADE
 );
+
+USE polyclinic;
+
+ALTER TABLE patient_medication
+RENAME COLUMN start_date TO duration;
+
+ALTER TABLE patient_medication
+MODIFY COLUMN duration INT;
+
+ALTER TABLE patient_medication
+DROP COLUMN end_date;
+
+ALTER TABLE medical_condition
+RENAME medication_description;
+
+ALTER TABLE diagnosis
+ADD appointment_id_fk INT,
+ADD CONSTRAINT fk_diagnosis_appointment
+FOREIGN KEY (patient_id_fk, appointment_id_fk) 
+REFERENCES appointment (patient_id_fk, appointment_id);
+
+ALTER TABLE diagnosis
+DROP COLUMN condition_id_fk,
+ADD COLUMN diagnosis_description VARCHAR(255) NOT NULL;
+
+DESCRIBE diagnosis;
+
+SELECT * FROM diagnosis;
+DELETE FROM diagnosis where patient_id_fk ='9';
+ 
+DESCRIBE patient_medication;
+
+ALTER TABLE patient_medication
+ADD COLUMN diagnosis_id_fk INT;
+
+ALTER TABLE patient_medication
+ADD CONSTRAINT fk_diagnosis_patient_medication
+FOREIGN KEY (diagnosis_id_fk) REFERENCES diagnosis(diagnosis_id) ON DELETE CASCADE;
+
+ALTER TABLE diagnosis
+DROP FOREIGN KEY fk_diagnosis_appointment;
+
+ALTER TABLE diagnosis
+ADD CONSTRAINT fk_diagnosis_appointment
+FOREIGN KEY (patient_id_fk, appointment_id_fk)
+REFERENCES appointment(patient_id_fk, appointment_id)
+ON DELETE CASCADE;
+
+ALTER TABLE diagnosis
+DROP FOREIGN KEY fk_diagnosis_appointment;
+
+ALTER TABLE diagnosis
+ADD CONSTRAINT fk_diagnosis_appointment
+FOREIGN KEY (patient_id_fk, appointment_id_fk)
+REFERENCES appointment(patient_id_fk, appointment_id)
+ON DELETE CASCADE;
+
+SHOW COLUMNS FROM diagnosis;
+
+ALTER TABLE diagnosis
+DROP FOREIGN KEY fk_diagnosis_appointment;
+
+ALTER TABLE diagnosis
+ADD FOREIGN KEY (appointment_id_fk)
+REFERENCES appointment(appointment_id)
+ON DELETE CASCADE;
+
+ALTER TABLE diagnosis
+MODIFY appointment_id_fk INT;
