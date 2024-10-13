@@ -36,6 +36,18 @@ const AdminDashboard = () => {
   const [currentPageCondition, setCurrentPageCondition] = useState(1); // For conditions pagination
   const itemsPerPageCondition = 5; // Items per page for conditions
 
+  const [totalUsers, setTotalUsers] = useState(() => {
+    const savedTotalUsers = localStorage.getItem("total_users");
+    return savedTotalUsers ? parseInt(savedTotalUsers) : 0;
+  });
+  
+
+  const changePage = (pageNumber) => {
+    setLoading(true);
+    setCurrentPageUser(pageNumber);
+  };
+  
+
   // State for the new medical condition form
   const [newCondition, setNewCondition] = useState({
     name: "",
@@ -65,9 +77,9 @@ const AdminDashboard = () => {
     setrole_id_fk(role_id_fk);
   }, []);
 
-  const getuser = () => {
+  const getuser = (page, pageSize) => {
     const role_id = localStorage.getItem("role_id_fk");
-    fetch(`/api/users/${role_id}/1/10`, {
+    fetch(`/api/users/${role_id}/${page}/${pageSize}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -82,16 +94,26 @@ const AdminDashboard = () => {
       .then((data) => {
         const usersData = data.message.users;
         console.log("user data ", usersData);
-        console.log("user data ", usersData[0].total_users);
-
-        setUsersAll(usersData);
-        setNoData(usersData.length === 0);
+  
+        if (usersData.length > 0) {
+          const totalUsers = usersData[0].total_users;
+          setTotalUsers(totalUsers);
+          localStorage.setItem("total_users", totalUsers);
+  
+          const userRecords = usersData.slice(1); // Get user records from index 1 onwards
+          setUsersAll(userRecords);
+        } else {
+          setUsersAll([]);
+          setNoData(true);
+        }
       })
       .catch((error) => {
         console.error("Request failed:", error);
       })
       .finally(() => setLoading(false)); // Stop loading when request completes
   };
+  
+  
 
   // Function to fetch medical conditions
   const getMedicalConditions = () => {
@@ -122,8 +144,12 @@ const AdminDashboard = () => {
   }, [activePage]);
 
   useEffect(() => {
-    getuser();
-  }, []);
+    if (activePage === "view_user") {
+      setLoading(true);
+      getuser(currentPageUser, itemsPerPageUser);
+    }
+  }, [activePage, currentPageUser]);
+  
 
   const handleCreateUser = async (event) => {
     event.preventDefault();
@@ -205,33 +231,26 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    setLoadingDelete(true); // Start loading
+    setLoadingDelete(true);
     try {
-      fetch(`/api/user/${userId}`, {
+      const response = await fetch(`/api/user/${userId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-      })
-        .then((response) => {
-          if (!response.ok) throw new Error("Deletion failed");
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Deletion successful:", data);
-          getuser();
-        })
-        .catch((error) => {
-          console.error("Deletion failed:", error.message);
-        })
-        .finally(() => {
-          setLoadingDelete(false); // Stop loading
-        });
+      });
+      if (!response.ok) throw new Error("Deletion failed");
+      const data = await response.json();
+      console.log("Deletion successful:", data);
+      // Refresh data
+      getuser(currentPageUser, itemsPerPageUser);
     } catch (error) {
-      console.error("Validation failed:", error);
-      setLoadingDelete(false); // Stop loading in case of an error
+      console.error("Deletion failed:", error.message);
+    } finally {
+      setLoadingDelete(false);
     }
   };
+  
 
   const handleAddConditionInputChange = (e) => {
     const { name, value } = e.target;
@@ -331,11 +350,8 @@ const AdminDashboard = () => {
   const renderContent = () => {
     if (activePage === "view_user") {
       // Pagination calculations for users
-      const totalPagesUser = Math.ceil(usersAll.length / itemsPerPageUser);
-      const currentDataUsers = usersAll.slice(
-        (currentPageUser - 1) * itemsPerPageUser,
-        currentPageUser * itemsPerPageUser
-      );
+      const totalPagesUser = Math.ceil(totalUsers / itemsPerPageUser);
+    const currentDataUsers = usersAll; // Use the fetched data directly
 
       return (
         <div>
@@ -344,13 +360,13 @@ const AdminDashboard = () => {
           </div>
           <div className="relative min-w-full bg-white shadow-md rounded-lg overflow-hidden min-h-[200px]">
             {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
-              </div>
+               <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+               <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+             </div>
             ) : noData ? (
               <div className="p-4 text-center text-gray-500">
-                No data available.
-              </div>
+              No data available.
+            </div>
             ) : (
               <div>
                 <table className="min-w-full">
@@ -384,37 +400,37 @@ const AdminDashboard = () => {
                 </table>
                 {/* Pagination Controls */}
                 <div className="flex justify-center mt-4">
-                  <button
-                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                    onClick={() => setCurrentPageUser(1)}
-                    disabled={currentPageUser === 1}
-                  >
-                    First
-                  </button>
-                  <button
-                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                    onClick={() => setCurrentPageUser(currentPageUser - 1)}
-                    disabled={currentPageUser === 1}
-                  >
-                    Previous
-                  </button>
-                  <span className="px-3 py-1 mx-1">
-                    Page {currentPageUser} of {totalPagesUser}
-                  </span>
-                  <button
-                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                    onClick={() => setCurrentPageUser(currentPageUser + 1)}
-                    disabled={currentPageUser === totalPagesUser}
-                  >
-                    Next
-                  </button>
-                  <button
-                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                    onClick={() => setCurrentPageUser(totalPagesUser)}
-                    disabled={currentPageUser === totalPagesUser}
-                  >
-                    Last
-                  </button>
+                <button
+            className="px-3 py-1 mx-1 bg-gray-300 rounded"
+            onClick={() => setCurrentPageUser(1)}
+            disabled={currentPageUser === 1}
+          >
+            First
+          </button>
+          <button
+            className="px-3 py-1 mx-1 bg-gray-300 rounded"
+            onClick={() => setCurrentPageUser(currentPageUser - 1)}
+            disabled={currentPageUser === 1}
+          >
+            Previous
+          </button>
+          <span className="px-3 py-1 mx-1">
+            Page {currentPageUser} of {totalPagesUser}
+          </span>
+          <button
+            className="px-3 py-1 mx-1 bg-gray-300 rounded"
+            onClick={() => setCurrentPageUser(currentPageUser + 1)}
+            disabled={currentPageUser === totalPagesUser}
+          >
+            Next
+          </button>
+          <button
+            className="px-3 py-1 mx-1 bg-gray-300 rounded"
+            onClick={() => setCurrentPageUser(totalPagesUser)}
+            disabled={currentPageUser === totalPagesUser}
+          >
+            Last
+          </button>
                 </div>
               </div>
             )}
@@ -625,41 +641,37 @@ const AdminDashboard = () => {
               </table>
               {/* Pagination Controls */}
               <div className="flex justify-center mt-4">
-                <button
-                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() => setCurrentPageCondition(1)}
-                  disabled={currentPageCondition === 1}
-                >
-                  First
-                </button>
-                <button
-                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() =>
-                    setCurrentPageCondition(currentPageCondition - 1)
-                  }
-                  disabled={currentPageCondition === 1}
-                >
-                  Previous
-                </button>
-                <span className="px-3 py-1 mx-1">
-                  Page {currentPageCondition} of {totalPagesCondition}
-                </span>
-                <button
-                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() =>
-                    setCurrentPageCondition(currentPageCondition + 1)
-                  }
-                  disabled={currentPageCondition === totalPagesCondition}
-                >
-                  Next
-                </button>
-                <button
-                  className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() => setCurrentPageCondition(totalPagesCondition)}
-                  disabled={currentPageCondition === totalPagesCondition}
-                >
-                  Last
-                </button>
+              <button
+    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+    onClick={() => changePage(1)}
+    disabled={currentPageUser === 1}
+  >
+    First
+  </button>
+  <button
+    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+    onClick={() => changePage(currentPageUser - 1)}
+    disabled={currentPageUser === 1}
+  >
+    Previous
+  </button>
+  <span className="px-3 py-1 mx-1">
+    Page {currentPageUser} of {totalPagesUser}
+  </span>
+  <button
+    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+    onClick={() => changePage(currentPageUser + 1)}
+    disabled={currentPageUser === totalPagesUser}
+  >
+    Next
+  </button>
+  <button
+    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+    onClick={() => changePage(totalPagesUser)}
+    disabled={currentPageUser === totalPagesUser}
+  >
+    Last
+  </button>
               </div>
             </div>
           )}
