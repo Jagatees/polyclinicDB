@@ -91,7 +91,7 @@ const AdminDashboard = () => {
           setTotalUserCount(0);
         }
 
-        setUsersAll(usersData);
+        setUsersAll(usersData.slice(1));
         setNoData(usersData.length === 0);
       })
       .catch((error) => {
