@@ -31,6 +31,7 @@ const AdminDashboard = () => {
   // Pagination states for users
   const [currentPageUser, setCurrentPageUser] = useState(1); // For users pagination
   const itemsPerPageUser = 10; // Items per page for users
+  const [totalUserCount, setTotalUserCount] = useState(0); // Total number of users
 
   // Pagination states for medical conditions
   const [currentPageCondition, setCurrentPageCondition] = useState(1); // For conditions pagination
@@ -65,9 +66,10 @@ const AdminDashboard = () => {
     setrole_id_fk(role_id_fk);
   }, []);
 
-  const getuser = () => {
+  const getuser = (pageNumber, itemsPerPage) => {
     const role_id = localStorage.getItem("role_id_fk");
-    fetch(`/api/users/${role_id}/1/10`, {
+    setLoading(true); // Start loading
+    fetch(`/api/users/${role_id}/${pageNumber}/${itemsPerPage}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -82,7 +84,12 @@ const AdminDashboard = () => {
       .then((data) => {
         const usersData = data.message.users;
         console.log("user data ", usersData);
-        console.log("user data ", usersData[0].total_users);
+
+        if (usersData.length > 0) {
+          setTotalUserCount(usersData[0].total_users);
+        } else {
+          setTotalUserCount(0);
+        }
 
         setUsersAll(usersData);
         setNoData(usersData.length === 0);
@@ -121,9 +128,10 @@ const AdminDashboard = () => {
     }
   }, [activePage]);
 
+  // Fetch users when currentPageUser changes
   useEffect(() => {
-    getuser();
-  }, []);
+    getuser(currentPageUser, itemsPerPageUser);
+  }, [currentPageUser]);
 
   const handleCreateUser = async (event) => {
     event.preventDefault();
@@ -184,7 +192,7 @@ const AdminDashboard = () => {
               specialty: "",
             });
             setActivePage("view_user");
-            getuser();
+            getuser(currentPageUser, itemsPerPageUser);
           } else if (
             data.message.message ===
             "User already exists with this username or email."
@@ -219,7 +227,7 @@ const AdminDashboard = () => {
         })
         .then((data) => {
           console.log("Deletion successful:", data);
-          getuser();
+          getuser(currentPageUser, itemsPerPageUser); // Refresh the current page
         })
         .catch((error) => {
           console.error("Deletion failed:", error.message);
@@ -330,12 +338,8 @@ const AdminDashboard = () => {
 
   const renderContent = () => {
     if (activePage === "view_user") {
-      // Pagination calculations for users
-      const totalPagesUser = Math.ceil(usersAll.length / itemsPerPageUser);
-      const currentDataUsers = usersAll.slice(
-        (currentPageUser - 1) * itemsPerPageUser,
-        currentPageUser * itemsPerPageUser
-      );
+      // Calculate total pages based on totalUserCount
+      const totalPagesUser = Math.ceil(totalUserCount / itemsPerPageUser);
 
       return (
         <div>
@@ -362,7 +366,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentDataUsers.map((user) => (
+                    {usersAll.map((user) => (
                       <tr key={user.user_id}>
                         <td className="border px-4 py-2">{user.username}</td>
                         <td className="border px-4 py-2">{user.role_id}</td>
