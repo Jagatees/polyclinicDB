@@ -218,11 +218,11 @@ const AdminDashboard = () => {
           return response.json();
         })
         .then((data) => {
-          console.log("Deletion successful:", data.message.status);
+          console.log("Deletion successful:", data);
           getuser();
         })
         .catch((error) => {
-          console.error("Deletion failed:", error);
+          console.error("Deletion failed:", error.message);
         })
         .finally(() => {
           setLoadingDelete(false); // Stop loading
