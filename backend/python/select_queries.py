@@ -371,8 +371,8 @@ def get_all_users_with_details(dbConnection, start, limit):
                     
                     else:
                         user_details.update({"role": "Role not recognized"})
-                        
-                    user_details.update({"total_users": total_users})
+
+                    all_users_details.append({"total_users": total_users})
 
                     all_users_details.append(user_details)
 
