@@ -233,11 +233,12 @@ def getAppointmentsbyDoctor(doctor_id):
         return jsonify({"message": res})
 
 
-#update appointment/ reassing appointment to another doctor 
+# update appointment/ reassing appointment to another doctor 
 @app.route('/appointment/<appointment_id>/<doctor_id>', methods=['PUT'])
 def reassignAppointment(appointment_id, doctor_id):
     dbConnection = g.dbConnection
-    
+    print("reasign here ")
+
     if request.method == 'PUT':
         appointment_id = int(appointment_id) 
         doctor_id = int(doctor_id) 
@@ -255,7 +256,10 @@ def reassignAppointment(appointment_id, doctor_id):
   }
 }
 '''
-@app.route('/appointment/<patient_id>/<appointment_id>', methods=['PUT'])
+
+# /api/appointment/${editingAppointment.patient_id_fk}/${editingAppointment.appointment_id}`
+# "PUT"
+@app.route('/userappointment/<patient_id>/<appointment_id>', methods=['PUT'])
 def updateAppointment(appointment_id, patient_id):
     dbConnection = g.dbConnection
     
@@ -264,6 +268,10 @@ def updateAppointment(appointment_id, patient_id):
         appointment_info = data['appointment_info'] 
         appointment_id = int(appointment_id) 
         patient_id = int(patient_id) 
+
+        print("HERE -> ", appointment_id)
+        print("HERE -> ", patient_id)
+
         res = update_queries.update_appointment(dbConnection, patient_id, appointment_id, appointment_info) 
         print(res)
         return jsonify({"message": res})

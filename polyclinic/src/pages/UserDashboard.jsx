@@ -126,11 +126,11 @@ const UserDashboard = () => {
   };
   
   const formatTime = (timeString) => {
-    let [hours, minutes] = timeString.split(":"); // Split time into hours and minutes
+    let [hours, minutes, seconds] = timeString.split(":"); // Split time into hours, minutes, and seconds
     let period = "AM";
-
+  
     hours = parseInt(hours, 10);
-
+  
     // Convert 24-hour time to 12-hour format
     if (hours >= 12) {
       period = "PM";
@@ -138,9 +138,14 @@ const UserDashboard = () => {
     } else if (hours === 0) {
       hours = 12;
     }
-
-    return `${hours}:${minutes} ${period}`;
+  
+    // Ensure minutes and seconds are two digits
+    minutes = minutes.padStart(2, '0');
+    seconds = seconds ? seconds.padStart(2, '0') : '00';
+  
+    return `${hours}:${minutes}:${seconds} ${period}`;
   };
+  
 
 
   const handleGetBilling = () => {
@@ -481,6 +486,7 @@ const UserDashboard = () => {
   
   const handleBookAppointment = (event) => {
     event.preventDefault(); // Prevent default form submit action
+    console.log("here as user ")
 
     const formData = {
       appointment_info: {
@@ -491,17 +497,30 @@ const UserDashboard = () => {
       },
     };
 
+    const formData2 = {
+      appointment_info: {
+        date: appointmentDate,
+        time: "10:10:00",
+        type: visitType,
+      },
+    };
+
+
+
+    
     const requestMethod = isEditing ? "PUT" : "POST"; // Use PUT for updates and POST for new
     const url = isEditing
-      ? `/api/appointment/${editingAppointment.patient_id_fk}/${editingAppointment.appointment_id}`
+      ? `/api/userappointment/${editingAppointment.patient_id_fk}/${editingAppointment.appointment_id}`
       : `/api/appointment`;
+
+      console.log(url, requestMethod)
 
     fetch(url, {
       method: requestMethod,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(formData2),
     })
       .then((response) => {
         if (!response.ok) {
