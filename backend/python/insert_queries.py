@@ -211,7 +211,7 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
                 dbConnection.commit()
 
                 insert_medication_query = """
-                INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, diagnosis_id_fk_pd, dosage, frequency, duration)
+                INSERT INTO patient_medication (patient_id_fk, medication_id_fk, doctor_id_fk, diagnosis_id_fk, dosage, frequency, duration)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
                 for medication in medications_info:
