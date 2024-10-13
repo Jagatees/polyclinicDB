@@ -312,24 +312,25 @@ def get_id_by_user(dbConnection=None, user_id=None, role=None):
     else:
         return {"status": "error", "message": "No database connection provided"}
 
-def get_all_users_with_details(dbConnection=None):
+def get_all_users_with_details(dbConnection, start, limit):
     if dbConnection:
         try:
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
 
-                # select from user table first
+                # select from user table with pagination
                 query = """
                 SELECT u.user_id, u.username, u.email, u.first_name, u.last_name, u.created_at, r.role_id
                 FROM user u
-                JOIN role r ON u.role_id_fk = r.role_id;
+                JOIN role r ON u.role_id_fk = r.role_id
+                LIMIT %s OFFSET %s;
                 """
-                cursor.execute(query)
+                cursor.execute(query, (limit, start))
                 users = cursor.fetchall()
                 
                 if not users:
                     return {"status": "error", "message": "No users found"}
 
-                # using role id from user query
+                # Process user details
                 all_users_details = []
 
                 for user in users:
@@ -337,7 +338,7 @@ def get_all_users_with_details(dbConnection=None):
 
                     role_id = user['role_id']
 
-                    if role_id == 1:  # 1 id doctor role
+                    if role_id == 1:  # 1 is doctor role
                         doctor_query = """
                         SELECT d.phone_number, d.specialty
                         FROM doctor d
@@ -348,11 +349,6 @@ def get_all_users_with_details(dbConnection=None):
                         
                         if doctor_details:
                             user_details.update(doctor_details)
-
-                            user_details.update({
-                                'first_name': user['first_name'],
-                                'last_name': user['last_name']
-                            })
                         else:
                             user_details.update({"doctor_details": "Doctor details not found"})
 
@@ -367,11 +363,6 @@ def get_all_users_with_details(dbConnection=None):
                         
                         if patient_details:
                             user_details.update(patient_details)
-
-                            user_details.update({
-                                'first_name': user['first_name'],
-                                'last_name': user['last_name']
-                            })
                         else:
                             user_details.update({"patient_details": "Patient details not found"})
                     
