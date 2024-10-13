@@ -48,11 +48,6 @@ def get_appointments_by_user(dbConnection=None, user_id=None, user_role=None):
     #! if you are a patient, it will be the patient_id 
 
     if dbConnection:
-        print (user_id)
-        print (user_role)
-        print (type(user_id))
-        print (type(user_role))
-
         if user_role == 2:
             query = """
             SELECT * FROM appointment WHERE patient_id_fk = %s
