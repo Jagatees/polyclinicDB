@@ -316,6 +316,9 @@ def get_all_users_with_details(dbConnection, start, limit):
     if dbConnection:
         try:
             with dbConnection.cursor(pymysql.cursors.DictCursor) as cursor:
+                count_query = "SELECT COUNT(*) AS total_users FROM user;"
+                cursor.execute(count_query)
+                total_users = cursor.fetchone()['total_users']
 
                 # select from user table with pagination
                 query = """
@@ -368,6 +371,8 @@ def get_all_users_with_details(dbConnection, start, limit):
                     
                     else:
                         user_details.update({"role": "Role not recognized"})
+                        
+                    user_details.update({"total_users": total_users})
 
                     all_users_details.append(user_details)
 
