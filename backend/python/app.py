@@ -228,7 +228,8 @@ def getAppointmentsbyDoctor(doctor_id):
 @app.route('/appointment/<appointment_id>/<doctor_id>', methods=['PUT'])
 def reassignAppointment(appointment_id, doctor_id):
     dbConnection = g.dbConnection
-    
+    print("/appointment/<appointment_id>/<doctor_id>")
+
     if request.method == 'PUT':
         appointment_id = int(appointment_id) 
         doctor_id = int(doctor_id) 
@@ -248,12 +249,14 @@ def reassignAppointment(appointment_id, doctor_id):
 @app.route('/userappointment/<patient_id>/<appointment_id>', methods=['PUT'])
 def updateAppointment(appointment_id, patient_id):
     dbConnection = g.dbConnection
-    
+    print("/userappointment/<patient_id>/<appointment_id>")
     if request.method == 'PUT':
         data = request.get_json()
         appointment_info = data['appointment_info'] 
         appointment_id = int(appointment_id) 
         patient_id = int(patient_id) 
+        
+
         res = update_queries.update_appointment(dbConnection, patient_id, appointment_id, appointment_info) 
         return jsonify({"message": res})
 

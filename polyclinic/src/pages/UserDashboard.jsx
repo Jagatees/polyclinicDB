@@ -500,7 +500,7 @@ const UserDashboard = () => {
     const formData2 = {
       appointment_info: {
         date: appointmentDate,
-        time: "10:10:00",
+        time: appointmentTime,
         type: visitType,
       },
     };
@@ -520,7 +520,7 @@ const UserDashboard = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData2),
+      body: JSON.stringify(isEditing ? formData2 : formData),
     })
       .then((response) => {
         if (!response.ok) {
