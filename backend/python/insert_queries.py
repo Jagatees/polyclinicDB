@@ -52,15 +52,10 @@ def insert_user(dbConnection, user_info, role_info):
                 cursor.execute(insert_query, (user_info['role_id'], user_info['username'],hashed_password, user_info['email'], user_info['first_name'], user_info['last_name'],  current_datetime))
 
                 user_id = cursor.lastrowid
-                print (user_id) 
-                print (user_info['role_id']) 
-                print ("inserted role , now inserting the patient table")
-
 
                 if user_info['role_id'] == 1: # doctor role
 
                     license_number = generate_unique_uuid4(cursor)
-
                     doc_insert_query = """
                     INSERT INTO doctor (user_id_fk, phone_number, specialty, license_number)
                     VALUES (%s, %s, %s, %s)
@@ -70,9 +65,6 @@ def insert_user(dbConnection, user_info, role_info):
 
                 elif user_info['role_id'] == 2: # patient role
 
-
-                    print ("inserting patient table") 
-                    print (role_info) 
                     pat_insert_query = """
                     INSERT INTO patient (user_id_fk, age, gender, phone_number, address)
                     VALUES (%s, %s, %s, %s, %s)
@@ -93,7 +85,6 @@ def insert_user(dbConnection, user_info, role_info):
             # rollback any changes made to database if any error occurs
             if dbConnection:
                 dbConnection.rollback()
-            #print(f"Status: error, Message: Error has occurred: {str(e)}")
             return {"status": "error", "message": f"Error has occurred: {str(e)}"}
 
 """
@@ -107,7 +98,6 @@ appointment_info:
 - type
 """
 def insert_appointment(dbConnection, appointment_info):
-    print(appointment_info)
     if dbConnection:
         try:
             with dbConnection.cursor() as cursor:
@@ -241,7 +231,6 @@ def insert_diagnosis(dbConnection, diagnosis_info, medications_info):
         except Exception as e:
             if dbConnection:
                 dbConnection.rollback()
-            #print(f"Status: error, Message: Error occurred: {str(e)}")
             return {"status": "error", "message": f"Error occurred: {str(e)}"}
 
 """
@@ -256,7 +245,6 @@ billing_info:
 - payment_method
 """
 def insert_billing(dbConnection=None, billing_info=None):
-    print ('inside insert billing', flush=True)
     if dbConnection:
         try:
             with dbConnection.cursor() as cursor:
@@ -266,17 +254,16 @@ def insert_billing(dbConnection=None, billing_info=None):
                 FROM billing 
                 WHERE patient_id_fk = %s
                 """
-                print ('before retrieving max billing id') 
+
                 cursor.execute(get_max_billing_id_query, (billing_info['patient_id'],))
                 max_billing_id = cursor.fetchone()[0]
-                print ('after retrieving max billing id')
+                
                 # If no billing id exists for the current patient, reset to 0, else +1 to max billing id
                 if max_billing_id is None:
                     new_billing_id = 0
                 else:
                     new_billing_id = max_billing_id + 1
 
-                print (new_billing_id)
                 # Insert the billing information with the new billing ID
                 insert_query = """
                 INSERT INTO billing (billing_id, patient_id_fk, appointment_id_fk, amount_due, amount_paid, billing_date, payment_status, payment_method)

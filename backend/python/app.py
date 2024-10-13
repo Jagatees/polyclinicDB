@@ -33,7 +33,6 @@ def home():
 def getUserData():
     dbConnection = g.dbConnection 
     user_data = select_queries.get_user(dbConnection, "emily.clark@example.com")
-    print(user_data)
     return jsonify({"message": user_data})
 
 #! ===========================================================================================
@@ -54,9 +53,7 @@ def login():
         data = request.get_json() 
         email = data['email']
         password = data['password']
-        print (email, password)
         res = select_queries.get_user(dbConnection, email, password)
-        print(res)
 
         if res['status'] == 'success':
             user_id = res['user']['user_id'] 
@@ -120,7 +117,6 @@ def register():
         userInfo = data['user_info'] 
         roleInfo = data['role_info']
         res = insert_queries.insert_user(dbConnection, userInfo, roleInfo) 
-        print(res)
         return jsonify({"message": res})
     
 
@@ -174,12 +170,10 @@ def updateUser(user_id):
         userInfo = data['user_info'] 
         user_id = int(user_id) 
         res = update_queries.update_user_info(dbConnection, user_id, userInfo) 
-        print(res)
         return jsonify({"message": res}) 
     elif request.method == 'GET':
         user_id = int(user_id)
         res = select_queries.get_user_profile(dbConnection, user_id)
-        print(res)
         return jsonify({"message": res})
     
 
@@ -206,7 +200,6 @@ def getAppointment():
         #appointment info should be a dictionary
         appointment_info = data['appointment_info'] 
         res = insert_queries.insert_appointment(dbConnection, appointment_info)
-        print(res)
         return jsonify({"message": res})
 
 
@@ -218,7 +211,6 @@ def getAppointments(user_id,role_id):
         role_id = int(role_id)
 
         res = select_queries.get_appointments_by_user(dbConnection, user_id, role_id)
-        print(res)
         return jsonify({"message": res})
 
 
@@ -229,7 +221,6 @@ def getAppointmentsbyDoctor(doctor_id):
     if request.method == 'GET':
         doctor_id = int(doctor_id)
         res = select_queries.get_appointments_by_doctor(dbConnection, doctor_id)
-        print(res)
         return jsonify({"message": res})
 
 
@@ -242,7 +233,6 @@ def reassignAppointment(appointment_id, doctor_id):
         appointment_id = int(appointment_id) 
         doctor_id = int(doctor_id) 
         res = update_queries.reassign_appointment(dbConnection, appointment_id, doctor_id) 
-        print(res)
         return jsonify({"message": res})
 
 #!TODO appointments update will show success even if no such appointments
@@ -265,7 +255,6 @@ def updateAppointment(appointment_id, patient_id):
         appointment_id = int(appointment_id) 
         patient_id = int(patient_id) 
         res = update_queries.update_appointment(dbConnection, patient_id, appointment_id, appointment_info) 
-        print(res)
         return jsonify({"message": res})
 
 
@@ -277,7 +266,6 @@ def deleteAppointment(appointment_id, patient_id):
         appointment_id = int(appointment_id) 
         patient_id = int(patient_id) 
         res = delete_queries.delete_appointment(dbConnection, appointment_id, patient_id)
-        print(res)
         return jsonify({"message": res})
     
 #!===============================================================================
@@ -336,7 +324,6 @@ def Diagnosis():
         # run the function if role is doctor 
         if role == 1: 
             res = insert_queries.insert_diagnosis(dbConnection, diagnosis_info, medication_info)
-            print(res)
 
             # insert billing as well 
             total = 0 
@@ -380,7 +367,6 @@ def updateDiagnosis(diagnosis_id):
         diagnosis_info = data['diagnosis_info'] 
         diagnosis_id = int(diagnosis_id) 
         res = update_queries.update_diagnosis(dbConnection, diagnosis_id, diagnosis_info) 
-        print(res)
         return jsonify({"message": res})
     
 
@@ -397,7 +383,6 @@ def deleteDiagnosis(diagnosis_id):
     if request.method == 'DELETE':
         diagnosis_id = int(diagnosis_id) 
         res = delete_queries.delete_diagnosis(dbConnection, diagnosis_id)
-        print(res)
         return jsonify({"message": res})
     
 
@@ -407,7 +392,6 @@ def getMedications():
     dbConnection = g.dbConnection
     if request.method == 'GET':
         res = select_queries.get_medications(dbConnection)
-        print(res)
         return jsonify({"message": res})
 
 @app.route('/medication/<user_id>', methods=['GET'])
@@ -416,7 +400,6 @@ def getMedicationByUser(user_id):
     if request.method == 'GET':
         # Assuming `get_medication_by_user` takes a db connection and user_id
         res = select_queries.get_medication_by_user(dbConnection, user_id)
-        print(res)
         return jsonify({"message": res})
     
 
@@ -427,7 +410,6 @@ def deleteMedication(medication_id):
     if request.method == 'DELETE':
         medication_id = int (medication_id) 
         res = delete_queries.delete_medication(dbConnection, medication_id)
-        print(res)
         return jsonify({"message": res})  
     
 #! function not implemented  ?
@@ -450,7 +432,6 @@ def getDiagnosis(patient_id, appointment_id):
         appointment_id = int(appointment_id)
         # Assuming `get_diagnosis_by_user` takes a db connection and user_id
         res = select_queries.get_patient_diagnoses_with_medications_by_appointment(dbConnection, patient_id, appointment_id)
-        print(res)
         return jsonify({"message": res})
     
 #!===============================================================================
@@ -473,9 +454,7 @@ def billing():
     if request.method == 'POST':
         data = request.get_json()
         billing_info = data['billing_info'] 
-        print ("i am here")
         res = insert_queries.insert_billing(dbConnection, billing_info)
-        print(res)
         return jsonify({"message": res})
 
 #delete a billing
@@ -485,7 +464,6 @@ def deleteBilling(billing_id):
     if request.method == 'DELETE':
         billing_id = int(billing_id) 
         res = delete_queries.delete_billing(dbConnection, billing_id)
-        print(res)
         return jsonify({"message": res})
     
 
@@ -496,7 +474,6 @@ def getBilling(user_id):
     if request.method == 'GET':
         # Assuming `get_billing_by_user` takes a db connection and user_id
         res = select_queries.get_billing_by_user(dbConnection, user_id)
-        print(res)
         return jsonify({"message": res})
 '''
 payment_info:
@@ -517,7 +494,6 @@ def updateBilling(billing_id, appointment_id, patient_id):
         appointment_id = int(appointment_id)
         patient_id = int(patient_id) 
         res = update_queries.update_billing_status(dbConnection, billing_id,appointment_id, patient_id, billing_info) 
-        print(res)
         return jsonify({"message": res})
 #!=============================================================================== 
 #admin functions
@@ -532,7 +508,6 @@ def getUsers(role_id, start, limit):
 
         if role_id == 3: 
             res = select_queries.get_all_users_with_details(dbConnection, start, limit)
-            print(res)
             return jsonify({"message": res})
         else:
             res = {"status": "error", "message": "Only admin can view all users."}
@@ -554,7 +529,6 @@ def medicalCondition():
         data = request.get_json()
         condition_info = data['condition_info'] 
         res = insert_queries.insert_medical_conditions(dbConnection, condition_info)
-        print(res)
         return jsonify({"message": res})     
     
 #delete a medical condition
@@ -564,7 +538,6 @@ def deleteMedicalCondition(condition_id):
     if request.method == 'DELETE':
         condition_id = int(condition_id) 
         res = delete_queries.delete_medical_condition(dbConnection, condition_id)
-        print(res)
         return jsonify({"message": res})
     
     
@@ -576,7 +549,6 @@ def getMedicalConditions(role_id):
     if request.method == 'GET':
         if role_id == 3: 
             res = select_queries.get_medical_conditions(dbConnection)
-            print(res)
             return jsonify({"message": res})
         else:
             res = {"status": "error", "message": "Only admin can view all medical conditions."}
@@ -601,7 +573,6 @@ def updateMedicalCondition(condition_id):
         condition_info = data['condition_info'] 
         condition_id = int(condition_id) 
         res = update_queries.update_medical_condition(dbConnection, condition_id, condition_info) 
-        print(res)
         return jsonify({"message": res})
 #!================================================================================
 '''
@@ -622,7 +593,6 @@ def medication():
         data = request.get_json()
         medication_info = data['medication_info'] 
         res = insert_queries.insert_medication(dbConnection, medication_info)
-        print(res)
         return jsonify({"message": res})
     
 #update medication
@@ -644,7 +614,6 @@ def updateMedication(medication_id):
         medication_info = data['medication_info'] 
         medication_id = int(medication_id) 
         res = update_queries.update_medication(dbConnection, medication_id, medication_info) 
-        print(res)
         return jsonify({"message": res}) 
     
 #!===============================================================================
