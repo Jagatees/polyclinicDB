@@ -527,6 +527,9 @@ def getUsers(role_id, start, limit):
     dbConnection = g.dbConnection
     if request.method == 'GET':
         role_id = int(role_id) 
+        start = int(start) 
+        limit = int(limit) 
+
         if role_id == 3: 
             res = select_queries.get_all_users_with_details(dbConnection, start, limit)
             print(res)
