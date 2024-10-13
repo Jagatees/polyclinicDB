@@ -623,7 +623,7 @@ const DoctorDashboard = () => {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium">Specialty</label>
                 <input
                   type="text"
@@ -632,7 +632,7 @@ const DoctorDashboard = () => {
                   onChange={handleProfileChange}
                   className="mt-1 p-2 border rounded w-full bg-white text-black"
                 />
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium">
                   Phone Number
