@@ -108,7 +108,6 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Payment successful:", data);
         // After successful payment, call handleGetBilling to refresh the billing data
         handleGetBilling();
       })
@@ -162,7 +161,6 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Billing successful:", data);
   
         setHistoryBilling(data.message.history);
         setBilling(data.message.current);
@@ -187,7 +185,6 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Get Profile successful:", data.message.data);
         setUserData(data.message.data);
 
         // Set state variables for profile fields
@@ -220,7 +217,6 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Diagnosis successful:", data.message.data);
         setDiagnosisDetails(data.message.data); // Store the diagnosis data
         setShowDiagnosisModal(true); // Show the diagnosis modal
       })
@@ -259,7 +255,6 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Profile update successful:", data);
         // Refresh the user data
         handleGetUser(userId);
       })
@@ -486,7 +481,6 @@ const UserDashboard = () => {
   
   const handleBookAppointment = (event) => {
     event.preventDefault(); // Prevent default form submit action
-    console.log("here as user ")
 
     const formData = {
       appointment_info: {
@@ -513,7 +507,6 @@ const UserDashboard = () => {
       ? `/api/userappointment/${editingAppointment.patient_id_fk}/${editingAppointment.appointment_id}`
       : `/api/appointment`;
 
-      console.log(url, requestMethod)
 
     fetch(url, {
       method: requestMethod,
@@ -529,10 +522,7 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log(
-          isEditing ? "Update successful" : "Booking successful",
-          data
-        );
+        
         setShowBookingForm(false); // Close the form on success
         setIsEditing(false); // Reset editing mode
         setEditingAppointment(null); // Reset editing appointment
@@ -559,7 +549,6 @@ const UserDashboard = () => {
           return response.json();
         })
         .then((data) => {
-          console.log("Deletion successful:", data.message.status);
           if (patientId && role_id_fk_ID) {
             handleGetAppointments();
           }
@@ -586,7 +575,6 @@ const UserDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Appointments fetched successfully:", data.message);
         setAppointments(data.message);
       })
       .catch((error) => {
@@ -609,12 +597,10 @@ const UserDashboard = () => {
   useEffect(() => {
     if (appointments.length > 0 && billing.length > 0) {
       joinAppointmentsAndBilling();
-      console.log("Joined Appointments and Billing Data:", joinedData);
     }
   }, [appointments, billing]);
 
   useEffect(() => {
-    console.log("patientId:", patientId, "role_id_fk_ID:", role_id_fk_ID);
     if (patientId && role_id_fk_ID) {
       handleGetAppointments();
     }

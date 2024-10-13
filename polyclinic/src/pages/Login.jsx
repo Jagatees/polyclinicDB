@@ -32,7 +32,6 @@ const Login = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Login successful:", data);
         setLoading(false); // Stop loading
         setLoginSuccess(true); // Show success indicator
 

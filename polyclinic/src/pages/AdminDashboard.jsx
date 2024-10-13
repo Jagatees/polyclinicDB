@@ -83,7 +83,6 @@ const AdminDashboard = () => {
       })
       .then((data) => {
         const usersData = data.message.users;
-        console.log("user data ", usersData);
 
         if (usersData.length > 0) {
           setTotalUserCount(usersData[0].total_users);
@@ -113,7 +112,6 @@ const AdminDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Medical conditions data:", data);
         setMedicalConditions(data.message); // Adjust based on actual response format
       })
       .catch((error) => {
@@ -226,7 +224,6 @@ const AdminDashboard = () => {
           return response.json();
         })
         .then((data) => {
-          console.log("Deletion successful:", data);
           getuser(currentPageUser, itemsPerPageUser); // Refresh the current page
         })
         .catch((error) => {
@@ -295,7 +292,6 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteCondition = (conditionId) => {
-    console.log("Condition id", conditionId);
 
     setLoadingDelete(true); // Start loading
 

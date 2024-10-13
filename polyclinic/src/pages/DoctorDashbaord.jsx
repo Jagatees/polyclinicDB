@@ -105,7 +105,6 @@ const DoctorDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Profile fetched:", data.message.data);
         const userData = data.message.data;
 
         // Flatten the data structure
@@ -161,7 +160,6 @@ const DoctorDashboard = () => {
       },
     };
 
-    console.log("Passing data:", updatedProfile);
 
     fetch(apiUrl, {
       method: "PUT",
@@ -177,7 +175,6 @@ const DoctorDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Profile updated:", data.message);
         alert("Profile updated successfully!");
       })
       .catch((error) => {
@@ -187,7 +184,6 @@ const DoctorDashboard = () => {
   };
 
   const handleReassignAppointment = (appointment) => {
-    console.log("Reassigning appointment:", appointment.appointment_id);
     const apiUrl = `/api/appointment/${appointment.appointment_id}/${doctor_id_ID}`;
     fetch(apiUrl, {
       method: "PUT",
@@ -202,8 +198,6 @@ const DoctorDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("ReassignAppointment fetched:", data);
-        console.log("ReassignAppointment fetched:", data.message.status);
 
         if (data.message.status === "error") {
           alert("Unable to Reasign. Please contact admin")
@@ -237,7 +231,6 @@ const DoctorDashboard = () => {
   };
 
   const handleGetAppointments = () => {
-    console.log(doctor_id_ID);
     // Define the API endpoint with user_id and role_id
     const apiUrl = `/api/appointment/${doctor_id_ID}/`;
 
@@ -254,7 +247,6 @@ const DoctorDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Appointments fetched:", data.message.appointments);
 
         // Update appointments state with fetched data
         setAppointments(data.message.appointments);
@@ -280,7 +272,6 @@ const DoctorDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("medication fetched:", data.message);
         // Map the fetched data to match the expected format
         const formattedMedications = data.message.map((med) => ({
           medication_id: med.medication_id,
@@ -311,7 +302,6 @@ const DoctorDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("setMedicalCondition fetched:", data.message);
 
         const formattedMedications = data.message.map((med) => ({
           condition_id: med.condition_id,
@@ -326,7 +316,6 @@ const DoctorDashboard = () => {
   };
 
   useEffect(() => {
-    console.log("doctor_id_ID:", doctor_id_ID);
     if (doctor_id_ID) {
       handleGetAppointments();
       handleGetMedication();
@@ -433,7 +422,6 @@ const DoctorDashboard = () => {
     };
 
     // Log the formatted data for debugging purposes
-    console.log("Formatted Data:", JSON.stringify(formattedData, null, 2));
 
     // Submit the formatted data to the API (uncomment to use)
     const apiUrl = `/api/diagnosis`;
@@ -452,7 +440,6 @@ const DoctorDashboard = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Diagnosis submitted:", data.message);
         handleGetAppointments();
         handleCloseModal();
       })
