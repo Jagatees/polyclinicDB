@@ -28,6 +28,14 @@ const AdminDashboard = () => {
   const [loadingAddUser, setLoadingAddUser] = useState(false);
   const [loadingAddCondition, setLoadingAddCondition] = useState(false);
 
+  // Pagination states for users
+  const [currentPageUser, setCurrentPageUser] = useState(1); // For users pagination
+  const itemsPerPageUser = 10; // Items per page for users
+
+  // Pagination states for medical conditions
+  const [currentPageCondition, setCurrentPageCondition] = useState(1); // For conditions pagination
+  const itemsPerPageCondition = 5; // Items per page for conditions
+
   // State for the new medical condition form
   const [newCondition, setNewCondition] = useState({
     name: "",
@@ -36,9 +44,6 @@ const AdminDashboard = () => {
 
   // New state variable for medical conditions
   const [medicalConditions, setMedicalConditions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); // For pagination
-  const itemsPerPage = 10; // Items per page
-
 
   useEffect(() => {
     if (!isUserLoggedIn()) {
@@ -117,13 +122,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     getuser();
   }, []);
-
-  // Fetch medical conditions when the active page is 'view_medical_condition'
-  useEffect(() => {
-    if (activePage === "view_medical_condition") {
-      getMedicalConditions();
-    }
-  }, [activePage]);
 
   const handleCreateUser = async (event) => {
     event.preventDefault();
@@ -328,9 +326,15 @@ const AdminDashboard = () => {
     }, 2000); // Simulate a 2-second delay for demonstration purposes
   };
 
-
   const renderContent = () => {
     if (activePage === "view_user") {
+      // Pagination calculations for users
+      const totalPagesUser = Math.ceil(usersAll.length / itemsPerPageUser);
+      const currentDataUsers = usersAll.slice(
+        (currentPageUser - 1) * itemsPerPageUser,
+        currentPageUser * itemsPerPageUser
+      );
+
       return (
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -346,35 +350,71 @@ const AdminDashboard = () => {
                 No data available.
               </div>
             ) : (
-              <table className="min-w-full">
-                <thead>
-                  <tr>
-                    <th className="border px-4 py-2 text-left">Username</th>
-                    <th className="border px-4 py-2 text-left">Role ID</th>
-                    <th className="border px-4 py-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {usersAll.map((user) => (
-                    <tr key={user.user_id}>
-                      <td className="border px-4 py-2">{user.username}</td>
-                      <td className="border px-4 py-2">{user.role_id}</td>
-                      <td className="border px-4 py-2">
-                        {loadingDelete ? (
-                          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
-                        ) : (
-                          <button
-                            onClick={() => handleDeleteUser(user.user_id)}
-                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </td>
+              <div>
+                <table className="min-w-full">
+                  <thead>
+                    <tr>
+                      <th className="border px-4 py-2 text-left">Username</th>
+                      <th className="border px-4 py-2 text-left">Role ID</th>
+                      <th className="border px-4 py-2">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {currentDataUsers.map((user) => (
+                      <tr key={user.user_id}>
+                        <td className="border px-4 py-2">{user.username}</td>
+                        <td className="border px-4 py-2">{user.role_id}</td>
+                        <td className="border px-4 py-2">
+                          {loadingDelete ? (
+                            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+                          ) : (
+                            <button
+                              onClick={() => handleDeleteUser(user.user_id)}
+                              className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {/* Pagination Controls */}
+                <div className="flex justify-center mt-4">
+                  <button
+                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                    onClick={() => setCurrentPageUser(1)}
+                    disabled={currentPageUser === 1}
+                  >
+                    First
+                  </button>
+                  <button
+                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                    onClick={() => setCurrentPageUser(currentPageUser - 1)}
+                    disabled={currentPageUser === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="px-3 py-1 mx-1">
+                    Page {currentPageUser} of {totalPagesUser}
+                  </span>
+                  <button
+                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                    onClick={() => setCurrentPageUser(currentPageUser + 1)}
+                    disabled={currentPageUser === totalPagesUser}
+                  >
+                    Next
+                  </button>
+                  <button
+                    className="px-3 py-1 mx-1 bg-gray-300 rounded"
+                    onClick={() => setCurrentPageUser(totalPagesUser)}
+                    disabled={currentPageUser === totalPagesUser}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -528,17 +568,19 @@ const AdminDashboard = () => {
         </div>
       );
     } else if (activePage === "view_medical_condition") {
-      // View Medical Conditions with Pagination
-      const totalPages = Math.ceil(medicalConditions.length / itemsPerPage);
-      const currentData = medicalConditions.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
+      // Pagination calculations for medical conditions
+      const totalPagesCondition = Math.ceil(
+        medicalConditions.length / itemsPerPageCondition
+      );
+      const currentDataConditions = medicalConditions.slice(
+        (currentPageCondition - 1) * itemsPerPageCondition,
+        currentPageCondition * itemsPerPageCondition
       );
 
       return (
         <div>
           <h3 className="text-2xl font-semibold mb-4">Medical Conditions</h3>
-          {currentData.length === 0 ? (
+          {currentDataConditions.length === 0 ? (
             <p>No medical conditions available.</p>
           ) : (
             <div>
@@ -552,8 +594,8 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentData.map((condition) => (
-                    <tr key={condition.id}>
+                  {currentDataConditions.map((condition) => (
+                    <tr key={condition.condition_id}>
                       <td className="border px-4 py-2">
                         {condition.condition_id}
                       </td>
@@ -583,32 +625,36 @@ const AdminDashboard = () => {
               <div className="flex justify-center mt-4">
                 <button
                   className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPageCondition(1)}
+                  disabled={currentPageCondition === 1}
                 >
                   First
                 </button>
                 <button
                   className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
+                  onClick={() =>
+                    setCurrentPageCondition(currentPageCondition - 1)
+                  }
+                  disabled={currentPageCondition === 1}
                 >
                   Previous
                 </button>
                 <span className="px-3 py-1 mx-1">
-                  Page {currentPage} of {totalPages}
+                  Page {currentPageCondition} of {totalPagesCondition}
                 </span>
                 <button
                   className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
+                  onClick={() =>
+                    setCurrentPageCondition(currentPageCondition + 1)
+                  }
+                  disabled={currentPageCondition === totalPagesCondition}
                 >
                   Next
                 </button>
                 <button
                   className="px-3 py-1 mx-1 bg-gray-300 rounded"
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPageCondition(totalPagesCondition)}
+                  disabled={currentPageCondition === totalPagesCondition}
                 >
                   Last
                 </button>
@@ -667,7 +713,7 @@ const AdminDashboard = () => {
         </nav>
 
         {/* Sidebar Footer */}
-         <button
+        <button
           className="w-full px-4 py-2 mt-auto bg-red-600 hover:bg-red-700 text-white rounded-md"
           onClick={handleLogout}
           disabled={loading}
