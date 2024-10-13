@@ -82,6 +82,8 @@ const AdminDashboard = () => {
       .then((data) => {
         const usersData = data.message.users;
         console.log("user data ", usersData);
+        console.log("user data ", usersData[0].total_users);
+
         setUsersAll(usersData);
         setNoData(usersData.length === 0);
       })
