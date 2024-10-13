@@ -67,7 +67,7 @@ const AdminDashboard = () => {
 
   const getuser = () => {
     const role_id = localStorage.getItem("role_id_fk");
-    fetch(`/api/users/${role_id}`, {
+    fetch(`/api/users/${role_id}/1/10`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
